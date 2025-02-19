@@ -11,7 +11,7 @@ One-time configuration by the administrator, easy for the entire team to use var
 
 * LaTeX and Markdown rendering
 * DeepSeek thought chain visualization
-* Image understanding
+* Vision Recognition
 * AI agents
 * Cloud-based data storage
 * Supported large model providers:

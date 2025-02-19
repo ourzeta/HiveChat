@@ -154,7 +154,7 @@ docker compose up -d
 
 默认将代码克隆的自己的 Github 后，需要填写环境变量：
 
-<img width="726" alt="image" src="https://github.com/user-attachments/assets/7abd8376-fe91-4a48-8570-afb4671feff4" />
+<img width="726" alt="image" src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/vercel01.png" />
 
 ```
 # PostgreSQL 数据库连接 URL，Vercel 平台提供了免费的托管服务，详情见下面说明
@@ -170,10 +170,10 @@ ADMIN_CODE=22113344
 
 1. 在 Vercel 平台顶部导航，选择「Storage」标签，点击 Create Databse
 2. 选择 Neon(Serverless Postgres)
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/75014b73-2952-4883-ba4e-ffa6adbda059" />
+<img width="400" alt="image" src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/vercel02.png" />
 
 3. 按照指引完成创建后，复制此处 `DATABASE_URL` 的值，填入到上一步的 `DATABASE_URL` 中
-<img width="800" alt="image" src="https://github.com/user-attachments/assets/a4e13abb-9b54-470d-886b-c8dfac5e33da" />
+<img width="800" alt="image" src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/vercel03.png" />
 
 4. 初始化管理员账号
 按照以上方法安装部署完成后，访问 `http://localhost:3000/setup` (实际使用的域名和端口号)，即可进入管理员账号设置页面，设置完成后，即可正常使用系统。

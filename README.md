@@ -1,6 +1,6 @@
 <div align="center">
-   <img width="32" height="32" src="https://github.com/user-attachments/assets/a6b58765-fc7c-4425-9289-6b8dcb626c47" />
-   <img height="32" alt="HiveChat" src="https://github.com/user-attachments/assets/561e1cad-46a9-4243-81c4-31406df730c7" />
+   <img width="32" height="32" src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/logo.png" />
+   <img height="32" alt="HiveChat" src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/hivechat.png" />
    <p>专为中小团队设计的 AI 聊天应用，支持 Deepseek、Open AI、Claude、Gemini 等模型。</p>
 </div>
 
@@ -28,21 +28,21 @@
 ### 普通用户端
 登录账号，即可对话。
 
-![image](https://github.com/user-attachments/assets/4beba6b0-410b-41cf-b19d-4084d7c0b061)
+![image](https://jiantuku.oss-cn-beijing.aliyuncs.com/share/003.png)
 
 ### 管理后台
 * 管理员配置 AI 大模型服务商
 * 可手动添加用户，也可开启或关闭账号注册，适用于公司/学校/组织等小型团队
 * 查看和管理全部用户
 
-![image](https://github.com/user-attachments/assets/5532d5bf-1323-4412-bac4-401131fb4770)
+![image](https://jiantuku.oss-cn-beijing.aliyuncs.com/share/001.png)
 
 <details>
   <summary>更多图片</summary>
    用户管理
-   <img src="https://github.com/user-attachments/assets/f9ca3064-5fea-4b2b-aaf0-a044095d194d" />
+   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/002.png" />
    开启或关闭用户注册
-   <img src="https://github.com/user-attachments/assets/3391c302-25ad-4311-9f72-9583b12b96cb" />
+   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/004.png" />
 </details>
 
 ## 2. 在线演示

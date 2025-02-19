@@ -1,6 +1,6 @@
 <div align="center">
-   <img width="32" height="32" src="https://github.com/user-attachments/assets/a6b58765-fc7c-4425-9289-6b8dcb626c47" />
-   <img height="32" alt="HiveChat" src="https://github.com/user-attachments/assets/561e1cad-46a9-4243-81c4-31406df730c7" />
+   <img width="32" height="32" src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/logo.png" />
+   <img height="32" alt="HiveChat" src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/hivechat.png" />
    <p>专为中小团队设计的 AI 聊天应用，支持 Deepseek、Open AI、Claude、Gemini 等模型。</p>
 </div>
 
@@ -28,21 +28,21 @@
 ### 普通用户端
 登录账号，即可对话。
 
-![image](https://github.com/user-attachments/assets/4beba6b0-410b-41cf-b19d-4084d7c0b061)
+![image](https://jiantuku.oss-cn-beijing.aliyuncs.com/share/003.png)
 
 ### 管理后台
 * 管理员配置 AI 大模型服务商
 * 可手动添加用户，也可开启或关闭账号注册，适用于公司/学校/组织等小型团队
 * 查看和管理全部用户
 
-![image](https://github.com/user-attachments/assets/5532d5bf-1323-4412-bac4-401131fb4770)
+![image](https://jiantuku.oss-cn-beijing.aliyuncs.com/share/001.png)
 
 <details>
   <summary>更多图片</summary>
    用户管理
-   <img src="https://github.com/user-attachments/assets/f9ca3064-5fea-4b2b-aaf0-a044095d194d" />
+   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/002.png" />
    开启或关闭用户注册
-   <img src="https://github.com/user-attachments/assets/3391c302-25ad-4311-9f72-9583b12b96cb" />
+   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/004.png" />
 </details>
 
 ## 2. 在线演示
@@ -154,7 +154,7 @@ docker compose up -d
 
 默认将代码克隆的自己的 Github 后，需要填写环境变量：
 
-<img width="726" alt="image" src="https://github.com/user-attachments/assets/7abd8376-fe91-4a48-8570-afb4671feff4" />
+<img width="726" alt="image" src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/vercel01.png" />
 
 ```
 # PostgreSQL 数据库连接 URL，Vercel 平台提供了免费的托管服务，详情见下面说明
@@ -170,10 +170,10 @@ ADMIN_CODE=22113344
 
 1. 在 Vercel 平台顶部导航，选择「Storage」标签，点击 Create Databse
 2. 选择 Neon(Serverless Postgres)
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/75014b73-2952-4883-ba4e-ffa6adbda059" />
+<img width="400" alt="image" src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/vercel02.png" />
 
 3. 按照指引完成创建后，复制此处 `DATABASE_URL` 的值，填入到上一步的 `DATABASE_URL` 中
-<img width="800" alt="image" src="https://github.com/user-attachments/assets/a4e13abb-9b54-470d-886b-c8dfac5e33da" />
+<img width="800" alt="image" src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/vercel03.png" />
 
 4. 初始化管理员账号
 按照以上方法安装部署完成后，访问 `http://localhost:3000/setup` (实际使用的域名和端口号)，即可进入管理员账号设置页面，设置完成后，即可正常使用系统。

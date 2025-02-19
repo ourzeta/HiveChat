@@ -89,6 +89,7 @@ cp .env.example .env
 
 ```env
 # PostgreSQL 数据库连接 URL，此处为示例，需本地安装或连接远程 PostgreSQL
+# 注意，本地安装暂不支持使用 Vercel 或 Neon 提供的 Serverless PostgreSQL
 DATABASE_URL=postgres://postgres:password@localhost/hivechat
 
 #用于用户信息等敏感信息的加密，可以使用 openssl rand -base64 32 生成一个随机的 32 位字符串作为密钥，此处为示例，请替换为自己生成的值。

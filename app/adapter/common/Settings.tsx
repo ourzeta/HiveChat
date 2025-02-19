@@ -12,6 +12,7 @@ import { useTranslations } from 'next-intl';
 import { saveToServer } from '@/app/adapter/actions';
 import { fetchLlmModels } from '@/app/adapter/actions';
 import useModelListStore from '@/app/store/modelList';
+import CheckApiModal from '@/app/adapter/common/CheckApiModal';
 import EditModelModal from '@/app/adapter/common/EditModelModal';
 import AddModelModal from '@/app/adapter/common/AddModelModal';
 import ModelList from '@/app/adapter/common/ModelList';
@@ -33,6 +34,7 @@ const Settings = (props: { providerId: string }) => {
   const [isClient, setIsClient] = useState(false);
   const [isPending, setIsPending] = useState(true);
 
+  const [isCheckApiModalOpen, setIsCheckApiModalOpen] = useState(false);
   const [isCustomModelModalOpen, setIsCustomModelModalOpen] = useState(false);
   const [isEditModelModalOpen, setIsEditModelModalOpen] = useState(false);
   const [curretEditModal, setCurretEditModal] = useState<LLMModel>();
@@ -102,9 +104,9 @@ const Settings = (props: { providerId: string }) => {
     saveToServer(provider.id, { ...values, providerName: provider.providerName });
   };
 
-  const checkApi = async () => {
+  const checkApi = async (modelId: string) => {
     setCheckResult('pending')
-    const result = await chatbot.check(modelList[0].id, form.getFieldValue('apikey'), form.getFieldValue('endpoint'));
+    const result = await chatbot.check(modelId, form.getFieldValue('apikey'), form.getFieldValue('endpoint'));
     if (result.status === 'success') {
       setCheckResult('success');
       setErrorMessage('');
@@ -180,7 +182,10 @@ const Settings = (props: { providerId: string }) => {
         <div className='flex flex-col mb-2'>
           <div className='font-medium'>{t('testConnect')}</div>
           <div className='my-2 flex flex-row items-center'>
-            <Button loading={checkResult === 'pending'} onClick={checkApi}>{t('check')}</Button>
+            {/* <Button loading={checkResult === 'pending'} onClick={checkApi}>{t('check')}</Button> */}
+            <Button loading={checkResult === 'pending'} onClick={() => {
+              setIsCheckApiModalOpen(true);
+            }}>{t('check')}</Button>
             <div className='ml-2 flex flex-row items-center' >
               {checkResult === 'success' &&
                 <>
@@ -217,6 +222,12 @@ const Settings = (props: { providerId: string }) => {
           setCurretEditModal={setCurretEditModal}
           setIsEditModelModalOpen={setIsEditModelModalOpen}
           setIsCustomModelModalOpen={setIsCustomModelModalOpen}
+        />
+
+        <CheckApiModal
+          isCheckApiModalOpen={isCheckApiModalOpen}
+          setIsCheckApiModalOpenOpen={setIsCheckApiModalOpen}
+          startCheck={checkApi}
         />
 
         <AddModelModal

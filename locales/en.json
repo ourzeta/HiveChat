@@ -174,7 +174,9 @@
       "okText": "OK",
       "cancelText": "Cancel",
       "addModelSuccess": "Added successfully",
-      "saveSuccess": "Success"
+      "saveSuccess": "Success",
+      "selectModelToCheck": "Select a Model",
+      "checkConnectivity": "API Check"
     },
     "Users": {
       "userList": "User List",

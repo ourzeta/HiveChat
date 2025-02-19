@@ -173,7 +173,9 @@
       "okText": "保存",
       "cancelText": "取消",
       "addModelSuccess": "添加成功",
-      "saveSuccess": "保存成功"
+      "saveSuccess": "保存成功",
+      "selectModelToCheck": "选择要检测的模型",
+      "checkConnectivity": "检查连通性"
     },
     "Users": {
       "userList": "用户列表",

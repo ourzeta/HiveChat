@@ -58,7 +58,8 @@ export default function LoginPage() {
           <Form.Item
             name="email"
             label={<span className="font-medium">Email</span>}
-            rules={[{ required: true, message: t('emailNotice') }]}
+            validateTrigger='onBlur'
+            rules={[{ required: true, type: 'email', message: t('emailNotice') }]}
           >
             <Input size='large' />
           </Form.Item>

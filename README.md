@@ -1,6 +1,7 @@
 <div align="center">
    <img width="32" height="32" src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/logo.png" />
    <img height="32" alt="HiveChat" src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/hivechat.png" />
+   <p>中文 ｜ <a href="https://github.com/HiveNexus/HiveChat/blob/main/README_EN.md">English</a><p>
    <p>专为中小团队设计的 AI 聊天应用，支持 Deepseek、Open AI、Claude、Gemini 等模型。</p>
 </div>
 

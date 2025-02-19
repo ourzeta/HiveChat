@@ -46,9 +46,11 @@
 </details>
 
 ## 2. 在线演示
-* 用户端：https://hivechat-demo.vercel.app/
-    * Email: user@demo.com
-    * Password: helloHivechat
+
+注：以下为演示站，数据随时会被清空
+
+* 用户端：https://chat.yotuku.cn/
+    * 可自行注册账号体验
 * 管理员端：https://hivechat-demo.vercel.app/
     * Email: admin@demo.com
     * Password: helloHivechat

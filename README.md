@@ -46,9 +46,11 @@
 </details>
 
 ## 2. 在线演示
-* 用户端：https://hivechat-demo.vercel.app/
-    * Email: user@demo.com
-    * Password: helloHivechat
+
+注：以下为演示站，数据随时会被清空
+
+* 用户端：https://chat.yotuku.cn/
+    * 可自行注册账号体验
 * 管理员端：https://hivechat-demo.vercel.app/
     * Email: admin@demo.com
     * Password: helloHivechat
@@ -87,6 +89,7 @@ cp .env.example .env
 
 ```env
 # PostgreSQL 数据库连接 URL，此处为示例，需本地安装或连接远程 PostgreSQL
+# 注意，本地安装暂不支持使用 Vercel 或 Neon 提供的 Serverless PostgreSQL
 DATABASE_URL=postgres://postgres:password@localhost/hivechat
 
 #用于用户信息等敏感信息的加密，可以使用 openssl rand -base64 32 生成一个随机的 32 位字符串作为密钥，此处为示例，请替换为自己生成的值。
@@ -140,6 +143,7 @@ docker compose up -d
 ```
 
 6. 初始化管理员账号
+   
 访问 `http://localhost:3000/setup` (实际使用的域名和端口号)，即可进入管理员账号设置页面，设置完成后，即可正常使用系统。
 
 

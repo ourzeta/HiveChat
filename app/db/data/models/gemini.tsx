@@ -6,15 +6,15 @@ export const provider = {
 
 export const modelList: LLMModel[] = [
   {
-    'id': 'gemini-1.5-flash',
-    'displayName': 'Gemini 1.5 Flash',
+    'id': 'gemini-2.0-flash',
+    'displayName': 'Gemini 2.0 Flash',
     'supportVision': true,
     'selected': true,
     provider
   },
   {
-    'id': 'gemini-1.5-flash-8b',
-    'displayName': 'Gemini 1.5 Flash 8B',
+    'id': 'gemini-1.5-flash',
+    'displayName': 'Gemini 1.5 Flash',
     'supportVision': true,
     'selected': true,
     provider

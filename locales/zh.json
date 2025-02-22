@@ -59,6 +59,7 @@
     "renameChat": "编辑对话名称",
     "inputChatName": "请输入对话名称",
     "deleteCurrentChat": "删除当前对话",
+    "deleteCurrentChatDetail": "对话所有记录都会被删除",
     "clearMemory": "清除记忆",
     "image": "图片",
     "unsupportImage": "当前模型不支持上传图片",

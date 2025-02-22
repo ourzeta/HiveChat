@@ -4,11 +4,11 @@ import { db } from './index';
 import providers from './data/providers';
 
 export async function initializeProviders() {
-  const count = await db.$count(llmSettingsTable);
-  if (count > 0) {
-    return;
-  }
-  await db.insert(llmSettingsTable).values(providers);
+  await db
+    .insert(llmSettingsTable)
+    .values(providers)
+    .onConflictDoNothing({ target: llmSettingsTable.provider }) // 冲突时忽略
+    .execute();
 }
 
 initializeProviders().then(() => {

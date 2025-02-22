@@ -60,7 +60,6 @@ const ModelList: React.FC<ModelListProps> = ({
                   handleChangeSelect(item.id, false);
                 }} size='small' type='text' icon={<EyeInvisibleOutlined style={{ color: '#888' }} />} />
               </Tooltip>
-              {item.type === 'custom' && <>
                 <Popconfirm
                   title={t('deleteCustomModel')}
                   description={t('currentModelWillbeDeleted')}
@@ -79,7 +78,6 @@ const ModelList: React.FC<ModelListProps> = ({
                     setIsEditModelModalOpen(true);
                   }} type='text' icon={<SettingOutlined style={{ color: '#888' }} />} />
                 </Tooltip>
-              </>}
             </div>
           </div>
         ))}

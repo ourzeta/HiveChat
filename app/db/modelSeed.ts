@@ -12,6 +12,10 @@ import { modelList as DeepseekModels } from "@/app/db/data/models/deepseek";
 import { modelList as QianfanModels } from "@/app/db/data/models/qianfan";
 import { modelList as SiliconflowModels } from "@/app/db/data/models/siliconflow";
 import { modelList as OllamaModels } from "@/app/db/data/models/ollama";
+import { modelList as OpenrouterModels } from "@/app/db/data/models/openrouter";
+import { modelList as ZhipuModels } from "@/app/db/data/models/zhipu";
+import { modelList as GrokModels } from "@/app/db/data/models/grok";
+import { modelList as HunyuanModels } from "@/app/db/data/models/hunyuan";
 const modelList = [
   ...OpenaiModels,
   ...ClaudeModels,
@@ -23,13 +27,13 @@ const modelList = [
   ...QianfanModels,
   ...SiliconflowModels,
   ...OllamaModels,
+  ...OpenrouterModels,
+  ...ZhipuModels,
+  ...GrokModels,
+  ...HunyuanModels,
 ];
 
 export async function initializeModels() {
-  const count = await db.$count(llmModels);
-  if (count > 0) {
-    return;
-  }
   const modelData = modelList.map((model) => ({
     name: model.id,
     displayName: model.displayName,
@@ -43,7 +47,10 @@ export async function initializeModels() {
     updatedAt: new Date(),
   }));
 
-  await db.insert(llmModels).values(modelData);
+  await db.insert(llmModels).values(modelData)
+    .onConflictDoNothing({
+      target: [llmModels.name, llmModels.providerId], // 指定冲突检测列
+    });
 }
 
 initializeModels().then(() => {

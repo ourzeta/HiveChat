@@ -56,6 +56,10 @@ const Settings = (props: { providerId: string }) => {
       'qianfan': 'https://k2swpw8zgf.feishu.cn/wiki/PUKvw62CgiZLoCkR9xjcWktinrc',
       'siliconflow': 'https://k2swpw8zgf.feishu.cn/wiki/EpD4wAj0ai681hkFFqMcvQZUn8g',
       'ollama': 'https://k2swpw8zgf.feishu.cn/wiki/MiPKw3uI7iS7ImkdAG7cRj77nuf',
+      'hunyuan': 'https://k2swpw8zgf.feishu.cn/wiki/MYt7wKmYniviwrkeULPc1yjEn0f',
+      'zhipu': 'https://k2swpw8zgf.feishu.cn/wiki/Ljyowt68vijCX0kPKhkc8fs8nS2',
+      'grok': 'https://k2swpw8zgf.feishu.cn/wiki/JWmBwLbCFiJ3YXko5ILc40xEnoy',
+      'openrouter': 'https://k2swpw8zgf.feishu.cn/wiki/LRjSwrcDVixWjzkII0icaoQQnBc',
     };
     const providers = Object.keys(helpLinks);
     if (providers.includes(providerId)) {

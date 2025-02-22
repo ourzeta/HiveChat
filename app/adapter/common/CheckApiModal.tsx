@@ -45,7 +45,7 @@ const CheckApiModal: React.FC<CustomModelModalProps> = ({
           form={customModelForm}
           onFinish={onModelFormSubmit}
           initialValues={{
-            modelId: modelList[0].id
+            modelId: modelList.length > 0 ? modelList[0].id : null
           }}
         >
           <Form.Item

@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react'
 import { fetchAllLlmSettings } from '@/app/adapter/actions';
-import { llmSettingsType } from '@/app/db/schema';
+import { PlusCircleOutlined } from '@ant-design/icons';
 import { useTranslations } from 'next-intl';
 import { Skeleton } from "antd";
 import { usePathname } from 'next/navigation';
@@ -9,6 +9,7 @@ import clsx from 'clsx';
 import ProviderItem from '@/app/components/ProviderItem';
 import Link from 'next/link';
 import useModelListStore from '@/app/store/modelList';
+import AddCustomProvider from '@/app/components/admin/AddCustomProvider';
 
 
 export default function LLMLayout({
@@ -19,6 +20,7 @@ export default function LLMLayout({
 
   const t = useTranslations('Admin.Models');
   const [isPending, setIsPending] = useState(true);
+  const [isAddProviderModalOpen, setIsAddProviderModalOpen] = useState(false);
   const pathname = usePathname();
   const providerId = pathname.split("/").pop() || '';
   const { allProviderList, initAllProviderList } = useModelListStore();
@@ -29,6 +31,7 @@ export default function LLMLayout({
         id: item.provider,
         providerName: item.providerName,
         providerLogo: item.logo || '',
+        type: item.type,
         status: item.isActive || false,
       }));
 
@@ -39,7 +42,7 @@ export default function LLMLayout({
   }, [initAllProviderList]);
   return (
     <div className='w-full flex flex-row h-dvh'>
-      <div className='w-72 bg-slate-50 p-4 border-l overflow-y-auto'>
+      <div className='w-72 bg-slate-50 p-4 border-l h-dvh overflow-y-auto'>
         {isPending ? <>
           <Skeleton.Node active style={{ width: 250, height: '3rem', marginTop: '0.5rem' }} />
           <Skeleton.Node active style={{ width: 250, height: '3rem', marginTop: '0.5rem' }} />
@@ -67,7 +70,14 @@ export default function LLMLayout({
             }
           </>
         }
-
+        <div className="flex grow-0 mt-2 flex-row just items-center justify-center border h-10 text-sm px-2 hover:bg-gray-200 cursor-pointer rounded-md"
+          onClick={() => {
+            setIsAddProviderModalOpen(true)
+          }}
+        >
+          <PlusCircleOutlined style={{ 'fontSize': '14px' }} />
+          <span className='ml-2'>添加服务商</span>
+        </div>
       </div>
       <div className='w-0 grow overflow-y-auto'>
         {
@@ -79,6 +89,10 @@ export default function LLMLayout({
         }
 
       </div>
+      <AddCustomProvider
+        isModalOpen={isAddProviderModalOpen}
+        setIsModalOpen={setIsAddProviderModalOpen}
+      />
     </div>
   )
 }

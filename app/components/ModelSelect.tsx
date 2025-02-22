@@ -37,10 +37,18 @@ const ModelSelect = () => {
       title: provider.providerName,
       options: modelList.filter((model) => model.provider.id === provider.id && model.selected).map((model) => ({
         label: (<div className='flex flex-row items-center'>
-          <Avatar
-            size={20}
-            src={allProviderListByKey && allProviderListByKey[provider.id]?.providerLogo || ''}
-          />
+          {allProviderListByKey && allProviderListByKey[provider.id]?.providerLogo ?
+            <Avatar
+              size={20}
+              src={allProviderListByKey[provider.id].providerLogo}
+            />
+            :
+            <Avatar
+              size={20}
+              style={{ backgroundColor: '#1c78fa' }}
+            >{allProviderListByKey && allProviderListByKey[provider.id].providerName.charAt(0)}</Avatar>
+          }
+
           <span className='ml-1'>{model.displayName}</span>
         </div>),
         value: model.id,

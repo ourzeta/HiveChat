@@ -4,10 +4,9 @@ import Markdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
 import React, { useState, useEffect } from 'react';
-import { Button, Form, Input, Switch, Skeleton } from 'antd';
+import { Button, Form, Input, Switch, Skeleton, Avatar, message, Popconfirm } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { getLLMInstance } from '@/app/adapter/models';
-import Image from "next/image";
 import { useTranslations } from 'next-intl';
 import { saveToServer } from '@/app/adapter/actions';
 import { fetchLlmModels } from '@/app/adapter/actions';
@@ -18,8 +17,8 @@ import AddModelModal from '@/app/adapter/common/AddModelModal';
 import ModelList from '@/app/adapter/common/ModelList';
 import { LLMModel } from '@/app/adapter/interface';
 import { getLlmOriginConfigByProvider } from '@/app/utils/llms';
-
-
+import { deleteCustomProviderInServer } from '@/app/adapter/actions';
+import { useRouter } from "next/navigation";
 
 type FormValues = {
   status: boolean;
@@ -28,7 +27,8 @@ type FormValues = {
 }
 
 const Settings = (props: { providerId: string }) => {
-  const { allProviderList, modelList, initModelList, toggleProvider } = useModelListStore();
+  const router = useRouter();
+  const { allProviderList, initModelList, toggleProvider, deleteCustomProvider } = useModelListStore();
   const provider = allProviderList.find((i) => i.id === props.providerId)!;
   const t = useTranslations('Admin.Models');
   const [isClient, setIsClient] = useState(false);
@@ -73,6 +73,17 @@ const Settings = (props: { providerId: string }) => {
     setIsClient(true);
   }, []);
 
+  const handleDeleteProvider = async (providerId: string) => {
+    try {
+      message.success('删除成功');
+      await deleteCustomProviderInServer(providerId);
+      deleteCustomProvider(providerId);
+      router.push(`/admin/llm`);
+    } catch (error) {
+      console.error('删除服务商失败:', error);
+      message.error('删除失败，请检查网络或后台服务。');
+    }
+  }
 
   useEffect(() => {
     const fetchLlmConfig = async (): Promise<void> => {
@@ -129,9 +140,21 @@ const Settings = (props: { providerId: string }) => {
           onFinish={onFinish}
         >
           <div className='flex flex-row justify-between my-4 items-center'>
-            <div className='flex items-center'>
-              <Image src={provider.providerLogo!} alt="" width={26} height={26} />
-              <h2 className='font-medium text-lg ml-2'>{provider.providerName}</h2>
+            <div className='flex items-center justify-center'>
+              {provider?.providerLogo ?
+                <Avatar
+                  style={{ 'fontSize': '30px',border: '1px solid #ddd', padding: '0.2rem' }}
+                  src={provider.providerLogo}
+                />
+                :
+                <Avatar
+                  style={{ 'fontSize': '28px', backgroundColor: '#1c78fa' }}
+                >{provider?.providerName.charAt(0)}</Avatar>
+              }
+              <div className='flex flex-col ml-2'>
+                <h2 className='font-medium text-lg mb-0 leading-5'>{provider?.providerName}</h2>
+                <span className='text-xs text-gray-400'>{provider?.id}</span>
+              </div>
             </div>
             <Form.Item name='status' style={{ 'margin': '0' }}>
               <Switch onChange={() => {
@@ -227,7 +250,29 @@ const Settings = (props: { providerId: string }) => {
           setIsEditModelModalOpen={setIsEditModelModalOpen}
           setIsCustomModelModalOpen={setIsCustomModelModalOpen}
         />
-
+        {provider?.type === 'custom' &&
+          <div className='w-full flex flex-row-reverse p-2'>
+            <Popconfirm
+              title="删除提示"
+              description="确定删除此服务商吗？"
+              onConfirm={() => {
+                handleDeleteProvider(props.providerId)
+              }}
+              okText={t('confirm')}
+              cancelText={t('cancel')}
+            >
+              <Button
+                size='small'
+                color="blue"
+                variant="text"
+              >
+                <span className='text-gray-400 text-xs'>
+                  删除此服务商
+                </span>
+              </Button>
+            </Popconfirm>
+          </div>
+        }
         <CheckApiModal
           isCheckApiModalOpen={isCheckApiModalOpen}
           setIsCheckApiModalOpenOpen={setIsCheckApiModalOpen}
@@ -237,15 +282,15 @@ const Settings = (props: { providerId: string }) => {
         <AddModelModal
           isCustomModelModalOpen={isCustomModelModalOpen}
           setIsCustomModelModalOpen={setIsCustomModelModalOpen}
-          providerId={provider.id}
-          providerName={provider.providerName}
+          providerId={provider?.id}
+          providerName={provider?.providerName}
         />
         <EditModelModal
           model={curretEditModal}
           isEditModelModalOpen={isEditModelModalOpen}
           setIsEditModelModalOpen={setIsEditModelModalOpen}
-          providerId={provider.id}
-          providerName={provider.providerName}
+          providerId={provider?.id}
+          providerName={provider?.providerName}
         />
       </div>
   );

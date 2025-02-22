@@ -12,6 +12,8 @@ interface IModelListStore {
   isPending: Boolean;
   initModelList: (initModels: llmModelTypeWithAllInfo[]) => Promise<void>;
   initAllProviderList: (initModels: LLMModelProvider[]) => Promise<void>;
+  addCustomProvider: (initModels: LLMModelProvider) => Promise<void>;
+  deleteCustomProvider: (providerId: string) => Promise<void>;
   toggleProvider: (providerId: string, selected: boolean) => Promise<void>;
   changeSelect: (modelId: string, selected: boolean) => Promise<void>;
   addCustomModel: (model: LLMModel) => Promise<void>;
@@ -112,6 +114,37 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
         item.id === providerId ? { ...item, status: selected } : item
       ),
     }));
+  },
+
+  addCustomProvider: async (provider: LLMModelProvider) => {
+    set((state) => {
+      const newAllProviderList = [...state.allProviderList, provider];
+      const newAllProviderListByKey = {
+        ...state.allProviderListByKey,
+        [provider.id]: provider,
+      };
+      return {
+        ...state,
+        allProviderList: newAllProviderList,
+        allProviderListByKey: newAllProviderListByKey,
+      };
+    });
+  },
+
+  deleteCustomProvider: async (providerId: string) => {
+    set((state) => {
+      const newAllProviderList = state.allProviderList.filter(
+        (provider) => provider.id !== providerId
+      );
+
+      const { [providerId]: _, ...newAllProviderListByKey } = state.allProviderListByKey || {};
+
+      return {
+        ...state,
+        allProviderList: newAllProviderList,
+        allProviderListByKey: newAllProviderListByKey,
+      };
+    });
   },
 
   changeSelect: async (modelId: string, selected: boolean) => {

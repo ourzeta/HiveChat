@@ -12,13 +12,15 @@ export async function getLlmOriginConfigByProvider(providerId: string) {
       return {
         endpoint: result.endpoint,
         isActive: result.isActive,
-        apikey: result.apikey
+        apikey: result.apikey,
+        type: result.type,
       };
     } else {
       return {
         endpoint: '',
         isActive: false,
-        apikey: null
+        apikey: null,
+        type: 'default',
       };
     }
 

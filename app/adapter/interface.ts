@@ -67,7 +67,8 @@ export interface LLMModelProvider {
   id: string;
   providerName: string;
   providerLogo?: string;
-  status?: boolean
+  status?: boolean;
+  type?: 'default' | 'custom';
 }
 
 export default interface TranslaterComponent {

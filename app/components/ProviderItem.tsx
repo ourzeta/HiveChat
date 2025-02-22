@@ -14,10 +14,16 @@ const ProviderItem = (props: {
   return (
     <div className={`flex flex-row items-center h-12 px-2 justify-between hover:bg-gray-200 cursor-pointer rounded-md ${props.className || ''}`}>
       <div className='flex flex-row items-center'>
-        <Avatar
-              style={{ border:'1px solid #ddd', padding: '0.2rem' }}
-              src={allProviderListByKey && allProviderListByKey[props.data.id]?.providerLogo || ''}
-            />
+        {allProviderListByKey && allProviderListByKey[props.data.id]?.providerLogo ?
+          <Avatar
+            style={{ border: '1px solid #ddd', padding: '0.2rem' }}
+            src={allProviderListByKey[props.data.id].providerLogo}
+          />
+          :
+          <Avatar
+            style={{ backgroundColor: '#1c78fa' }}
+          >{allProviderListByKey && allProviderListByKey[props.data.id].providerName.charAt(0)}</Avatar>
+        }
         <span className='ml-2'>{props.data?.providerName}</span>
       </div>
       {

@@ -86,8 +86,7 @@ export default function RootLayout({
           </div>
         </div>
       </div>
-      {/* <div className='flex flex-row w-0 grow container mx-auto justify-center overflow-auto px-6'> */}
-      <div className='flex flex-row w-0 grow mx-auto justify-center overflow-auto h-screen'>
+      <div className='flex flex-row w-0 grow mx-auto justify-center overflow-auto h-dvh'>
         {children}
       </div>
     </div>

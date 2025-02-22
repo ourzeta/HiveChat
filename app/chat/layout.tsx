@@ -17,7 +17,6 @@ export default function ChatLayout({
         const remoteModelList = await fetchAvailableLlmModels();
         const modelNames = remoteModelList.map(model => model.name);
         await initModelList(remoteModelList);
-        // -----
         const allProviderSettings = await fetchAllProviders();
         const processedList = allProviderSettings.map(item => ({
           id: item.provider,
@@ -26,7 +25,6 @@ export default function ChatLayout({
           status: item.isActive || false,
         }));
         initAllProviderList(processedList)
-        // -----
         const lastSelectedModel = localStorage.getItem('lastSelectedModel');
         if (lastSelectedModel && modelNames.includes(lastSelectedModel)) {
           setCurrentModel(lastSelectedModel);
@@ -43,7 +41,7 @@ export default function ChatLayout({
     };
 
     initializeModelList();
-  }, [initModelList, setCurrentModel, initAllProviderList]);
+  }, [initModelList, setCurrentModel, setIsPending, initAllProviderList]);
   return (
     <div className="flex flex-col h-dvh">
       <App>{children}</App>

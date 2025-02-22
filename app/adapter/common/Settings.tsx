@@ -198,7 +198,7 @@ const Settings = (props: { providerId: string }) => {
             </Link>
           </div>
           {
-            props.providerId === 'ollama' ?
+            props.providerId === 'ollama' || provider.type === 'custom' ?
               <Form.Item label={<span className='font-medium'>{t('serviceEndpoint')}</span>} name='endpoint'>
                 <Input
                   type='url'

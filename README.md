@@ -23,8 +23,13 @@
     * 火山方舟（豆包）
     * 阿里百炼（千问）
     * 百度千帆
+    * 腾讯混元
+    * 智谱
+    * Open Router
+    * Grok
     * Ollama
     * 硅基流动
+ * 同时支持自定义添加任意 Open AI 风格的服务商
 
 ### 普通用户端
 登录账号，即可对话。
@@ -67,6 +72,10 @@
 
 ## 4. 安装和部署
 ### 方法 1：本地部署
+
+>注意：
+>旧版本升级到 2025 年 2 月 22 日更新的版本，需要重新手动执行 `npm run initdb`, 部分数据库结构进行了更新
+
 1. 克隆本项目到本地
 ```
 git clone https://github.com/HiveNexus/hivechat.git
@@ -149,6 +158,10 @@ docker compose up -d
 
 
 ### 方法 3：在 Vercel 上部署
+
+>注意：
+>旧版本升级到 2025 年 2 月 22 日更新的版本，请手动登入到 Vercel 数据库管理页面，将 `models` 表删除，然后重新部署。因为涉及到表结构的调整，脚本执行无法自动跳过，会导致部署卡住，全新部署不存在此问题。
+
 点击下面的按钮，即可开始部署。
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/HiveNexus/hivechat.git&project-name=hivechat&env=DATABASE_URL&env=AUTH_SECRET&env=ADMIN_CODE)
@@ -177,4 +190,5 @@ ADMIN_CODE=22113344
 <img width="800" alt="image" src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/vercel03.png" />
 
 4. 初始化管理员账号
+
 按照以上方法安装部署完成后，访问 `http://localhost:3000/setup` (实际使用的域名和端口号)，即可进入管理员账号设置页面，设置完成后，即可正常使用系统。

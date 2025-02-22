@@ -74,7 +74,7 @@
 ### 方法 1：本地部署
 
 >注意：
->旧版本升级到 2025 年 2 月 22 日更新的版本，需要重新执行 `npm run initdb`, 部分数据库结构进行了更新
+>旧版本升级到 2025 年 2 月 22 日更新的版本，需要重新手动执行 `npm run initdb`, 部分数据库结构进行了更新
 
 1. 克隆本项目到本地
 ```
@@ -158,6 +158,10 @@ docker compose up -d
 
 
 ### 方法 3：在 Vercel 上部署
+
+>注意：
+>旧版本升级到 2025 年 2 月 22 日更新的版本，请手动登入到 Vercel 数据库管理页面，将 `models` 表删除，然后重新部署。因为涉及到表结构的调整，脚本执行无法自动跳过，会导致部署卡住，全新部署不存在此问题。
+
 点击下面的按钮，即可开始部署。
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/HiveNexus/hivechat.git&project-name=hivechat&env=DATABASE_URL&env=AUTH_SECRET&env=ADMIN_CODE)

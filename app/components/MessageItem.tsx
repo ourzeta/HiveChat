@@ -32,14 +32,28 @@ const MessageItem = memo((props: {
     }
   }, [props.item]);
 
+  const ProviderAvatar = () => {
+    if (allProviderListByKey) {
+      return (allProviderListByKey[props.item.providerId]?.providerLogo) ? <Avatar
+        style={{ marginTop: '0.2rem', 'fontSize': '24px', 'border': '1px solid #eee', 'padding': '2px' }}
+        src={allProviderListByKey[props.item.providerId].providerLogo}
+      /> : <Avatar
+        size={26}
+        style={{ marginTop: '0.4rem', 'fontSize': '18px', 'padding': '0', backgroundColor: '#1c78fa' }}
+      >{allProviderListByKey[props.item.providerId].providerName.charAt(0)}</Avatar>
+    } else {
+      return <Avatar
+        size={26}
+        style={{ marginTop: '0.4rem', 'fontSize': '18px', 'padding': '0', backgroundColor: '#1c78fa' }}
+      >Bot</Avatar>
+    }
+  }
+
   if (props.item.type === 'error' && props.item.errorType === 'TimeoutError') {
     return (
       <div className="flex container mx-auto px-4 max-w-screen-md w-full flex-col justify-center items-center" >
         <div className='items-start flex  max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
-          <Avatar
-            style={{ marginTop: '0.2rem', 'fontSize': '24px', 'border': '1px solid #eee', 'padding': '2px' }}
-            src={allProviderListByKey && allProviderListByKey[props.item.providerId]?.providerLogo || ''}
-          />
+          <ProviderAvatar />
           <div className='flex flex-col w-0 grow group max-w-80'>
             <Alert
               showIcon
@@ -72,10 +86,7 @@ const MessageItem = memo((props: {
     return (
       <div className="flex container mx-auto px-4 max-w-screen-md w-full flex-col justify-center items-center" >
         <div className='items-start flex  max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
-          <Avatar
-            style={{ marginTop: '0.2rem', 'fontSize': '24px', 'border': '1px solid #eee', 'padding': '2px' }}
-            src={allProviderListByKey && allProviderListByKey[props.item.providerId]?.providerLogo || ''}
-          />
+          <ProviderAvatar />
           <div className='flex flex-col w-0 grow group max-w-96'>
             <Alert
               showIcon
@@ -200,10 +211,7 @@ const MessageItem = memo((props: {
       <div className="flex container mx-auto px-4 max-w-screen-md w-full flex-col justify-center items-center" >
         <div className='items-start flex max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
           {contextHolderMessage}
-          <Avatar
-            style={{ marginTop: '0.2rem', 'fontSize': '24px', 'border': '1px solid #eee', 'padding': '2px' }}
-            src={allProviderListByKey && allProviderListByKey[props.item.providerId]?.providerLogo || ''}
-          />
+          <ProviderAvatar />
           <div className='flex flex-col w-0 grow group'>
             <div className='px-3 py-2 ml-2  bg-gray-100  text-gray-600 w-full grow markdown-body answer-content rounded-xl'>
               {props.item.reasoninContent &&

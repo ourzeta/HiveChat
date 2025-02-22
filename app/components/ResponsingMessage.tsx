@@ -20,10 +20,17 @@ const ResponsingMessage = (props: {
       {props.responseStatus === "pending" &&
         <div className="flex container mx-auto px-4 max-w-screen-md w-full flex-col justify-center items-center" >
           <div className='items-start flex max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
-            <Avatar
-              style={{ marginTop: '0.2rem', 'fontSize': '24px', 'border': '1px solid #eee', 'padding': '2px' }}
-              src={allProviderListByKey && allProviderListByKey[props.currentProvider]?.providerLogo || ''}
-            />
+            {allProviderListByKey && allProviderListByKey[props.currentProvider]?.providerLogo ?
+              <Avatar
+                style={{ marginTop: '0.2rem', 'fontSize': '24px', 'border': '1px solid #eee', 'padding': '2px' }}
+                src={allProviderListByKey[props.currentProvider].providerLogo}
+              />
+              :
+              <Avatar
+                size={26}
+                style={{ marginTop: '0.4rem', 'fontSize': '18px', 'padding': '0', backgroundColor: '#1c78fa' }}
+              >{allProviderListByKey && allProviderListByKey[props.currentProvider].providerName.charAt(0)}</Avatar>
+            }
             <div className='flex flex-col w-0 grow'>
               <div className='px-3 py-2 ml-2  bg-gray-100  text-gray-600 w-full grow markdown-body answer-content rounded-xl'>
                 {

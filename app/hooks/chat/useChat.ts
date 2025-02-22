@@ -9,6 +9,7 @@ import { getLLMInstance } from '@/app/adapter/models';
 import useModelListStore from '@/app/store/modelList';
 import { ResponseContent } from '@/app/adapter/interface';
 import { addMessageInServer, getMessagesInServer, deleteMessageInServer, clearMessageInServer } from '@/app/chat/actions/message';
+import useGlobalConfigStore from '@/app/store/globalConfig';
 import { localDb } from '@/app/db/localDb';
 
 const useChat = (chatId: string) => {
@@ -24,6 +25,7 @@ const useChat = (chatId: string) => {
   const [userSendCount, setUserSendCount] = useState(0);
   const { chat, initializeChat } = useChatStore();
   const { setNewTitle } = useChatListStore();
+  const { chatNamingModel } = useGlobalConfigStore();
 
   useEffect(() => {
     const llmApi = getLLMInstance(currentModel.provider.id);
@@ -88,16 +90,25 @@ const useChat = (chatId: string) => {
 
   const shouldSetNewTitle = useCallback((messages: RequestMessage[]) => {
     if (userSendCount === 0 && !chat?.isWithBot) {
-      const renameModel = currentModel.id
-      generateTitle(messages, renameModel, currentModel.provider.id, (message: string) => {
-        setNewTitle(chatId, message);
-      }, () => { })
+      if (chatNamingModel && chatNamingModel !== 'none') {
+        let renameModel = currentModel.id;
+        let renameProvider = currentModel.provider.id;
+        if (chatNamingModel !== 'current') {
+          const [providerId, modelId] = chatNamingModel.split('|');
+          renameModel = modelId;
+          renameProvider = providerId;
+        }
+        generateTitle(messages, renameModel, renameProvider, (message: string) => {
+          setNewTitle(chatId, message);
+        }, () => { })
+      }
     }
   }, [
     chat,
     chatId,
     currentModel,
     userSendCount,
+    chatNamingModel,
     setNewTitle,
   ]);
 

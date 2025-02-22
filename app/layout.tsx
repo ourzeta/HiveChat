@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/react"
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { SessionProvider } from 'next-auth/react';
+import AppPrepare from "@/app/components/AppPrepare";
 import "./globals.css";
 
 
@@ -35,6 +36,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <SessionProvider>
             <AntdRegistry>
+            <AppPrepare />
               {children}
             </AntdRegistry>
             <Analytics />

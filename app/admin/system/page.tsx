@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { Switch, message } from "antd";
 import { fetchAppSettings, adminAndSetAppSettings } from "./actions";
+import ChatNaming from '@/app/components/admin/ChatNaming';
 import { useTranslations } from 'next-intl';
 
 const Userpage = () => {
@@ -46,6 +47,7 @@ const Userpage = () => {
           />
         </div>
       </div>
+      <ChatNaming />
     </div>
   )
 }

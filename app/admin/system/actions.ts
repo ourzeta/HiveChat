@@ -41,7 +41,7 @@ export const setAppSettings = async (key: string, newValue: string): Promise<{
         value: newValue,
         updatedAt: new Date(),
       })
-      .where(eq(appSettings.key, 'isRegistrationOpen'));
+      .where(eq(appSettings.key, key));
   } else {
     await db.insert(appSettings).values({
       key: key,

@@ -85,7 +85,7 @@ export async function completeEndpoint(providerId: string, inputUrl?: string | n
     }
     return apiUrl;
   }
-  if (inputUrl.endsWith('/v1/chat/completions')) {
+  if (inputUrl.endsWith('completions')) {
     apiUrl = inputUrl;
   } else if (inputUrl.endsWith('/')) {
     apiUrl = inputUrl + 'v1/chat/completions';

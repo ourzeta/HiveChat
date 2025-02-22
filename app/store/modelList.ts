@@ -13,6 +13,7 @@ interface IModelListStore {
   initModelList: (initModels: llmModelTypeWithAllInfo[]) => Promise<void>;
   initAllProviderList: (initModels: LLMModelProvider[]) => Promise<void>;
   addCustomProvider: (initModels: LLMModelProvider) => Promise<void>;
+  renameProvider: (providerId: string, newName: string) => Promise<void>;
   deleteCustomProvider: (providerId: string) => Promise<void>;
   toggleProvider: (providerId: string, selected: boolean) => Promise<void>;
   changeSelect: (modelId: string, selected: boolean) => Promise<void>;
@@ -123,6 +124,30 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
         ...state.allProviderListByKey,
         [provider.id]: provider,
       };
+      return {
+        ...state,
+        allProviderList: newAllProviderList,
+        allProviderListByKey: newAllProviderListByKey,
+      };
+    });
+  },
+
+  renameProvider: async (providerId: string, newName: string) => {
+    set((state) => {
+      // 更新 allProviderList
+      const newAllProviderList = state.allProviderList.map((provider) =>
+        provider.id === providerId ? { ...provider, providerName: newName } : provider
+      );
+
+      // 更新 allProviderListByKey
+      const newAllProviderListByKey = {
+        ...state.allProviderListByKey,
+        [providerId]: {
+          ...state.allProviderListByKey![providerId],
+          providerName: newName,
+        },
+      };
+
       return {
         ...state,
         allProviderList: newAllProviderList,

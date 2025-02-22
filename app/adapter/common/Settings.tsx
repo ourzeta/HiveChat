@@ -4,8 +4,8 @@ import Markdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
 import React, { useState, useEffect } from 'react';
-import { Button, Form, Input, Switch, Skeleton, Avatar, message, Popconfirm } from 'antd';
-import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { Button, Form, Input, Switch, Skeleton, Avatar, message, Popconfirm, Modal } from 'antd';
+import { CheckCircleOutlined, CloseCircleOutlined, EditOutlined } from '@ant-design/icons';
 import { getLLMInstance } from '@/app/adapter/models';
 import { useTranslations } from 'next-intl';
 import { saveToServer } from '@/app/adapter/actions';
@@ -14,6 +14,7 @@ import useModelListStore from '@/app/store/modelList';
 import CheckApiModal from '@/app/adapter/common/CheckApiModal';
 import EditModelModal from '@/app/adapter/common/EditModelModal';
 import AddModelModal from '@/app/adapter/common/AddModelModal';
+import RenameProviderModal from '@/app/adapter/common/RenameProviderModal';
 import ModelList from '@/app/adapter/common/ModelList';
 import { LLMModel } from '@/app/adapter/interface';
 import { getLlmOriginConfigByProvider } from '@/app/utils/llms';
@@ -21,7 +22,7 @@ import { deleteCustomProviderInServer } from '@/app/adapter/actions';
 import { useRouter } from "next/navigation";
 
 type FormValues = {
-  status: boolean;
+  isActive: boolean;
   apikey: string;
   endpoint: string;
 }
@@ -36,6 +37,7 @@ const Settings = (props: { providerId: string }) => {
 
   const [isCheckApiModalOpen, setIsCheckApiModalOpen] = useState(false);
   const [isCustomModelModalOpen, setIsCustomModelModalOpen] = useState(false);
+  const [isRenameProviderModalOpen, setIsRenameProviderModalOpen] = useState(false);
   const [isEditModelModalOpen, setIsEditModelModalOpen] = useState(false);
   const [curretEditModal, setCurretEditModal] = useState<LLMModel>();
   const [checkResult, setCheckResult] = useState('init');
@@ -89,7 +91,7 @@ const Settings = (props: { providerId: string }) => {
     const fetchLlmConfig = async (): Promise<void> => {
       const result = await getLlmOriginConfigByProvider(provider.id);
       form.setFieldsValue({
-        status: result.isActive || false,
+        isActive: result.isActive || false,
         apikey: result.apikey || '',
         endpoint: result.endpoint || '',
       });
@@ -115,7 +117,7 @@ const Settings = (props: { providerId: string }) => {
   if (!isClient) return null;
 
   const onFinish = (values: FormValues) => {
-    toggleProvider(provider.id, values.status);
+    toggleProvider(provider.id, values.isActive);
     saveToServer(provider.id, { ...values, providerName: provider.providerName });
   };
 
@@ -152,11 +154,23 @@ const Settings = (props: { providerId: string }) => {
                 >{provider?.providerName.charAt(0)}</Avatar>
               }
               <div className='flex flex-col ml-2'>
-                <h2 className='font-medium text-lg mb-0 leading-5'>{provider?.providerName}</h2>
+                <h2 className='font-medium text-lg mb-0 leading-5'>{provider?.providerName}
+                  {provider?.type === 'custom' &&
+                    <Button
+                      size='small'
+                      type='text'
+                      className='ml-2'
+                      onClick={() => {
+                        setIsRenameProviderModalOpen(true);
+                      }}>
+                      <EditOutlined style={{ fontSize: '12px', 'color': '#666' }} />
+                    </Button>
+                  }
+                </h2>
                 <span className='text-xs text-gray-400'>{provider?.id}</span>
               </div>
             </div>
-            <Form.Item name='status' style={{ 'margin': '0' }}>
+            <Form.Item name='isActive' style={{ 'margin': '0' }}>
               <Switch onChange={() => {
                 form.submit();
               }} />
@@ -209,7 +223,6 @@ const Settings = (props: { providerId: string }) => {
         <div className='flex flex-col mb-2'>
           <div className='font-medium'>{t('testConnect')}</div>
           <div className='my-2 flex flex-row items-center'>
-            {/* <Button loading={checkResult === 'pending'} onClick={checkApi}>{t('check')}</Button> */}
             <Button loading={checkResult === 'pending'} onClick={() => {
               setIsCheckApiModalOpen(true);
             }}>{t('check')}</Button>
@@ -289,6 +302,12 @@ const Settings = (props: { providerId: string }) => {
           model={curretEditModal}
           isEditModelModalOpen={isEditModelModalOpen}
           setIsEditModelModalOpen={setIsEditModelModalOpen}
+          providerId={provider?.id}
+          providerName={provider?.providerName}
+        />
+        <RenameProviderModal
+          isModalOpen={isRenameProviderModalOpen}
+          setIsModalOpen={setIsRenameProviderModalOpen}
           providerId={provider?.id}
           providerName={provider?.providerName}
         />

@@ -6,9 +6,9 @@ import { llmModelType, llmModelTypeWithAllInfo } from '@/app/db/schema';
 import { auth } from '@/auth';
 
 type FormValues = {
-  status: boolean;
-  apikey: string;
-  providerName: string;
+  isActive?: boolean;
+  apikey?: string;
+  providerName?: string;
   endpoint?: string;
   order?: number;
 }
@@ -25,24 +25,15 @@ export const saveToServer = async (providerId: string, values: FormValues) => {
 
   if (existingRecord.length > 0) {
     await db.update(llmSettingsTable)
-      .set({
-        providerName: values.providerName,
-        apikey: values.apikey,
-        endpoint: values.endpoint,
-        isActive: values.status,
-        order: values.order,
-      })
+      .set(values)
       .where(eq(llmSettingsTable.provider, providerId))
   } else {
     // 如果用户不存在，插入新记录
     await db.insert(llmSettingsTable)
       .values({
         provider: providerId,
-        providerName: values.providerName,
-        apikey: values.apikey,
-        endpoint: values.endpoint,
-        isActive: values.status,
-        order: values.order,
+        providerName: values.providerName || 'Untitled',
+        ...values
       })
   }
 };

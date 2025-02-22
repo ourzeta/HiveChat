@@ -10,6 +10,7 @@ interface IModelListStore {
   allProviderList: LLMModelProvider[];
   modelList: LLMModel[];
   isPending: Boolean;
+  setIsPending: (isPending: boolean) => void;
   initModelList: (initModels: llmModelTypeWithAllInfo[]) => Promise<void>;
   initAllProviderList: (initModels: LLMModelProvider[]) => Promise<void>;
   addCustomProvider: (initModels: LLMModelProvider) => Promise<void>;
@@ -20,7 +21,8 @@ interface IModelListStore {
   addCustomModel: (model: LLMModel) => Promise<void>;
   updateCustomModel: (modelId: string, model: LLMModel) => Promise<void>;
   deleteCustomModel: (modelId: string) => Promise<void>;
-  setCurrentModel: (model: string) => void
+  setCurrentModel: (model: string) => void;
+  setCurrentModelExact: (providerId: string, modelId: string,) => void
 }
 
 const useModelListStore = create<IModelListStore>((set, get) => ({
@@ -41,6 +43,12 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
   allProviderList: [],
   modelList: [],
   isPending: true,
+  setIsPending: (isPending: boolean) => {
+    set((state) => ({
+      ...state,
+      isPending, // 更新 isPending 状态
+    }));
+  },
   initModelList: async (initModels: llmModelTypeWithAllInfo[]) => {
     const newData = initModels.map((model) => ({
       id: model.name,
@@ -73,7 +81,6 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
       ...state,
       providerList,
       modelList: newData,
-      isPending: false,
     }));
 
   },
@@ -88,6 +95,24 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
       allProviderList: providers,
       allProviderListByKey: providerByKey,
     }));
+  },
+  setCurrentModelExact: (providerId: string, modelId: string) => {
+    set((state) => {
+      // 检查新模型是否与当前模型相同
+      if (!(state.currentModel.id === modelId && state.currentModel.provider.id === providerId)) {
+        const modelInfo = state.modelList.find(m => (m.id === modelId && m.provider.id === providerId));
+        if (modelInfo) {
+          localStorage.setItem('lastSelectedModel', modelInfo.id);
+          return {
+            ...state,
+            currentModel: modelInfo,
+          };
+        } else {
+          return state;
+        }
+      }
+      return state; // 如果相同，则返回当前状态
+    });
   },
   setCurrentModel: (modelId: string) => {
     set((state) => {

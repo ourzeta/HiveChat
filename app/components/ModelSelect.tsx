@@ -6,10 +6,11 @@ import useModelListStore from '@/app/store/modelList';
 import { useTranslations } from 'next-intl';
 
 const ModelSelect = () => {
-  const { modelList, currentModel, allProviderListByKey, providerList, isPending, setCurrentModel } = useModelListStore();
+  const { modelList, currentModel, allProviderListByKey, providerList, isPending, setCurrentModelExact } = useModelListStore();
   const t = useTranslations('Chat');
   const handleChangeModel = (value: string) => {
-    setCurrentModel(value);
+    const [providerId, modelId] = value.split('|');
+    setCurrentModelExact(providerId, modelId);
   };
 
   if (isPending) {
@@ -51,7 +52,8 @@ const ModelSelect = () => {
 
           <span className='ml-1'>{model.displayName}</span>
         </div>),
-        value: model.id,
+        // value: model.id,
+        value: `${model.provider.id}|${model.id}`,
       }))
     }
   });
@@ -72,7 +74,7 @@ const ModelSelect = () => {
       }}
     >
       <Select
-        value={currentModel?.id}
+        value={`${currentModel.provider.id}|${currentModel.id}`}
         style={{ width: 230, border: 'none', backgroundColor: 'transparent' }}
         onChange={handleChangeModel}
         listHeight={320}

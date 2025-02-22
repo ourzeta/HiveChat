@@ -9,7 +9,7 @@ export default function ChatLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { initModelList, setCurrentModel, initAllProviderList } = useModelListStore();
+  const { initModelList, setCurrentModel, setIsPending, initAllProviderList } = useModelListStore();
 
   useEffect(() => {
     const initializeModelList = async () => {
@@ -36,6 +36,7 @@ export default function ChatLayout({
             setCurrentModel(remoteModelList[0].name);
           }
         }
+        setIsPending(false);
       } catch (error) {
         console.error('Error initializing model list:', error);
       }

@@ -143,12 +143,12 @@ const Settings = (props: { providerId: string }) => {
             <div className='flex items-center justify-center'>
               {provider?.providerLogo ?
                 <Avatar
-                  style={{ 'fontSize': '30px',border: '1px solid #ddd', padding: '0.2rem' }}
+                  style={{ border: '1px solid #ddd', padding: '0.2rem' }}
                   src={provider.providerLogo}
                 />
                 :
                 <Avatar
-                  style={{ 'fontSize': '28px', backgroundColor: '#1c78fa' }}
+                  style={{ backgroundColor: '#1c78fa' }}
                 >{provider?.providerName.charAt(0)}</Avatar>
               }
               <div className='flex flex-col ml-2'>

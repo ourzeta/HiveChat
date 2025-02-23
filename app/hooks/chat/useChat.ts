@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Message } from '@/app/db/schema';
 import { ChatOptions, LLMApi, RequestMessage, MessageContent } from '@/app/adapter/interface';
 import chatHistoryConfig from '@/app/store/chatHistoryConfig';
@@ -88,13 +88,14 @@ const useChat = (chatId: string) => {
     setInput(e.target.value);
   };
 
+  const chatNamingModelStable = useMemo(() => chatNamingModel, [chatNamingModel]);
   const shouldSetNewTitle = useCallback((messages: RequestMessage[]) => {
     if (userSendCount === 0 && !chat?.isWithBot) {
-      if (chatNamingModel && chatNamingModel !== 'none') {
+      if (chatNamingModelStable !== 'none') {
         let renameModel = currentModel.id;
         let renameProvider = currentModel.provider.id;
-        if (chatNamingModel !== 'current') {
-          const [providerId, modelId] = chatNamingModel.split('|');
+        if (chatNamingModelStable !== 'current') {
+          const [providerId, modelId] = chatNamingModelStable.split('|');
           renameModel = modelId;
           renameProvider = providerId;
         }
@@ -108,10 +109,11 @@ const useChat = (chatId: string) => {
     chatId,
     currentModel,
     userSendCount,
-    chatNamingModel,
+    chatNamingModelStable,
     setNewTitle,
   ]);
 
+  const shouldSetNewTitleRef = useRef(shouldSetNewTitle);
   const sendMessage = useCallback(async (messages: RequestMessage[]) => {
     let lastUpdate = Date.now();
     setResponseStatus("pending");
@@ -139,7 +141,7 @@ const useChat = (chatId: string) => {
         setMessageList(prevList => [...prevList, respMessage]);
         setResponseStatus("done");
         setResponseMessage({ content: '', reasoning_content: '' });
-        shouldSetNewTitle(messages);
+        shouldSetNewTitleRef.current(messages);
       },
       onError: async (error) => {
         const respMessage: Message = {
@@ -161,7 +163,6 @@ const useChat = (chatId: string) => {
     }
     chatBot?.chat(options);
   }, [
-    shouldSetNewTitle,
     chatBot,
     chatId,
     currentModel,

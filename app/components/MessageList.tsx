@@ -46,12 +46,14 @@ export const MessageList = (props: { chat_id: string }) => {
     retryMessage,
     stopChat,
     setIsUserScrolling,
+    shouldSetNewTitle,
   } = useChat(props.chat_id);
 
   const { uploadedImages, maxImages, handleImageUpload, removeImage, setUploadedImages } = useImageUpload();
 
   const isFromHome = useRouteState();
   const router = useRouter();
+  const shouldSetNewTitleRef = useRef(shouldSetNewTitle);
   useEffect(() => {
     const check = async () => {
       if (isFromHome) {
@@ -67,6 +69,7 @@ export const MessageList = (props: { chat_id: string }) => {
             content: question
           }];
           await sendMessage(messages);
+          shouldSetNewTitleRef.current(messages);
           router.replace(`/chat/${props.chat_id}`);
         }
       }

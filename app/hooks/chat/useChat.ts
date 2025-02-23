@@ -113,7 +113,7 @@ const useChat = (chatId: string) => {
     setNewTitle,
   ]);
 
-  const shouldSetNewTitleRef = useRef(shouldSetNewTitle);
+  // const shouldSetNewTitleRef = useRef(shouldSetNewTitle);
   const sendMessage = useCallback(async (messages: RequestMessage[]) => {
     let lastUpdate = Date.now();
     setResponseStatus("pending");
@@ -141,7 +141,7 @@ const useChat = (chatId: string) => {
         setMessageList(prevList => [...prevList, respMessage]);
         setResponseStatus("done");
         setResponseMessage({ content: '', reasoning_content: '' });
-        shouldSetNewTitleRef.current(messages);
+        // shouldSetNewTitleRef.current(messages);
       },
       onError: async (error) => {
         const respMessage: Message = {

@@ -264,3 +264,25 @@ export const saveModelsOrder = async (
   // 执行所有更新操作
   await Promise.all(updatePromises);
 }
+
+export const saveProviderOrder = async (
+  newOrderProviders: {
+    providerId: string;
+    order: number
+  }[]) => {
+  const session = await auth();
+  if (!session?.user.isAdmin) {
+    throw new Error('not allowed');
+  }
+  const updatePromises = newOrderProviders.map((item) => {
+    return db
+      .update(llmSettingsTable)
+      .set({ order: item.order })
+      .where(
+        eq(llmSettingsTable.provider, item.providerId),
+      )
+  });
+
+  // 执行所有更新操作
+  await Promise.all(updatePromises);
+}

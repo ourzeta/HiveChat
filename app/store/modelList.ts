@@ -13,6 +13,7 @@ interface IModelListStore {
   setIsPending: (isPending: boolean) => void;
   initModelList: (initModels: llmModelTypeWithAllInfo[]) => Promise<void>;
   setModelList: (newOrderModels: LLMModel[]) => void;
+  setAllProviderList: (newProviderList: LLMModelProvider[]) => void; //排序
   initAllProviderList: (initModels: LLMModelProvider[]) => Promise<void>;
   addCustomProvider: (initModels: LLMModelProvider) => Promise<void>;
   renameProvider: (providerId: string, newName: string) => Promise<void>;
@@ -48,6 +49,12 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
     set((state) => ({
       ...state,
       isPending, // 更新 isPending 状态
+    }));
+  },
+  setAllProviderList: (newProviderList: LLMModelProvider[]) => {
+    set((state) => ({
+      ...state,
+      allProviderList: newProviderList,
     }));
   },
   setModelList: (newOrderModels: LLMModel[]) => {

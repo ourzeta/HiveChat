@@ -29,7 +29,7 @@ const ModelList: React.FC<ModelListProps> = ({
   useEffect(() => {
     if (listRef.current) {
       sortableRef.current = Sortable.create(listRef.current, {
-        animation: 150,
+        animation: 200,
         handle: '.handle', // 仅允许通过带有 .handle 类的元素拖动
         onStart: (evt) => {
         },
@@ -44,7 +44,6 @@ const ModelList: React.FC<ModelListProps> = ({
           const newOrder = newModels.map((model, index) => ({ modelId: model.id, order: index }));
           try {
             await saveModelsOrder(providerId, newOrder);
-            console.log(newOrder)
           } catch (error) {
             console.error('Failed to update order:', error);
           }

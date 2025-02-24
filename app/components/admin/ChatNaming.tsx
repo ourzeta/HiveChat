@@ -5,10 +5,18 @@ import useModelListStore from '@/app/store/modelList';
 import { adminAndSetAppSettings, fetchAppSettings } from '@/app/admin/system/actions';
 import useGlobalConfigStore from '@/app/store/globalConfig';
 import Spark from "@/app/images/spark.svg";
+import { fetchAvailableLlmModels } from '@/app/adapter/actions';
 
 const ChatNaming = () => {
-  const { modelList, allProviderListByKey, providerList } = useModelListStore();
   const { chatNamingModel, setChatNamingModel } = useGlobalConfigStore();
+  const { initModelList, modelList, providerList } = useModelListStore();
+  useEffect(() => {
+    const initializeModelList = async () => {
+      const remoteModelList = await fetchAvailableLlmModels();
+      await initModelList(remoteModelList);
+    };
+    initializeModelList();
+  }, [initModelList]);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -31,16 +39,16 @@ const ChatNaming = () => {
       title: provider.providerName,
       options: modelList.filter((model) => model.provider.id === provider.id && model.selected).map((model) => ({
         label: (<div className='flex flex-row items-center'>
-          {allProviderListByKey && allProviderListByKey[provider.id]?.providerLogo ?
+          {provider?.providerLogo ?
             <Avatar
               size={20}
-              src={allProviderListByKey[provider.id].providerLogo}
+              src={provider.providerLogo}
             />
             :
             <Avatar
               size={20}
               style={{ backgroundColor: '#1c78fa' }}
-            >{allProviderListByKey && allProviderListByKey[provider.id].providerName.charAt(0)}</Avatar>
+            >{provider.providerName.charAt(0)}</Avatar>
           }
 
           <span className='ml-1'>{model.displayName}</span>

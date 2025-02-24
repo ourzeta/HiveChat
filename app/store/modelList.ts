@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { LLMModel, LLMModelProvider } from '@/app/adapter/interface';
-import { llmModelType, llmModelTypeWithAllInfo } from '@/app/db/schema';
+import { llmModelTypeWithAllInfo } from '@/app/db/schema';
 
 interface IModelListStore {
   currentModel: LLMModel;
@@ -12,6 +12,7 @@ interface IModelListStore {
   isPending: Boolean;
   setIsPending: (isPending: boolean) => void;
   initModelList: (initModels: llmModelTypeWithAllInfo[]) => Promise<void>;
+  setModelList: (newOrderModels: LLMModel[]) => void;
   initAllProviderList: (initModels: LLMModelProvider[]) => Promise<void>;
   addCustomProvider: (initModels: LLMModelProvider) => Promise<void>;
   renameProvider: (providerId: string, newName: string) => Promise<void>;
@@ -47,6 +48,12 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
     set((state) => ({
       ...state,
       isPending, // 更新 isPending 状态
+    }));
+  },
+  setModelList: (newOrderModels: LLMModel[]) => {
+    set((state) => ({
+      ...state,
+      modelList: newOrderModels,
     }));
   },
   initModelList: async (initModels: llmModelTypeWithAllInfo[]) => {

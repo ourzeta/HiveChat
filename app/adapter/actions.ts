@@ -63,9 +63,16 @@ export const fetchAllLlmSettings = async () => {
 export const fetchLlmModels = async (providerId?: string) => {
   let llmModelList;
   if (providerId) {
-    llmModelList = await db.select().from(llmModels).where(eq(llmModels.providerId, providerId));
+    llmModelList = await db
+      .select()
+      .from(llmModels)
+      .where(eq(llmModels.providerId, providerId))
+      .orderBy(asc(llmModels.order));
+    ;
   } else {
-    llmModelList = await db.select().from(llmModels);
+    llmModelList = await db
+      .select()
+      .from(llmModels);
   }
   return llmModelList;
 }
@@ -82,7 +89,10 @@ export const fetchAvailableLlmModels = async () => {
     .select()
     .from(llmSettingsTable)
     .innerJoin(llmModels, eq(llmSettingsTable.provider, llmModels.providerId))
-    .orderBy(asc(llmSettingsTable.order))
+    .orderBy(
+      asc(llmSettingsTable.order),
+      asc(llmModels.order),
+    )
     .where(
       and(
         eq(llmSettingsTable.isActive, true),
@@ -227,4 +237,30 @@ export const deleteCustomProviderInServer = async (providerId: string) => {
   return {
     status: 'success',
   }
+}
+
+export const saveModelsOrder = async (
+  providerId: string,
+  newOrderModels: {
+    modelId: string;
+    order: number
+  }[]) => {
+  const session = await auth();
+  if (!session?.user.isAdmin) {
+    throw new Error('not allowed');
+  }
+  const updatePromises = newOrderModels.map((item) => {
+    return db
+      .update(llmModels)
+      .set({ order: item.order })
+      .where(
+        and(
+          eq(llmModels.providerId, providerId),
+          eq(llmModels.name, item.modelId),
+        )
+      )
+  });
+
+  // 执行所有更新操作
+  await Promise.all(updatePromises);
 }

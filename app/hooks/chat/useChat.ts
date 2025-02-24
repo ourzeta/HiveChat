@@ -113,7 +113,6 @@ const useChat = (chatId: string) => {
     setNewTitle,
   ]);
 
-  // const shouldSetNewTitleRef = useRef(shouldSetNewTitle);
   const sendMessage = useCallback(async (messages: RequestMessage[]) => {
     let lastUpdate = Date.now();
     setResponseStatus("pending");
@@ -123,7 +122,7 @@ const useChat = (chatId: string) => {
       chatId: chatId,
       onUpdate: (responseContent: ResponseContent) => {
         const now = Date.now();
-        if (now - lastUpdate < 60) return; // 如果距离上次更新小于 60ms，则不更新
+        if (now - lastUpdate < 50) return; // 如果距离上次更新小于 50ms，则不更新
         setResponseMessage(responseContent);
         lastUpdate = now;
       },
@@ -141,7 +140,6 @@ const useChat = (chatId: string) => {
         setMessageList(prevList => [...prevList, respMessage]);
         setResponseStatus("done");
         setResponseMessage({ content: '', reasoning_content: '' });
-        // shouldSetNewTitleRef.current(messages);
       },
       onError: async (error) => {
         const respMessage: Message = {

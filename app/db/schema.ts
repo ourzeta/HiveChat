@@ -129,6 +129,7 @@ export const llmModels = pgTable("models", {
   providerId: varchar({ length: 255 }).notNull(),
   providerName: varchar({ length: 255 }).notNull(),
   type: modelType('type').notNull().default('default'),
+  order: integer('order').default(1),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 },

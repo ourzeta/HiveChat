@@ -259,6 +259,7 @@ const Settings = (props: { providerId: string }) => {
           </div>
         }
         <ModelList
+          providerId={provider.id}
           setCurretEditModal={setCurretEditModal}
           setIsEditModelModalOpen={setIsEditModelModalOpen}
           setIsCustomModelModalOpen={setIsCustomModelModalOpen}

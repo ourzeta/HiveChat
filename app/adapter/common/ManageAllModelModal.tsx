@@ -1,27 +1,64 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal, Tooltip, Divider, Button } from 'antd';
-import { PictureOutlined, MinusOutlined, PlusOutlined } from '@ant-design/icons';
+import { PictureOutlined, MinusOutlined, PlusOutlined, SyncOutlined } from '@ant-design/icons';
 import useModelListStore from '@/app/store/modelList';
-import { changeSelectInServer } from '@/app/adapter/actions';
+import { LLMModel } from '@/app/adapter/interface';
+import { changeModelSelectInServer, getRemoteModelsByProvider } from '@/app/adapter/actions';
 import { useTranslations } from 'next-intl';
 
 type ManageAllModelModalProps = {
   isModalOpen: boolean;
   setIsModalOpen: (open: boolean) => void;
   providerId: string;
+  providerName: string;
 };
 
 const ManageAllModelModal: React.FC<ManageAllModelModalProps> = ({
   isModalOpen,
   setIsModalOpen,
   providerId,
+  providerName,
 }) => {
   const t = useTranslations('Admin.Models');
-  const { modelList, changeSelect } = useModelListStore();
+  const { modelList, setModelList, changeSelect } = useModelListStore();
+  const [isFetching, setIsFetching] = useState(false);
 
-  const handleChangeSelect = async (modelName: string, selected: boolean) => {
-    changeSelect(modelName, selected);
-    await changeSelectInServer(modelName, selected);
+  const fetchRemoteModels = async () => {
+    setIsFetching(true);
+    const remoteModelsList = await getRemoteModelsByProvider(providerId);
+    console.log('remoteModelsList', remoteModelsList)
+    const filterModels = remoteModelsList.filter(i => i.object === 'model');
+
+    // 合并 filterModels 和 modelList
+    const modelListIds = new Set(modelList.map(model => model.id));
+    const processedModels: LLMModel[] = filterModels.filter(model => !modelListIds.has(model.id)).map(i => {
+      return {
+        id: i.id,
+        displayName: i.id,
+        provider: {
+          id: providerId,
+          providerName: providerId
+        },
+      }
+    })
+    const allModelList = [
+      ...modelList,
+      ...processedModels
+    ];
+    setModelList(allModelList);
+    setIsFetching(false);
+  }
+
+  const handleChangeSelect = async (modelId: string, selected: boolean) => {
+    changeSelect(modelId, selected);
+    await changeModelSelectInServer({
+      id: modelId,
+      displayName: modelId,
+      provider: {
+        id: providerId,
+        providerName: providerName,
+      }
+    }, selected);
   }
 
   return (
@@ -31,12 +68,21 @@ const ManageAllModelModal: React.FC<ManageAllModelModalProps> = ({
       open={isModalOpen}
       onCancel={() => setIsModalOpen(false)}
       footer={
-        <Button onClick={() => setIsModalOpen(false)}>
-          关闭
-        </Button>
+        <div className='flex flex-row justify-between'>
+          <Button
+            onClick={async () => {
+              fetchRemoteModels()
+            }}
+            icon={<SyncOutlined />}
+            loading={isFetching}
+          >获取模型列表</Button>
+          <Button onClick={() => setIsModalOpen(false)}>
+            关闭
+          </Button>
+        </div>
       }
     >
-      <div className='mt-4'>
+      <div className='mt-4 max-h-96 pr-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-50 scrollbar-track-rounded-full scrollbar-thumb-rounded-full'>
         <div>
           <div className=''>
             {
@@ -66,7 +112,6 @@ const ManageAllModelModal: React.FC<ManageAllModelModalProps> = ({
                     }</div>
                   {
                     item.selected ? <Button size="small" onClick={() => {
-                      console.log('item.id  ', item.id)
                       handleChangeSelect(item.id, false);
                     }}
                       icon={<MinusOutlined />} />

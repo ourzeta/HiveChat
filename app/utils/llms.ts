@@ -78,6 +78,8 @@ export async function completeEndpoint(providerId: string, inputUrl?: string | n
   if (providerId === 'claude') {
     if (inputUrl.endsWith('/v1/messages')) {
       apiUrl = inputUrl;
+    } else if (inputUrl?.endsWith('/v1')) {
+      apiUrl = inputUrl + '/messages';
     } else if (inputUrl?.endsWith('/')) {
       apiUrl = inputUrl + 'v1/messages';
     } else {
@@ -87,6 +89,8 @@ export async function completeEndpoint(providerId: string, inputUrl?: string | n
   }
   if (inputUrl.endsWith('completions')) {
     apiUrl = inputUrl;
+  } else if (inputUrl.endsWith('v1')) {
+    apiUrl = inputUrl + '/chat/completions';
   } else if (inputUrl.endsWith('/')) {
     apiUrl = inputUrl + 'v1/chat/completions';
   } else {

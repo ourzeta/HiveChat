@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { updateChatTitleInServer, addChatInServer, updateChatInServer } from '@/app/chat/actions/chat';
+import { updateChatTitleInServer, updateChatInServer } from '@/app/chat/actions/chat';
 import { addBotToChatInServer } from '@/app/chat/actions/bot';
-import { ChatType, BotType } from '@/app/db/schema';
+import { ChatType } from '@/app/db/schema';
 
 interface IChatListStore {
   chatList: ChatType[];

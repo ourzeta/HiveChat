@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl';
 
 interface ModelListProps {
   providerId: string;
+  providerName: string;
   setCurretEditModal: (model: LLMModel) => void;
   setIsEditModelModalOpen: (open: boolean) => void;
   setIsCustomModelModalOpen: (open: boolean) => void;
@@ -17,6 +18,7 @@ interface ModelListProps {
 
 const ModelList: React.FC<ModelListProps> = ({
   providerId,
+  providerName,
   setCurretEditModal,
   setIsEditModelModalOpen,
   setIsCustomModelModalOpen,
@@ -104,27 +106,25 @@ const ModelList: React.FC<ModelListProps> = ({
                     handleChangeSelect(item.id, false);
                   }} size='small' type='text' icon={<EyeInvisibleOutlined style={{ color: '#888' }} />} />
                 </Tooltip>
-                {item.type === 'custom' && <>
-                  <Popconfirm
-                    title={t('deleteCustomModel')}
-                    description={t('currentModelWillbeDeleted')}
-                    onConfirm={() => {
-                      handleDeleteCustomModel(item.id);
-                      messageApi.success(t('deleteSuccess'))
-                    }}
-                    okText={t('confirm')}
-                    cancelText={t('cancel')}
-                  >
-                    <Button size='small' type='text' icon={<DeleteOutlined style={{ color: '#888' }} />} />
-                  </Popconfirm>
+                <Popconfirm
+                  title={t('deleteCustomModel')}
+                  description={t('currentModelWillbeDeleted')}
+                  onConfirm={() => {
+                    handleDeleteCustomModel(item.id);
+                    messageApi.success(t('deleteSuccess'))
+                  }}
+                  okText={t('confirm')}
+                  cancelText={t('cancel')}
+                >
+                  <Button size='small' type='text' icon={<DeleteOutlined style={{ color: '#888' }} />} />
+                </Popconfirm>
 
-                  <Tooltip title={t('settings')}>
-                    <Button size='small' onClick={() => {
-                      setCurretEditModal(item);
-                      setIsEditModelModalOpen(true);
-                    }} type='text' icon={<SettingOutlined style={{ color: '#888' }} />} />
-                  </Tooltip></>
-                }
+                <Tooltip title={t('settings')}>
+                  <Button size='small' onClick={() => {
+                    setCurretEditModal(item);
+                    setIsEditModelModalOpen(true);
+                  }} type='text' icon={<SettingOutlined style={{ color: '#888' }} />} />
+                </Tooltip>
               </div>
             </div>
           </div>
@@ -151,6 +151,7 @@ const ModelList: React.FC<ModelListProps> = ({
         isModalOpen={isManageAllModalOpen}
         setIsModalOpen={setIsManageAllModalOpen}
         providerId={providerId}
+        providerName={providerName}
       />
     </>
   );

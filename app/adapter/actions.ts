@@ -1,8 +1,10 @@
 'use server';
 import { db } from '@/app/db';
-import { eq, and, asc } from 'drizzle-orm'
+import { eq, and, asc } from 'drizzle-orm';
+import { LLMModel } from '@/app/adapter/interface';
 import { llmSettingsTable, llmModels } from '@/app/db/schema';
-import { llmModelType, llmModelTypeWithAllInfo } from '@/app/db/schema';
+import { llmModelTypeWithAllInfo } from '@/app/db/schema';
+import { getLlmConfigByProvider } from '@/app/utils/llms';
 import { auth } from '@/auth';
 
 type FormValues = {
@@ -67,7 +69,7 @@ export const fetchLlmModels = async (providerId?: string) => {
       .select()
       .from(llmModels)
       .where(eq(llmModels.providerId, providerId))
-      .orderBy(asc(llmModels.order));
+      .orderBy(asc(llmModels.order), asc(llmModels.createdAt));
     ;
   } else {
     llmModelList = await db
@@ -118,6 +120,30 @@ export const changeSelectInServer = async (modelName: string, selected: boolean)
       selected: selected,
     })
     .where(eq(llmModels.name, modelName))
+}
+
+export const changeModelSelectInServer = async (model: LLMModel, selected: boolean) => {
+
+  const hasExist = await db.select()
+    .from(llmModels)
+    .where(eq(llmModels.name, model.id))
+  if (hasExist.length > 0) {
+    await db.update(llmModels)
+      .set({
+        selected: selected,
+      })
+      .where(eq(llmModels.name, model.id))
+  } else {
+    await db.insert(llmModels).values({
+      name: model.id,
+      displayName: model.displayName,
+      selected: selected,
+      type: 'default',
+      providerId: model.provider.id,
+      providerName: model.provider.providerName,
+      order: 100,
+    })
+  }
 }
 
 export const deleteCustomModelInServer = async (modelName: string) => {
@@ -285,4 +311,32 @@ export const saveProviderOrder = async (
 
   // 执行所有更新操作
   await Promise.all(updatePromises);
+}
+
+export const getRemoteModelsByProvider = async (providerId: string): Promise<{
+  id: string;
+  object: string;
+  created: number;
+  owned_by: string;
+}[]> => {
+  const { endpoint, apikey } = await getLlmConfigByProvider(providerId);
+  const apiUrl = endpoint + '/models';
+  const headers = new Headers({
+    'Content-Type': 'application/json',
+    'Connection': 'keep-alive',
+    'Authorization': `Bearer ${apikey}`,
+  });
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: headers,
+    });
+    if (!response.ok) {
+      return [];
+    }
+    const body = await response.json();
+    return body.data;
+  } catch {
+    return [];
+  }
 }

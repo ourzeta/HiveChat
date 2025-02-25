@@ -42,11 +42,33 @@ const Settings = (props: { providerId: string }) => {
   const [curretEditModal, setCurretEditModal] = useState<LLMModel>();
   const [checkResult, setCheckResult] = useState('init');
   const [errorMessage, setErrorMessage] = useState('');
+  const [inputEndpoint, setInputEndpoint] = useState('');
   const [form] = Form.useForm();
 
+  const getEndpointBaseUrl = (providerId: string, inputUrl?: string | null) => {
+    if (inputUrl) {
+      return inputUrl;
+    }
+    const endpointMap = {
+      'claude': 'https://api.anthropic.com/v1',
+      'deepseek': 'https://api.deepseek.com/v1',
+      'volcengine': 'https://ark.cn-beijing.volces.com/api/v3',
+      'gemini': 'https://generativelanguage.googleapis.com/v1beta/openai',
+      'moonshot': 'https://api.moonshot.cn/v1',
+      'ollama': 'http://127.0.0.1:11434/v1',
+      'openai': 'https://api.openai.com/v1',
+      'qwen': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+      'qianfan': 'https://qianfan.baidubce.com/v2',
+      'siliconflow': 'https://api.siliconflow.cn/v1',
+      'zhipu': 'https://open.bigmodel.cn/api/paas/v4',
+      'hunyuan': 'https://api.hunyuan.cloud.tencent.com/v1',
+      'openrouter': 'https://openrouter.ai/api/v1',
+      'grok': 'https://api.x.ai/v1',
+    }
+    return endpointMap[providerId as keyof typeof endpointMap];
+  }
 
   const getHelpLinks = (providerId: string) => {
-
     const helpLinks = {
       'openai': 'https://k2swpw8zgf.feishu.cn/wiki/J3FtwGumMi7k0vktB41cHvjTnTg',
       'claude': 'https://k2swpw8zgf.feishu.cn/wiki/XrMdwQlRKiOESdkdexMcQ89vn2e',
@@ -90,11 +112,14 @@ const Settings = (props: { providerId: string }) => {
   useEffect(() => {
     const fetchLlmConfig = async (): Promise<void> => {
       const result = await getLlmOriginConfigByProvider(provider.id);
+      const endpointUrl = getEndpointBaseUrl(provider.id, result.endpoint?.trim());
+      console.log('endpointUrl', endpointUrl)
       form.setFieldsValue({
         isActive: result.isActive || false,
         apikey: result.apikey || '',
-        endpoint: result.endpoint || '',
+        endpoint: endpointUrl,
       });
+      setInputEndpoint(endpointUrl);
     };
 
     const fetchModelList = async (): Promise<void> => {
@@ -140,6 +165,9 @@ const Settings = (props: { providerId: string }) => {
           layout="vertical"
           form={form}
           onFinish={onFinish}
+        // initialValues={{
+        //   endpoint: inputEndpoint,
+        // }}
         >
           <div className='flex flex-row justify-between my-4 items-center'>
             <div className='flex items-center justify-center'>
@@ -199,18 +227,32 @@ const Settings = (props: { providerId: string }) => {
           </div>
           {
             props.providerId === 'ollama' || provider.type === 'custom' ?
-              <Form.Item label={<span className='font-medium'>{t('serviceEndpoint')}</span>} name='endpoint'>
+              <Form.Item
+                label={<span className='font-medium'>{t('serviceEndpoint')}</span>}
+                name='endpoint'
+                extra={<span className='ml-3'>{inputEndpoint + '/chat/completions'}</span>}
+              >
                 <Input
                   type='url'
+                  value={inputEndpoint}
+                  onChange={(e) => setInputEndpoint(e.target.value)}
                   onBlur={() => {
                     form.submit();
                   }
                   }
                 />
               </Form.Item> :
-              <Form.Item label={<span className='font-medium'>{t('endpoint')} ({t('optional')})</span>} name='endpoint'>
+              <Form.Item
+                label={<span className='font-medium'>{t('endpoint')} ({t('optional')})</span>}
+                name='endpoint'
+                extra={props.providerId === 'claude' ? <span className='ml-3'>{inputEndpoint + '/messages'}</span>
+                  : <span className='ml-3'>{inputEndpoint + '/chat/completions'}</span>
+                }
+              >
                 <Input
                   type='url'
+                  value={inputEndpoint}
+                  onChange={(e) => setInputEndpoint(e.target.value)}
                   onBlur={() => {
                     form.submit();
                   }
@@ -219,8 +261,7 @@ const Settings = (props: { providerId: string }) => {
               </Form.Item>
           }
         </Form>
-
-        <div className='flex flex-col mb-2'>
+        <div className='flex flex-col -mt-2 mb-2'>
           <div className='font-medium'>{t('testConnect')}</div>
           <div className='my-2 flex flex-row items-center'>
             <Button loading={checkResult === 'pending'} onClick={() => {
@@ -260,6 +301,7 @@ const Settings = (props: { providerId: string }) => {
         }
         <ModelList
           providerId={provider.id}
+          providerName={provider?.providerName}
           setCurretEditModal={setCurretEditModal}
           setIsEditModelModalOpen={setIsEditModelModalOpen}
           setIsCustomModelModalOpen={setIsCustomModelModalOpen}

@@ -59,7 +59,6 @@ export default async function proxyGeminiStream(response: Response,
         }
         controller.enqueue(value);
       }
-      controller.close();
       // 有 ChatId 的存储到 messages 表
       if (messageInfo.chatId) {
         const toAddMessage = {
@@ -73,8 +72,9 @@ export default async function proxyGeminiStream(response: Response,
           model: messageInfo.model,
           providerId: messageInfo.providerId,
         }
-        await addMessageInServer(toAddMessage);
+        addMessageInServer(toAddMessage);
       }
+      controller.close();
     }
   });
 

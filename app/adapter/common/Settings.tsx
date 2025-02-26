@@ -158,6 +158,16 @@ const Settings = (props: { providerId: string }) => {
     }
   };
 
+  const getEndpointExtraNotice = (providerId: string, inputEndpoint: string) => {
+    switch (providerId) {
+      case 'claude':
+        return <span className='ml-3'>{inputEndpoint + '/messages'}</span>
+      case 'gemini':
+        return <span className='ml-3'>{inputEndpoint + '/v1beta/models/${model}:streamGenerateContent?alt=sse'}</span>
+      default:
+        return <span className='ml-3'>{inputEndpoint + '/chat/completions'}</span>
+    }
+  }
   return (
     isPending ? <Skeleton active style={{ 'marginTop': '1.5rem' }} /> :
       <div className='flex w-full flex-col'>
@@ -165,9 +175,6 @@ const Settings = (props: { providerId: string }) => {
           layout="vertical"
           form={form}
           onFinish={onFinish}
-        // initialValues={{
-        //   endpoint: inputEndpoint,
-        // }}
         >
           <div className='flex flex-row justify-between my-4 items-center'>
             <div className='flex items-center justify-center'>
@@ -245,9 +252,7 @@ const Settings = (props: { providerId: string }) => {
               <Form.Item
                 label={<span className='font-medium'>{t('endpoint')} ({t('optional')})</span>}
                 name='endpoint'
-                extra={props.providerId === 'claude' ? <span className='ml-3'>{inputEndpoint + '/messages'}</span>
-                  : <span className='ml-3'>{inputEndpoint + '/chat/completions'}</span>
-                }
+                extra={getEndpointExtraNotice(props.providerId, inputEndpoint)}
               >
                 <Input
                   type='url'

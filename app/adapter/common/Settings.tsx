@@ -226,7 +226,7 @@ const Settings = (props: { providerId: string }) => {
             </Link>
           </div>
           {
-            props.providerId === 'ollama' || provider.type === 'custom' ?
+            props.providerId === 'ollama' || provider?.type === 'custom' ?
               <Form.Item
                 label={<span className='font-medium'>{t('serviceEndpoint')}</span>}
                 name='endpoint'
@@ -300,7 +300,7 @@ const Settings = (props: { providerId: string }) => {
           </div>
         }
         <ModelList
-          providerId={provider.id}
+          providerId={provider?.id}
           providerName={provider?.providerName}
           setCurretEditModal={setCurretEditModal}
           setIsEditModelModalOpen={setIsEditModelModalOpen}

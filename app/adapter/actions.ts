@@ -123,10 +123,14 @@ export const changeSelectInServer = async (modelName: string, selected: boolean)
 }
 
 export const changeModelSelectInServer = async (model: LLMModel, selected: boolean) => {
-
   const hasExist = await db.select()
     .from(llmModels)
-    .where(eq(llmModels.name, model.id))
+    .where(
+      and(
+        eq(llmModels.name, model.id),
+        eq(llmModels.providerId, model.provider.id)
+      )
+    )
   if (hasExist.length > 0) {
     await db.update(llmModels)
       .set({

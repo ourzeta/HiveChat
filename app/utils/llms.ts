@@ -83,7 +83,7 @@ export async function completeEndpoint(providerId: string, inputUrl?: string | n
     } else if (inputUrl?.endsWith('/')) {
       apiUrl = inputUrl + 'v1/messages';
     } else {
-      apiUrl = inputUrl + '/v1/messages';
+      apiUrl = inputUrl + '/messages';
     }
     return apiUrl;
   }
@@ -94,7 +94,7 @@ export async function completeEndpoint(providerId: string, inputUrl?: string | n
   } else if (inputUrl.endsWith('/')) {
     apiUrl = inputUrl + 'v1/chat/completions';
   } else {
-    apiUrl = inputUrl + '/v1/chat/completions';
+    apiUrl = inputUrl + '/chat/completions';
   }
   return apiUrl;
 }

@@ -53,7 +53,7 @@ const Settings = (props: { providerId: string }) => {
       'claude': 'https://api.anthropic.com/v1',
       'deepseek': 'https://api.deepseek.com/v1',
       'volcengine': 'https://ark.cn-beijing.volces.com/api/v3',
-      'gemini': 'https://generativelanguage.googleapis.com/v1beta/openai',
+      'gemini': 'https://generativelanguage.googleapis.com',
       'moonshot': 'https://api.moonshot.cn/v1',
       'ollama': 'http://127.0.0.1:11434/v1',
       'openai': 'https://api.openai.com/v1',

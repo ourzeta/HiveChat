@@ -69,7 +69,7 @@ const AddCustomProvider: React.FC<AddCustomProviderModalProps> = ({
           <Form.Item
             name='provider'
             label={<span className='font-medium'>服务商 ID</span>}
-            rules={[{ required: true, message: '此项为必填' }]}
+            rules={[{ required: true, message: '此项为必填', }, { pattern: /^[a-zA-Z0-9_]+$/, message: '仅允许字母、数字和下划线' }]}
             extra="作为服务商唯一标识，创建后将不可修改"
             validateTrigger='onBlur'
           >

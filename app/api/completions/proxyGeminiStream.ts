@@ -73,7 +73,7 @@ export default async function proxyGeminiStream(response: Response,
           model: messageInfo.model,
           providerId: messageInfo.providerId,
         }
-        addMessageInServer(toAddMessage);
+        await addMessageInServer(toAddMessage);
       }
     }
   });

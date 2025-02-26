@@ -79,7 +79,7 @@ export default async function proxyOpenAiStream(response: Response,
           model: messageInfo.model,
           providerId: messageInfo.providerId,
         }
-        addMessageInServer(toAddMessage);
+        await addMessageInServer(toAddMessage);
       }
     }
   });

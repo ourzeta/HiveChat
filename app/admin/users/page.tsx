@@ -110,6 +110,7 @@ const UserListPage = () => {
             <thead>
               <tr className="bg-slate-100">
                 <th className='border-b border-r border-slate-300 p-2'>#</th>
+                <th className='border-b border-r border-slate-300 p-2'>昵称</th>
                 <th className='border-b border-r border-slate-300 p-2'>Email</th>
                 <th className='border-b border-r border-slate-300 p-2'>{t('role')}</th>
                 <th className='border-b border-r border-slate-300 p-2'>{t('registerAt')}</th>
@@ -120,7 +121,8 @@ const UserListPage = () => {
               {userList.map((user, index) => (
                 <tr key={user.id} className="hover:bg-slate-50">
                   <td className='border-t border-r text-center text-sm border-slate-300 p-2'>{index + 1}</td>
-                  <td className='border-t border-r text-sm border-slate-300 p-2'>{user.email}</td>
+                  <td className='border-t border-r text-sm border-slate-300 p-2'>{user.name ? user.name : '-'}</td>
+                  <td className='border-t border-r text-sm border-slate-300 p-2'>{user.email ? user.email : '-'}</td>
                   <td className='border-t border-r text-sm text-center border-slate-300 p-2'>{user.isAdmin ? <Tag color="blue">{t('roleAdmin')}</Tag> : <Tag>{t('roleUser')}</Tag>}</td>
                   <td className='border-t border-r text-sm text-center w-48 border-slate-300 p-2'>{user.createdAt?.toLocaleString('sv-SE')}</td>
                   <td className='border-t text-center text-sm w-32 border-slate-300 p-2'>
@@ -195,7 +197,8 @@ const UserListPage = () => {
           validateTrigger='onBlur'
         >
           <Form.Item label={<span className='font-medium'>Email</span>} name='email'
-            rules={[{ required: true, message: t('emailNotice') }, { type: 'email', message:  t('emailNotice') }]}>
+            // rules={[{ required: true, message: t('emailNotice') }, { type: 'email', message:  t('emailNotice') }]}>
+            rules={[{ type: 'email', message:  t('emailNotice') }]}>
             <Input type='email' disabled />
           </Form.Item>
           <Form.Item label={<span className='font-medium'>{t('roleAdmin')}</span>} name='isAdmin'>

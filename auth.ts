@@ -5,10 +5,19 @@ import { signInSchema } from "@/app/lib/zod";
 import { verifyPassword } from "@/app/utils/password";
 import { db } from '@/app/db';
 import { users } from '@/app/db/schema';
+import Feishu from "@/app/auth/providers/feishu";
 import { eq } from 'drizzle-orm';
 
+let feishuAuth: any[] = [];
+if (process.env.FEISHU_AUTH_STATUS === 'ON') {
+  feishuAuth = [Feishu({
+    clientId: process.env.FEISHU_CLIENT_ID!,
+    clientSecret: process.env.FEISHU_CLIENT_SECRET!,
+  })]
+}
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
+    ...feishuAuth,
     Credentials({
       // You can specify which fields should be submitted, by adding keys to the `credentials` object.
       // e.g. domain, username, password, 2FA token, etc.
@@ -49,17 +58,38 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
 
   ],
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
         token.isAdmin = user.isAdmin;
+      }
+      // 处理飞书登录的情况
+      if (account?.provider === "feishu" && token.sub) {
+        const dbUser = await db.query.users.findFirst({
+          where: eq(users.feishuUserId, account.providerAccountId)
+        });
+        
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.isAdmin = dbUser.isAdmin || false;
+        }
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
-        // session.user.isAdmin = token.isAdmin || false;
         session.user = {
           ...session.user, // 保留已有的属性
           id: String(token.id),

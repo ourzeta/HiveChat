@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from 'next/link';
-import { adminSetup } from '../actions';
-import { fetchAppSettings } from '@/app/admin/system/actions';
+import { adminSetup, adminSetupLogined, getActiveAuthProvides } from '../actions';
+import { fetchAppSettings, } from '@/app/admin/system/actions';
 import { Form, Input, Button, Alert } from 'antd';
 import logo from "@/app/images/logo.png";
+import FeishuLogin from "@/app/components/FeishuLoginButton"
 import Hivechat from "@/app/images/hivechat.svg";
+import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 
 interface SetupFormValues {
@@ -16,17 +19,24 @@ interface SetupFormValues {
   repeatPassword: string;
   adminCode: string;
 }
+interface LoginedSetupFormValues {
+  adminCode: string;
+}
 
 export default function SetupPage() {
   const t = useTranslations('Auth');
+  const { data: session } = useSession();
   const [form] = Form.useForm<SetupFormValues>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [hasSetup, setHasSetup] = useState(true);
+  const [authProviders, setAuthProviders] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchSettings = async () => {
       const resultValue = await fetchAppSettings('hasSetup');
+      const activeAuthProvides = await getActiveAuthProvides();
+      setAuthProviders(activeAuthProvides)
       if (resultValue === 'true') {
         setHasSetup(true);
         window.location.href = "/chat";
@@ -36,6 +46,22 @@ export default function SetupPage() {
     }
     fetchSettings();
   }, []);
+
+  async function handleLoginedSubmit(values: LoginedSetupFormValues) {
+    setLoading(true);
+    try {
+      const result = await adminSetupLogined(values.adminCode);
+      if (result?.status === 'success') {
+        signIn('feishu');
+      } else {
+        setError(result?.message || t('registerFail'));
+        setLoading(false);
+      }
+    } catch (err: any) {
+      setError(err.message || t('registerFail'));
+      setLoading(false);
+    }
+  }
 
   async function handleSubmit(values: SetupFormValues) {
     setLoading(true);
@@ -51,10 +77,10 @@ export default function SetupPage() {
     }
     try {
       const result = await adminSetup(values.email, values.password, values.adminCode);
-      if (result.status === 'success') {
+      if (result?.status === 'success') {
         window.location.href = "/chat";
       } else {
-        setError(result.message || t('registerFail'));
+        setError(result?.message || t('registerFail'));
         setLoading(false);
       }
     } catch (err: any) {
@@ -77,57 +103,106 @@ export default function SetupPage() {
       </div>
       <div className="w-full max-w-sm space-y-6 rounded-lg bg-white p-6 mb-6 shadow-xl">
         <h2 className="text-center text-2xl">{t('setupAdminAccount')}</h2>
-        {error && <Alert message={error} type="error" />}
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-          requiredMark='optional'
-        >
-          <div className="text-sm text-gray-400 my-2">{t('setupNotice')}</div>
-          <Form.Item
-            name="email"
-            label={<span className="font-medium">Email</span>}
-            rules={[{ required: true, message: t('emailNotice') }]}
+        {session?.user && <>
+          <div className="font-medium mt-4">当前登录账号</div>
+          <div className="bg-gray-100 rounded-md p-4 mt-2">
+            <div>
+              <span className="mr-3 font-medium">昵称:</span>
+              {session?.user.name ? session?.user.name : '-'}
+            </div>
+            <div className="mt-2">
+              <span className="mr-3 font-medium">邮箱:</span>
+              {session?.user.email ? session?.user.email : '-'}
+            </div>
+          </div>
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleLoginedSubmit}
+            requiredMark='optional'
           >
-            <Input size="large" />
-          </Form.Item>
-          <Form.Item
-            name="password"
-            label={<span className="font-medium">{t('password')}</span>}
-            rules={[{ required: true, message: t('passwordNotice') }]}
-          >
-            <Input.Password size="large" />
-          </Form.Item>
-          <Form.Item
-            name="repeatPassword"
-            label={<span className="font-medium">{t('repeatPassword')}</span>}
-            rules={[{ required: true, message: t('passwordNotice') }]}
-          >
-            <Input.Password size="large" />
-          </Form.Item>
-
-          <Form.Item
-            name="adminCode"
-            label={<span className="font-medium">Admin Code</span>}
-            rules={[{ required: true, message: t('adminCodeRequired') }]}
-          >
-            <Input.Password size="large" />
-          </Form.Item>
-          <div className="text-sm text-gray-400 -mt-2 mb-2">{t('adminCodeNotice')}</div>
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              size="large"
-              block
-              loading={loading}
+            <Form.Item
+              name="adminCode"
+              label={<span className="font-medium">Admin Code</span>}
+              rules={[{ required: true, message: t('adminCodeRequired') }]}
             >
-              {t('setupAdminAccount')}
-            </Button>
-          </Form.Item>
-        </Form>
+              <Input.Password size="large" />
+            </Form.Item>
+            <div className="text-sm text-gray-400 -mt-2 mb-2">{t('adminCodeNotice')}</div>
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                size="large"
+                block
+                loading={loading}
+              >
+                {t('setupAdminAccount')}
+              </Button>
+            </Form.Item>
+          </Form>
+        </>}
+        {error && <Alert message={error} type="error" />}
+        {authProviders.includes('email') && !session &&
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
+            requiredMark='optional'
+          >
+            <div className="text-sm text-gray-400 my-2">{t('setupNotice')}</div>
+            <Form.Item
+              name="email"
+              label={<span className="font-medium">Email</span>}
+              rules={[{ required: true, message: t('emailNotice') }]}
+            >
+              <Input size="large" />
+            </Form.Item>
+            <Form.Item
+              name="password"
+              label={<span className="font-medium">{t('password')}</span>}
+              rules={[{ required: true, message: t('passwordNotice') }]}
+            >
+              <Input.Password size="large" />
+            </Form.Item>
+            <Form.Item
+              name="repeatPassword"
+              label={<span className="font-medium">{t('repeatPassword')}</span>}
+              rules={[{ required: true, message: t('passwordNotice') }]}
+            >
+              <Input.Password size="large" />
+            </Form.Item>
+
+            <Form.Item
+              name="adminCode"
+              label={<span className="font-medium">Admin Code</span>}
+              rules={[{ required: true, message: t('adminCodeRequired') }]}
+            >
+              <Input.Password size="large" />
+            </Form.Item>
+            <div className="text-sm text-gray-400 -mt-2 mb-2">{t('adminCodeNotice')}</div>
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                size="large"
+                block
+                loading={loading}
+              >
+                {t('setupAdminAccount')}
+              </Button>
+            </Form.Item>
+          </Form>
+        }
+        
+        {
+          authProviders.includes('email') && authProviders.includes('feishu') && 
+          <div className="w-full text-center text-gray-500 text-sm">或</div>
+        }
+        {
+          authProviders.includes('feishu') && !session && <FeishuLogin text="使用飞书登录后设置" callbackUrl="/setup" />
+        }
       </div>
-    </div>
+    </div >
   );
 }

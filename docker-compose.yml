@@ -1,6 +1,7 @@
 services:
   app:
-    build: .
+    container_name: hivechat
+    image: hivenexus/hivechat:0.0.1
     ports:
       - "3000:3000"
     depends_on:
@@ -11,11 +12,16 @@ services:
       ADMIN_CODE: ${ADMIN_CODE}
       NEXTAUTH_URL: ${NEXTAUTH_URL}
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST}
+      EMAIL_AUTH_STATUS: ${EMAIL_AUTH_STATUS}
+      FEISHU_AUTH_STATUS: ${FEISHU_AUTH_STATUS}
+      FEISHU_CLIENT_ID: ${FEISHU_CLIENT_ID}
+      FEISHU_CLIENT_SECRET: ${FEISHU_CLIENT_SECRET}
     restart: unless-stopped
     networks:
       - my-network
 
   db:
+    container_name: hivechat-db
     image: postgres:15-alpine
     environment:
       POSTGRES_USER: postgres
@@ -24,8 +30,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker:/docker-entrypoint-initdb.d/
-    ports:
-      - "5432:5432"
     restart: unless-stopped
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d hivechat" ]

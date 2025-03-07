@@ -167,7 +167,7 @@ ADMIN_CODE=22113344
 # 生产环境设置为正式域名，开启飞书等第三方登录时回调时会使用
 NEXTAUTH_URL=http://127.0.0.1:3000
 
-是否开启邮箱登录，开启值设为 ON，关闭时修改为 OFF，未设置时默认开启
+# 是否开启邮箱登录，开启值设为 ON，关闭时修改为 OFF，未设置时默认开启
 EMAIL_AUTH_STATUS=ON
 
 # 是否开启飞书登录，开启值设为 ON，关闭时修改为 OFF，详细说明见底部附2
@@ -176,16 +176,12 @@ FEISHU_CLIENT_ID="cli_xxxxxxxxxxxxxxxx"
 FEISHU_CLIENT_SECRET="xxxxxxxxHOEWIoE7eDc1Lhc0042OXXXX"
 ```
 
-3. 构建镜像
-```
-docker compose build
-```
-5. 启动容器
+3. 启动容器
 ```   
 docker compose up -d
 ```
 
-6. 初始化管理员账号
+4. 初始化管理员账号
    
 访问 `http://localhost:3000/setup` (实际使用的域名和端口号)，即可进入管理员账号设置页面，设置完成后，即可正常使用系统。
 

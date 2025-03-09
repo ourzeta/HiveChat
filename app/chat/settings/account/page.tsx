@@ -72,16 +72,15 @@ const AccountPage = () => {
   return (
     <div>
       <div className='flex flex-row justify-between mt-6 p-6 border border-gray-200 rounded-md'>
-        {session?.user.email &&
-          <div className='flex items-center'>
-            <span className='text-sm font-medium'>Email:</span>
-            <span className='text-sm ml-2'>{session.user.email}</span>
-          </div>
-        }
-        {session?.user.name &&
+        {session?.user.name ?
           <div className='flex items-center'>
             <span className='text-sm font-medium'>昵称:</span>
             <span className='text-sm ml-2'>{session.user.name}</span>
+          </div>
+          :
+          <div className='flex items-center'>
+            <span className='text-sm font-medium'>Email:</span>
+            <span className='text-sm ml-2'>{session?.user.email}</span>
           </div>
         }
         <div className='flex items-center'>

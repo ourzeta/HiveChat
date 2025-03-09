@@ -9,6 +9,8 @@ import { fetchAppSettings, } from '@/app/admin/system/actions';
 import { Form, Input, Button, Alert } from 'antd';
 import logo from "@/app/images/logo.png";
 import FeishuLogin from "@/app/components/FeishuLoginButton"
+import WecomLogin from "@/app/components/WecomLoginButton"
+import DingdingLogin from "@/app/components/DingdingLoginButton"
 import Hivechat from "@/app/images/hivechat.svg";
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
@@ -52,6 +54,7 @@ export default function SetupPage() {
     try {
       const result = await adminSetupLogined(values.adminCode);
       if (result?.status === 'success') {
+        
         signIn('feishu');
       } else {
         setError(result?.message || t('registerFail'));
@@ -101,11 +104,11 @@ export default function SetupPage() {
           <Hivechat className="ml-1" alt="HiveChat text" width={156} height={39} />
         </Link>
       </div>
-      <div className="w-full max-w-sm space-y-6 rounded-lg bg-white p-6 mb-6 shadow-xl">
+      <div className="w-full max-w-sm rounded-lg bg-white p-6 mb-6 shadow-xl">
         <h2 className="text-center text-2xl">{t('setupAdminAccount')}</h2>
         {session?.user && <>
           <div className="font-medium mt-4">当前登录账号</div>
-          <div className="bg-gray-100 rounded-md p-4 mt-2">
+          <div className="bg-gray-100 rounded-md p-4 my-4">
             <div>
               <span className="mr-3 font-medium">昵称:</span>
               {session?.user.name ? session?.user.name : '-'}
@@ -194,13 +197,18 @@ export default function SetupPage() {
             </Form.Item>
           </Form>
         }
-        
         {
-          authProviders.includes('email') && authProviders.includes('feishu') && 
+          authProviders.includes('email') && authProviders.length > 1 && !session &&
           <div className="w-full text-center text-gray-500 text-sm">或</div>
         }
         {
-          authProviders.includes('feishu') && !session && <FeishuLogin text="使用飞书登录后设置" callbackUrl="/setup" />
+          authProviders.includes('wecom') && !session && <div className='my-2'><WecomLogin text="使用企业微信登录后设置" callbackUrl="/setup" /></div>
+        }
+        {
+          authProviders.includes('feishu') && !session && <div className='my-2'><FeishuLogin text="使用飞书登录后设置" callbackUrl="/setup" /></div>
+        }
+        {
+          authProviders.includes('dingding') && !session && <div className='my-2'><DingdingLogin text="使用钉钉登录后设置" callbackUrl="/setup" /></div>
         }
       </div>
     </div >

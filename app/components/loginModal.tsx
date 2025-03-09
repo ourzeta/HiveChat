@@ -11,6 +11,8 @@ import Hivechat from "@/app/images/hivechat.svg";
 import Link from 'next/link';
 import Image from "next/image";
 import FeishuLogin from "@/app/components/FeishuLoginButton"
+import WecomLogin from "@/app/components/WecomLoginButton"
+import DingdingLogin from "@/app/components/DingdingLoginButton"
 import { useTranslations } from 'next-intl';
 
 interface LoginFormValues {
@@ -122,8 +124,16 @@ export default function LoginModal() {
 
           </div>}
         {
+          authProviders.includes('wecom') &&
+          <div className='px-4 my-2'><WecomLogin /></div>
+        }
+        {
           authProviders.includes('feishu') &&
           <div className='px-4 my-2'><FeishuLogin /></div>
+        }
+        {
+          authProviders.includes('dingding') &&
+          <div className='px-4 my-2'><DingdingLogin /></div>
         }
       </>}
     </Modal>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, Button } from 'antd';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { getFeishuAuthInfo } from '@/app/(auth)/actions';
+import { getDingdingAuthInfo } from '@/app/(auth)/actions';
 
 type settingsModalProps = {
   isModalOpen: boolean;
@@ -25,7 +25,7 @@ const SettingsModal: React.FC<settingsModalProps> = ({
   useEffect(() => {
     if (isModalOpen) {
       const fetchSettings = async () => {
-        const activeAuthProvides = await getFeishuAuthInfo();
+        const activeAuthProvides = await getDingdingAuthInfo();
         setIsActive(activeAuthProvides.isActive);
         settingForm.setFieldsValue({
           appId: activeAuthProvides.appId,
@@ -38,7 +38,7 @@ const SettingsModal: React.FC<settingsModalProps> = ({
 
   return (
     <Modal
-      title='设置飞书登录'
+      title='设置钉钉登录'
       maskClosable={false}
       keyboard={false}
       centered={true}
@@ -65,7 +65,7 @@ const SettingsModal: React.FC<settingsModalProps> = ({
                 <span className='ml-2 text-sm'>未启用</span>
               </div>
             }
-            <div className='text-gray-500'>如需启用或禁用飞书登录，请修改根目录 .env 文件，并重新编译并启动程序，详情请<Link href="https://k2swpw8zgf.feishu.cn/wiki/Fr80wA8HHi7ZN7kxb6xcU1i7nae" target='_blank'>查看帮助文档</Link>。</div>
+            <div className='text-gray-500'>如需启用或禁用飞书登录，请修改根目录 .env 文件，并重新编译并启动程序，详情请<Link href="https://k2swpw8zgf.feishu.cn/wiki/PcLVwBMcsiCm8Ikcp3pc7rVXn3f" target='_blank'>查看帮助文档</Link>。</div>
           </div>
           <Form.Item
             name='appId'

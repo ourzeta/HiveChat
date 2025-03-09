@@ -1,7 +1,7 @@
 services:
   app:
     container_name: hivechat
-    image: hivenexus/hivechat:0.0.1
+    image: hivenexus/hivechat:0.0.2
     ports:
       - "3000:3000"
     depends_on:
@@ -16,6 +16,13 @@ services:
       FEISHU_AUTH_STATUS: ${FEISHU_AUTH_STATUS}
       FEISHU_CLIENT_ID: ${FEISHU_CLIENT_ID}
       FEISHU_CLIENT_SECRET: ${FEISHU_CLIENT_SECRET}
+      WECOM_AUTH_STATUS: ${WECOM_AUTH_STATUS}
+      WECOM_CLIENT_ID: ${WECOM_CLIENT_ID}
+      WECOM_AGENT_ID: ${WECOM_AGENT_ID}
+      WECOM_CLIENT_SECRET: ${WECOM_CLIENT_SECRET}
+      DINGDING_AUTH_STATUS: ${DINGDING_AUTH_STATUS}
+      DINGDING_CLIENT_ID: ${DINGDING_CLIENT_ID}
+      DINGDING_CLIENT_SECRET: ${DINGDING_CLIENT_SECRET}
     restart: unless-stopped
     networks:
       - my-network

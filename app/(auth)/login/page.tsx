@@ -8,6 +8,8 @@ import { Form, Input, Button, Alert } from 'antd';
 import logo from "@/app/images/logo.png";
 import Hivechat from "@/app/images/hivechat.svg";
 import FeishuLogin from "@/app/components/FeishuLoginButton"
+import WecomLogin from "@/app/components/WecomLoginButton"
+import DingdingLogin from "@/app/components/DingdingLoginButton"
 import { fetchAppSettings } from '@/app/admin/system/actions';
 import { getActiveAuthProvides } from '@/app/(auth)/actions';
 import SpinLoading from '@/app/components/loading/SpinLoading';
@@ -73,7 +75,7 @@ export default function LoginPage() {
         </Link>
       </div>
 
-      <div className="w-full  max-w-md space-y-6 rounded-lg bg-white p-8 shadow-xl">
+      <div className="w-full  max-w-md rounded-lg bg-white p-8 shadow-xl">
         <h2 className="text-center text-2xl">{t('login')}</h2>
         {authProviders.includes('email') &&
           <>
@@ -124,11 +126,18 @@ export default function LoginPage() {
           </>
         }
         {
-          authProviders.includes('feishu') && <FeishuLogin />
+          authProviders.includes('wecom') &&
+          <div className='my-2'><WecomLogin /></div>
+        }
+        {
+          authProviders.includes('feishu') &&
+          <div className='my-2'><FeishuLogin /></div>
+        }
+        {
+          authProviders.includes('dingding') &&
+          <div className='my-2'><DingdingLogin /></div>
         }
       </div>
-
-
     </div>
   );
 }

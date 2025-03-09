@@ -21,6 +21,8 @@ export const users = pgTable("user", {
   name: text("name"),
   email: text("email").unique(),
   password: text("password"),
+  dingdingUnionId: text("dingdingUnionId"),
+  wecomUserId: text("wecomUserId"),
   feishuUserId: text("feishuUserId"),
   feishuOpenId: text("feishuOpenId"),
   feishuUnionId: text("feishuUnionId"),

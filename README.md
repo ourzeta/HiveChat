@@ -9,7 +9,7 @@
 
 管理员一人配置，全团队轻松使用各种 AI 模型。
 
-* 支持配置邮箱登录或飞书登录（企业微信、钉钉正在计划中）
+* 支持配置邮箱登录或企业微信、钉钉、飞书登录
 * LaTeX 和 Markdown 渲染
 * DeepSeek 思维链展示
 * 图像理解
@@ -119,6 +119,17 @@ EMAIL_AUTH_STATUS=ON
 FEISHU_AUTH_STATUS=OFF
 FEISHU_CLIENT_ID="cli_xxxxxxxxxxxxxxxx"
 FEISHU_CLIENT_SECRET="xxxxxxxxHOEWIoE7eDc1Lhc0042OXXXX"
+
+# 是否开启企业微信登录，开启值设为 ON，关闭时修改为 OFF
+WECOM_AUTH_STATUS=OFF
+WECOM_CLIENT_ID="ww728c371c2fXXXXXX"
+WECOM_AGENT_ID="100XXXX"
+WECOM_CLIENT_SECRET="H-7J4jzG0m1axpXLGshaCDlMOZxdjvkX6bIVLuXXXXXX"
+
+# 是否开启钉钉登录，开启值设为 ON，关闭时修改为 OFF
+DINGDING_AUTH_STATUS=OFF
+DINGDING_CLIENT_ID="dingpcfi2kpuplXXXXXX"
+DINGDING_CLIENT_SECRET="3vk9-VFCExNckqNUk_CL2F-HEgz7qGN-BimH0lZ1gUx6hWO7g_an2lnkk6XXXXXX"
 ```
 
 4. 初始化数据库
@@ -174,6 +185,17 @@ EMAIL_AUTH_STATUS=ON
 FEISHU_AUTH_STATUS=OFF
 FEISHU_CLIENT_ID="cli_xxxxxxxxxxxxxxxx"
 FEISHU_CLIENT_SECRET="xxxxxxxxHOEWIoE7eDc1Lhc0042OXXXX"
+
+# 是否开启企业微信登录，开启值设为 ON，关闭时修改为 OFF
+WECOM_AUTH_STATUS=OFF
+WECOM_CLIENT_ID="ww728c371c2fXXXXXX"
+WECOM_AGENT_ID="100XXXX"
+WECOM_CLIENT_SECRET="H-7J4jzG0m1axpXLGshaCDlMOZxdjvkX6bIVLuXXXXXX"
+
+# 是否开启钉钉登录，开启值设为 ON，关闭时修改为 OFF
+DINGDING_AUTH_STATUS=OFF
+DINGDING_CLIENT_ID="dingpcfi2kpuplXXXXXX"
+DINGDING_CLIENT_SECRET="3vk9-VFCExNckqNUk_CL2F-HEgz7qGN-BimH0lZ1gUx6hWO7g_an2lnkk6XXXXXX"
 ```
 
 3. 启动容器
@@ -220,6 +242,17 @@ EMAIL_AUTH_STATUS=ON
 FEISHU_AUTH_STATUS=OFF
 FEISHU_CLIENT_ID="cli_xxxxxxxxxxxxxxxx"
 FEISHU_CLIENT_SECRET="xxxxxxxxHOEWIoE7eDc1Lhc0042OXXXX"
+
+# 是否开启企业微信登录，开启值设为 ON，关闭时修改为 OFF
+WECOM_AUTH_STATUS=OFF
+WECOM_CLIENT_ID="ww728c371c2fXXXXXX"
+WECOM_AGENT_ID="100XXXX"
+WECOM_CLIENT_SECRET="H-7J4jzG0m1axpXLGshaCDlMOZxdjvkX6bIVLuXXXXXX"
+
+# 是否开启钉钉登录，开启值设为 ON，关闭时修改为 OFF
+DINGDING_AUTH_STATUS=OFF
+DINGDING_CLIENT_ID="dingpcfi2kpuplXXXXXX"
+DINGDING_CLIENT_SECRET="3vk9-VFCExNckqNUk_CL2F-HEgz7qGN-BimH0lZ1gUx6hWO7g_an2lnkk6XXXXXX"
 ```
 #### 附1：Vercel（Neon）PostgreSQL 配置
 
@@ -234,5 +267,7 @@ FEISHU_CLIENT_SECRET="xxxxxxxxHOEWIoE7eDc1Lhc0042OXXXX"
 
 按照以上方法安装部署完成后，访问 `http://localhost:3000/setup` (实际使用的域名和端口号)，即可进入管理员账号设置页面，设置完成后，即可正常使用系统。
 
-#### 附2：飞书登录配置说明
-[详情点此查看](https://k2swpw8zgf.feishu.cn/wiki/Fr80wA8HHi7ZN7kxb6xcU1i7nae)
+#### 附2：第三方登录配置说明
+* [企业微信登录配置说明](https://k2swpw8zgf.feishu.cn/wiki/WBH5w6mcuiYui0kNhmecdxtqnac)
+* [钉钉登录配置说明](https://k2swpw8zgf.feishu.cn/wiki/PcLVwBMcsiCm8Ikcp3pc7rVXn3f)
+* [飞书登录配置说明](https://k2swpw8zgf.feishu.cn/wiki/Fr80wA8HHi7ZN7kxb6xcU1i7nae)

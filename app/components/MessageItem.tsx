@@ -212,15 +212,15 @@ const MessageItem = memo((props: {
           <div className='flex flex-col w-0 grow group'>
             <div className='px-3 py-2 ml-2  bg-gray-100  text-gray-600 w-full grow markdown-body answer-content rounded-xl'>
               {props.item.reasoninContent &&
-                <div className='text-sm mt-1 mb-4'>
-                  <div className='flex text-xs flex-row items-center text-gray-800 bg-gray-100 rounded-md p-2'>
+                <details open={true} className='text-sm mt-1 mb-4'>
+                  <summary className='flex text-xs flex-row items-center text-gray-800 bg-gray-100 rounded-md p-2' style={{ display: 'flex' }}>
                     <ThinkingIcon width={16} height={16} style={{ 'fontSize': '10px' }} />
                     <span className='ml-1'>{t('thought')}</span>
-                  </div>
+                  </summary>
                   <div className='border-l-2 border-gray-200 px-2 mt-2 leading-5 text-gray-400'>
                     <MarkdownRender content={props.item.reasoninContent as string} />
                   </div>
-                </div>}
+                </details>}
               <MarkdownRender content={props.item.content as string} />
             </div>
             <div className='invisible flex flex-row items-center pl-1 group-hover:visible'>

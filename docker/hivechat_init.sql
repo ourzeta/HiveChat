@@ -195,6 +195,8 @@ CREATE TABLE public.chats (
     title character varying(255) NOT NULL,
     history_type public.history_type DEFAULT 'count'::public.history_type NOT NULL,
     history_count integer DEFAULT 5 NOT NULL,
+    default_model character varying,
+    default_provider character varying,
     is_star boolean DEFAULT false,
     is_with_bot boolean DEFAULT false,
     bot_id integer,

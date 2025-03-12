@@ -2,7 +2,7 @@ import React, { useState, useEffect, memo } from 'react';
 import { Message } from '@/app/db/schema';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Button, Tooltip, message, Alert, Avatar, Popconfirm, Image as AntdImage } from "antd";
-import { CopyOutlined, SyncOutlined, DeleteOutlined } from '@ant-design/icons';
+import { CopyOutlined, SyncOutlined, DeleteOutlined, DownOutlined } from '@ant-design/icons';
 import useModelListStore from '@/app/store/modelList';
 import ThinkingIcon from '@/app/images/thinking.svg';
 import MarkdownRender from '@/app/components/Markdown';
@@ -21,6 +21,7 @@ const MessageItem = memo((props: {
   const [messageApi, contextHolderMessage] = message.useMessage();
   const [images, setImages] = useState<string[]>([]);
   const [plainText, setPlainText] = useState('');
+  const [isOpen, setIsOpen] = useState(true);
   useEffect(() => {
     if (Array.isArray(props.item.content) && props.item.content.length > 0) {
       const images = props.item.content.filter((item: any) => item.type === 'image').map((item: any) => item.data);
@@ -213,9 +214,23 @@ const MessageItem = memo((props: {
             <div className='px-3 py-2 ml-2  bg-gray-100  text-gray-600 w-full grow markdown-body answer-content rounded-xl'>
               {props.item.reasoninContent &&
                 <details open={true} className='text-sm mt-1 mb-4'>
-                  <summary className='flex text-xs flex-row items-center text-gray-800 bg-gray-100 rounded-md p-2' style={{ display: 'flex' }}>
+                  <summary 
+                    className='flex text-xs flex-row items-center hover:bg-gray-200 text-gray-800 bg-gray-100 rounded-md p-2'
+                    style={{ display: 'flex' }}
+                    onClick={(e) => {
+                      setIsOpen(!isOpen);
+                    }}
+                  >
                     <ThinkingIcon width={16} height={16} style={{ 'fontSize': '10px' }} />
                     <span className='ml-1'>{t('thought')}</span>
+                    <DownOutlined
+                      className='ml-auto mr-1'
+                      style={{
+                        color: '#999',
+                        transform: `rotate(${isOpen ? 0 : -90}deg)`,
+                        transition: 'transform 0.2s ease'
+                      }}
+                    />
                   </summary>
                   <div className='border-l-2 border-gray-200 px-2 mt-2 leading-5 text-gray-400'>
                     <MarkdownRender content={props.item.reasoninContent as string} />

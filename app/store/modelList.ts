@@ -11,7 +11,7 @@ interface IModelListStore {
   modelList: LLMModel[];
   isPending: Boolean;
   setIsPending: (isPending: boolean) => void;
-  initModelList: (initModels: llmModelTypeWithAllInfo[]) => Promise<void>;
+  initModelList: (initModels: llmModelTypeWithAllInfo[]) => void;
   setModelList: (newOrderModels: LLMModel[]) => void;
   setAllProviderList: (newProviderList: LLMModelProvider[]) => void; //排序
   initAllProviderList: (initModels: LLMModelProvider[]) => Promise<void>;
@@ -63,7 +63,7 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
       modelList: newOrderModels,
     }));
   },
-  initModelList: async (initModels: llmModelTypeWithAllInfo[]) => {
+  initModelList: (initModels: llmModelTypeWithAllInfo[]) => {
     const newData = initModels.map((model) => ({
       id: model.name,
       displayName: model.displayName,
@@ -116,7 +116,6 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
       if (!(state.currentModel.id === modelId && state.currentModel.provider.id === providerId)) {
         const modelInfo = state.modelList.find(m => (m.id === modelId && m.provider.id === providerId));
         if (modelInfo) {
-          localStorage.setItem('lastSelectedModel', modelInfo.id);
           return {
             ...state,
             currentModel: modelInfo,
@@ -125,7 +124,7 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
           return state;
         }
       }
-      return state; // 如果相同，则返回当前状态
+      return state;
     });
   },
   setCurrentModel: (modelId: string) => {
@@ -134,7 +133,6 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
       if (state.currentModel?.id !== modelId) {
         const modelInfo = state.modelList.find(m => m.id === modelId);
         if (modelInfo) {
-          localStorage.setItem('lastSelectedModel', modelInfo.id);
           return {
             ...state,
             currentModel: modelInfo,
@@ -143,7 +141,7 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
           return state;
         }
       }
-      return state; // 如果相同，则返回当前状态
+      return state;
     });
   },
 

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Button, Segmented, InputNumber } from "antd";
-import chatHistoryConfig from '@/app/store/chatHistoryConfig';
+import useChatStore from '@/app/store/chat';
 import { useTranslations } from 'next-intl';
 
 const HistorySettings = (props: { chat_id: string, changeVisible: (open: boolean) => void }) => {
   const t = useTranslations('Chat');
-  const { historyType, historyCount, setHistoryType, setHistoryCount } = chatHistoryConfig();
+  const { historyType, historyCount, setHistoryType, setHistoryCount } = useChatStore();
   const [value, setValue] = useState<string>(historyType);
   const [localCount, setLocalCount] = useState(historyCount);
   const saveConfig = () => {

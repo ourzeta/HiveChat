@@ -158,6 +158,8 @@ export const chats = pgTable("chats", {
   title: varchar({ length: 255 }).notNull(),
   historyType: historyType('history_type').notNull().default('count'),
   historyCount: integer('history_count').default(5).notNull(),
+  defaultModel: varchar('default_model'),
+  defaultProvider: varchar('default_provider'),
   isStar: boolean('is_star').default(false),
   isWithBot: boolean('is_with_bot').default(false),
   botId: integer('bot_id'),
@@ -249,6 +251,7 @@ export interface ChatType {
   id: string;
   title?: string;
   defaultModel?: string;
+  defaultProvider?: string,
   historyType?: 'all' | 'none' | 'count';
   historyCount?: number;
   isStar?: boolean;

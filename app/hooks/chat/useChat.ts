@@ -1,20 +1,19 @@
-import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Message } from '@/app/db/schema';
 import { ChatOptions, LLMApi, RequestMessage, MessageContent } from '@/app/adapter/interface';
-import chatHistoryConfig from '@/app/store/chatHistoryConfig';
 import useChatStore from '@/app/store/chat';
 import useChatListStore from '@/app/store/chatList';
 import { generateTitle } from '@/app/utils';
 import { getLLMInstance } from '@/app/adapter/models';
 import useModelListStore from '@/app/store/modelList';
 import { ResponseContent } from '@/app/adapter/interface';
+import { getChatInfoInServer } from '@/app/chat/actions/chat';
 import { addMessageInServer, getMessagesInServer, deleteMessageInServer, clearMessageInServer } from '@/app/chat/actions/message';
 import useGlobalConfigStore from '@/app/store/globalConfig';
 import { localDb } from '@/app/db/localDb';
 
 const useChat = (chatId: string) => {
-  const { currentModel } = useModelListStore();
-  const { historyType, historyCount, initializeHistory } = chatHistoryConfig();
+  const { currentModel, setCurrentModel, setCurrentModelExact } = useModelListStore();
   const [messageList, setMessageList] = useState<Message[]>([]);
   const [isPending, setIsPending] = useState(false);
   const [responseStatus, setResponseStatus] = useState<"done" | "pending">("done");
@@ -23,7 +22,7 @@ const useChat = (chatId: string) => {
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [input, setInput] = useState('');
   const [userSendCount, setUserSendCount] = useState(0);
-  const { chat, initializeChat } = useChatStore();
+  const { chat, initializeChat, historyType, historyCount } = useChatStore();
   const { setNewTitle } = useChatListStore();
   const { chatNamingModel } = useGlobalConfigStore();
 
@@ -39,10 +38,6 @@ const useChat = (chatId: string) => {
       }
     };
   }, [currentModel]);
-
-  useEffect(() => {
-    initializeHistory(chatId);
-  }, [initializeHistory, chatId]);
 
   useEffect(() => {
     async function fetchMessages() {
@@ -70,6 +65,16 @@ const useChat = (chatId: string) => {
       setUserSendCount(1);
       await localDb.messages.clear();
     }
+
+    async function fetchChatInfo() {
+      const { status, data } = await getChatInfoInServer(chatId);
+      if (status === 'success') {
+        initializeChat(data!);
+        if(data?.defaultProvider && data?.defaultModel){
+          setCurrentModelExact(data.defaultProvider, data.defaultModel);
+        }
+      }
+    }
     if (localStorage.getItem('f') === 'home') {
       fetchLocalMessages();
       localStorage.removeItem('f');
@@ -77,12 +82,12 @@ const useChat = (chatId: string) => {
       setIsPending(true);
       Promise.all([
         fetchMessages(),
-        initializeChat(chatId)
+        fetchChatInfo()
       ]).finally(() => {
         setIsPending(false);
       });
     }
-  }, [chatId, initializeChat]);
+  }, [chatId, initializeChat, setCurrentModelExact]);
 
   const handleInputChange = (e: any) => {
     setInput(e.target.value);

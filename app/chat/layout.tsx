@@ -14,8 +14,7 @@ export default function ChatLayout({
     const initializeModelList = async () => {
       try {
         const remoteModelList = await fetchAvailableLlmModels();
-        const modelNames = remoteModelList.map(model => model.name);
-        await initModelList(remoteModelList);
+        initModelList(remoteModelList);
         const allProviderSettings = await fetchAllProviders();
         const processedList = allProviderSettings.map(item => ({
           id: item.provider,
@@ -24,15 +23,6 @@ export default function ChatLayout({
           status: item.isActive || false,
         }));
         initAllProviderList(processedList)
-        const lastSelectedModel = localStorage.getItem('lastSelectedModel');
-        if (lastSelectedModel && modelNames.includes(lastSelectedModel)) {
-          setCurrentModel(lastSelectedModel);
-        }
-        else {
-          if (remoteModelList.length > 0) {
-            setCurrentModel(remoteModelList[0].name);
-          }
-        }
         setIsPending(false);
       } catch (error) {
         console.error('Error initializing model list:', error);

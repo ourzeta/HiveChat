@@ -59,7 +59,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               name: user.name,
               email: user.email,
               isAdmin: user.isAdmin || false,
-              groupId: user.groupId,
+              groupId: user.groupId  || undefined,
             };
           } else {
             return null;

@@ -86,7 +86,7 @@ const GroupModal = ({ title, open, onOk, onCancel, onFinish, form, initialValues
     )
 };
 
-const groupManagementTab = () => {
+const GroupManagementTab = () => {
     const t = useTranslations('Admin.Users');
     const ct = useTranslations('Common');
     const { modelListRealId, providerList, initModelListRealId } = useModelListStore();
@@ -133,7 +133,7 @@ const groupManagementTab = () => {
             await initModelListRealId(remoteModelList);
         };
         initializeModelList();
-    }, []);
+    }, [initModelListRealId]);
 
 
     const onFinish = async (values: FormValues) => {
@@ -236,20 +236,19 @@ const groupManagementTab = () => {
                     <table className='border-collapse w-full'>
                         <thead>
                             <tr className="bg-slate-100">
-                                <th className='border-b border-r border-slate-300 w-1/4'>{t('groupName')}</th>
-                                <th className='border-b border-r border-slate-300 w-1/2'>{t('availableModels')}
-                                </th>
-                                <th className='border-b border-slate-300 p-2 w-1/5'>{t('action')}</th>
+                                <th className='border-b border-r border-slate-300 w-36'>{t('groupName')}</th>
+                                <th className='border-b border-r border-slate-300'>{t('availableModels')}</th>
+                                <th className='border-b border-slate-300 p-2 w-36'>{t('action')}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {groupList.map((group, index) => (
                                 <tr key={group.id} className="hover:bg-slate-50">
                                     <td className='border-t border-r text-sm border-slate-300 p-2'>{group.isDefault ? t('defaultGroup') : group.name}</td>
-                                    <td className='border-t border-r text-sm border-slate-300 p-2'>
+                                    <td className='border-t border-r text-sm border-slate-300 p-2 pb-0'>
                                         {group.modelType === 'specific' ? group.modelProviderList && group.modelProviderList.map((model, index) => (
-                                            <Tag color='#f2f2f2' style={{ marginBottom: 10, color: '#626262' }} key={index} bordered={false}>{model}</Tag>
-                                        )) : <Tag color='blue'>{ct('all')}</Tag>}
+                                            <Tag color='#f2f2f2' style={{ marginBottom: 8, color: '#626262' }} key={index} bordered={false}>{model}</Tag>
+                                        )) : <Tag color='blue'  style={{ marginBottom: 8 }}>{ct('all')}</Tag>}
                                     </td>
                                     <td className='border-t text-center text-sm w-32 border-slate-300 p-2'>
                                         <Button
@@ -317,4 +316,4 @@ const groupManagementTab = () => {
     );
 };
 
-export default groupManagementTab;
+export default GroupManagementTab;

@@ -304,20 +304,6 @@ export const groups = pgTable("groups", {
 })
 
 
-
-export const groupUsers = pgTable("group_users", {
-  groupId: text("groupId").notNull().references(() => groups.id, { onDelete: 'cascade' }),
-  userId: text("userId").notNull().references(() => users.id, { onDelete: 'cascade' }),
-},
-  (groupUsers) => [
-    {
-      compositePK: primaryKey({
-        columns: [groupUsers.groupId, groupUsers.userId],
-      }),
-    }
-  ]
-)
-
 export const groupModels = pgTable("group_models", {
   groupId: text("groupId").notNull().references(() => groups.id, { onDelete: 'cascade' }),
   modelId: integer("modelId").notNull().references(() => llmModels.id, { onDelete: 'cascade' }),

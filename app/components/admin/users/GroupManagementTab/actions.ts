@@ -1,5 +1,5 @@
 'use server';
-import { groupModels, groups, llmModels } from '@/app/db/schema';
+import { groupModels, groups, llmModels, users } from '@/app/db/schema';
 import { db } from '@/app/db';
 import { eq, inArray } from 'drizzle-orm';
 import { auth } from "@/auth";
@@ -127,7 +127,17 @@ export async function deleteGroup(groupId: string) {
         message: 'Cannot delete default group'
       };
     }
+    // 删除分组
     await db.delete(groups).where(eq(groups.id, groupId));
+    // 同时将所有当前分组的用户，修改为默认分组
+    const defaultGroup = await db.query.groups.findFirst({
+      where: eq(groups.isDefault, true)
+    });
+    if (defaultGroup) {
+      await db.update(users).set({
+        groupId: defaultGroup.id,
+      }).where(eq(users.groupId, groupId));
+    }
     return {
       success: true,
       message: 'delete success'

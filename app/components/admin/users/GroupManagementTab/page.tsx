@@ -1,11 +1,9 @@
 'use client';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { getGroupList, addGroup, deleteGroup, updateGroup } from './actions';
-import { Tag, Button, Modal, Form, Input, Switch, Divider, message, Skeleton, Select, Radio, CheckboxChangeEvent, ConfigProvider, Avatar, Tooltip, Popconfirm, Badge, FormInstance } from 'antd';
-import { UserType } from '@/app/db/schema';
+import { Tag, Button, Modal, Form, Input, Divider, message, Skeleton, Select, Radio, Avatar, Tooltip, Popconfirm, FormInstance } from 'antd';
 import { useTranslations } from 'next-intl';
 import useModelListStore from '@/app/store/modelList';
-import { groups } from '@/app/db/schema';
 import { fetchAvailableLlmModels } from '@/app/adapter/actions';
 
 type FormValues = {
@@ -24,25 +22,69 @@ export interface groupType {
     modelProviderList?: string[];
 }
 
-const GroupModal = ({ title, open, onOk, onCancel, form, initialValues }: {
+const GroupModal = ({ title, open, onOk, onCancel, onFinish, form, initialValues, options, tagRender }: {
     title: string;
     open: boolean;
     onOk: () => void;
     onCancel: () => void;
+    onFinish: (values: FormValues) => void;
     form: FormInstance;
     initialValues?: any;
-}) => (
-    <Modal title={title} open={open} onOk={onOk} onCancel={onCancel}>
-        <Form
-            layout="vertical"
-            form={form}
-            validateTrigger="onBlur"
-            initialValues={{ modelType: 'all', ...initialValues }}
-        >
-            
-        </Form>
-    </Modal>
-);
+    options?: any;
+    tagRender?: any;
+}) => {
+    const t = useTranslations('Admin.Users');
+    const ct = useTranslations('Common');
+    return (
+        <Modal title={title} open={open} onOk={onOk} onCancel={onCancel}>
+            <Form
+                layout="vertical"
+                form={form}
+                onFinish={onFinish}
+                validateTrigger="onBlur"
+                initialValues={{ modelType: 'all', ...initialValues }}
+            >
+                <Form.Item name="id" hidden>
+                    <Input type="hidden" />
+                </Form.Item>
+                <Form.Item label={<span className='font-medium'>{t('groupName')}</span>} name='name'
+                    rules={[{ required: true }]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item label={<span className='font-medium'>{t('availableModels')}
+                </span>} name='modelType'>
+                    <Radio.Group>
+                        <Radio value="all">{ct('all')}</Radio>
+                        <Radio value="specific">{t('specificModel')}</Radio>
+                    </Radio.Group>
+                </Form.Item>
+
+                <Form.Item
+                    noStyle
+                    shouldUpdate={(prev, cur) => prev.modelType !== cur.modelType}
+                >
+                    {({ getFieldValue }) => {
+                        return getFieldValue('modelType') === 'specific' && (
+                            <Form.Item
+                                name="models"
+                                style={{ margin: 0 }}
+                            >
+                                <Select
+                                    mode="multiple"
+                                    placeholder="请选择模型"
+                                    style={{ backgroundColor: 'transparent' }}
+                                    listHeight={320}
+                                    options={options}
+                                    tagRender={tagRender}
+                                />
+                            </Form.Item>
+                        );
+                    }}
+                </Form.Item>
+            </Form>
+        </Modal>
+    )
+};
 
 const groupManagementTab = () => {
     const t = useTranslations('Admin.Users');
@@ -52,14 +94,8 @@ const groupManagementTab = () => {
     const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
     const [groupList, setGroupList] = useState<groupType[]>([]);
     const [userFetchStatus, setUserFetchStatus] = useState(true);
-    const [passwordVisible, setPasswordVisible] = React.useState(false);
     const [form] = Form.useForm();
     const [editForm] = Form.useForm();
-    // const [modelType, setModelType] = useState('all');
-
-    // const handleModelTypeChange = (e: CheckboxChangeEvent) => {
-    //     setModelType(e.target.value);
-    // };
     const showAddUserModal = () => {
         setIsModalOpen(true);
     };
@@ -87,7 +123,6 @@ const groupManagementTab = () => {
             const groupList = await getGroupList();
             setGroupList(groupList);
             setUserFetchStatus(false)
-            console.log('groupList', groupList);
         };
         fetchGroupList();
     }, []);
@@ -115,7 +150,6 @@ const groupManagementTab = () => {
     };
 
     const onEditGroupFinish = async (values: FormValues) => {
-        console.log(values);
         const result = await updateGroup(values.id, values);
         if (result.success) {
             const groupList = await getGroupList();
@@ -144,7 +178,7 @@ const groupManagementTab = () => {
             message.error(result.message)
         }
     }
-    const options = providerList.map((provider) => {
+    const options = useMemo(() => providerList.map((provider) => {
         return {
             label: <span key={`provider-${provider.id}`}>{provider.providerName}</span>,
             title: provider.providerName,
@@ -171,7 +205,7 @@ const groupManagementTab = () => {
                 value: model.id,
             }))
         }
-    });
+    }), [modelListRealId, providerList]);
 
     const tagRender = (props: any) => {
         const { label, value, closable, onClose } = props;
@@ -259,107 +293,26 @@ const groupManagementTab = () => {
                     <div className='h-8'></div>
                 </>
             }
-            <Modal
+            <GroupModal
                 title={t('addGroup')}
                 open={isModalOpen}
                 onOk={handleOk}
+                onFinish={onFinish}
                 onCancel={handleCancel}
-            >
-                <Form
-                    layout="vertical"
-                    form={form}
-                    onFinish={onFinish}
-                    validateTrigger='onBlur'
-                    initialValues={{
-                        modelType: 'all',
-                    }}
-                >
-                    <Form.Item label={<span className='font-medium'>{t('groupName')}</span>} name='name'
-                        rules={[{ required: true }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item label={<span className='font-medium'>{t('availableModels')}
-                    </span>} name='modelType'>
-                        <Radio.Group>
-                            <Radio value="all">{ct('all')}</Radio>
-                            <Radio value="specific">{t('specificModel')}</Radio>
-                        </Radio.Group>
-                    </Form.Item>
-
-                    <Form.Item
-                        noStyle
-                        shouldUpdate={(prev, cur) => prev.modelType !== cur.modelType}
-                    >
-                        {({ getFieldValue }) => {
-                            return getFieldValue('modelType') === 'specific' && (
-                                <Form.Item
-                                    name="models"
-                                    style={{ margin: 0 }}
-                                >
-                                    <Select
-                                        mode="multiple"
-                                        placeholder="请选择模型"
-                                        style={{ backgroundColor: 'transparent' }}
-                                        listHeight={320}
-                                        options={options}
-                                        tagRender={tagRender}
-                                    />
-                                </Form.Item>
-                            );
-                        }}
-                    </Form.Item>
-                </Form>
-            </Modal>
-
-            <Modal
-                title={t('editUser')}
+                form={form}
+                options={options}
+                tagRender={tagRender}
+            />
+            <GroupModal
+                title={ct('edit')}
                 open={isEditUserModalOpen}
                 onOk={handleEditGroupOk}
-                onCancel={handleEditUserModalCancel}>
-                <Form
-                    layout="vertical"
-                    form={editForm}
-                    onFinish={onEditGroupFinish}
-                    validateTrigger='onBlur'>
-                    <Form.Item name="id" hidden>
-                        <Input type="hidden" />
-                    </Form.Item>
-                    <Form.Item label={<span className='font-medium'>{t('groupName')}</span>} name='name'
-                        rules={[{ required: true }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item label={<span className='font-medium'>{t('availableModels')}</span>} name='modelType'>
-                        <Radio.Group>
-                            <Radio value="all">{ct('all')}</Radio>
-                            <Radio value="specific">{t('specificModel')}</Radio>
-                        </Radio.Group>
-                    </Form.Item>
-
-                    <Form.Item
-                        noStyle
-                        shouldUpdate={(prev, cur) => prev.modelType !== cur.modelType}
-                    >
-                        {({ getFieldValue }) => {
-                            return getFieldValue('modelType') === 'specific' && (
-                                <Form.Item
-                                    name="models"
-                                    style={{ margin: 0 }}
-                                >
-                                    <Select
-                                        optionLabelProp="value"
-                                        mode="multiple"
-                                        placeholder="请选择模型"
-                                        style={{ backgroundColor: 'transparent' }}
-                                        listHeight={320}
-                                        options={options}
-                                        tagRender={tagRender}
-                                    />
-                                </Form.Item>
-                            );
-                        }}
-                    </Form.Item>
-                </Form>
-            </Modal>
+                onFinish={onEditGroupFinish}
+                onCancel={handleEditUserModalCancel}
+                form={editForm}
+                options={options}
+                tagRender={tagRender}
+            />
         </div>
     );
 };

@@ -243,7 +243,6 @@ const UserListTab = () => {
           validateTrigger='onBlur'
         >
           <Form.Item label={<span className='font-medium'>Email</span>} name='email'
-            // rules={[{ required: true, message: t('emailNotice') }, { type: 'email', message:  t('emailNotice') }]}>
             rules={[{ type: 'email', message: t('emailNotice') }]}>
             <Input type='email' disabled />
           </Form.Item>

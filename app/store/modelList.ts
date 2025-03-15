@@ -113,6 +113,7 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
       provider: {
         id: model.providerId,
         providerName: model.providerName,
+        providerLogo: model.providerLogo,
       }
     }));
 

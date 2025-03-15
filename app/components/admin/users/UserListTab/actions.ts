@@ -1,20 +1,37 @@
 'use server';
 import { groups, users } from '@/app/db/schema';
 import { db } from '@/app/db';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, is } from 'drizzle-orm';
 import { auth } from "@/auth";
 import bcrypt from "bcryptjs";
+
+type UserActionParams = {
+  email: string;
+  password?: string;
+  isAdmin: boolean;
+  groupId?: string;
+};
+
+const handleDatabaseError = (error: unknown, defaultMessage: string) => ({
+  success: false,
+  message: error instanceof Error ? error.message : defaultMessage
+});
+
+const hashPassword = async (password: string) => {
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
+};
 
 export async function getUserList(groupId?: string) {
   const session = await auth();
   if (!session?.user.isAdmin) {
-    throw new Error('not allowed');
+    throw new Error('Not allowed');
   }
   let result
   try {
     if (!groupId || groupId === '_all') {
       result = await db.query.users.findMany({
-        orderBy: [desc(users.createdAt)],
+        orderBy: [users.createdAt],
       });
     } else {
       result = await db.query.users.findMany({
@@ -32,54 +49,40 @@ export async function getUserList(groupId?: string) {
 
     return result;
   } catch (error) {
-    throw new Error('query user list fail');
+    throw new Error('Failed to fetch user list');
   }
 }
 
-export async function addUser(userBasicInfo: { email: string, password: string, isAdmin: boolean, groupId?: string }) {
+export async function addUser(user: UserActionParams & { password: string }) {
   const session = await auth();
-  if (!session?.user.isAdmin) {
-    throw new Error('not allowed');
-  }
+  if (!session?.user.isAdmin) return handleDatabaseError(null, 'Not allowed');
   try {
-    const existingUser = await db.query.users.findFirst({
-      where: eq(users.email, userBasicInfo.email),
+    const emailExists = await db.query.users.findFirst({
+      where: eq(users.email, user.email),
     });
-
-    if (existingUser) {
+    if (emailExists) return { success: false, message: 'Email has been registered' }
+    const hashedPassword = await hashPassword(user.password);
+    const group = user.groupId ? await db.query.groups.findFirst({
+      where: eq(groups.id, user.groupId)
+    }) : null;
+    if (user.groupId && !group) {
       return {
         success: false,
-        message: '邮箱已被注册',
+        message: 'Group not found'
       }
     }
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(userBasicInfo.password, salt);
-
-    const group = await db.query.groups.findFirst({
-      where: userBasicInfo.groupId? eq(groups.id, userBasicInfo.groupId) : undefined,
-    });
-    if (!group) {
-      return {
-        success: false,
-        message: 'group not found'
-      }
-    }
-
-    const result = await db.insert(users).values({
-      email: userBasicInfo.email,
+    await db.insert(users).values({
+      email: user.email,
       password: hashedPassword,
-      isAdmin: userBasicInfo.isAdmin,
-      groupId: userBasicInfo.groupId
-    });
+      isAdmin: user.isAdmin,
+      groupId: user.groupId
+    })
     return {
       success: true,
+      message: 'User added successfully'
     }
   } catch (error) {
-    return {
-      success: false,
-      message: 'database add error'
-    }
+    return handleDatabaseError(error, 'User registration failed');
   }
 }
 
@@ -92,71 +95,40 @@ export async function deleteUser(email: string) {
     await db.delete(users).where(eq(users.email, email));
     return {
       success: true,
-      message: '未找到对应邮箱的用户'
+      message: 'User deleted successfully'
     }
   } catch (error) {
     return {
       success: false,
-      message: 'database delete error'
+      message: 'User delete failed'
     }
   }
 }
 
-export async function updateUser(email: string, userBasicInfo: { email: string, password?: string, isAdmin: boolean, groupId?: string }) {
+export async function updateUser(email: string, user: UserActionParams) {
   const session = await auth();
-  if (!session?.user.isAdmin) {
-    throw new Error('not allowed');
-  }
+  if (!session?.user.isAdmin) return handleDatabaseError(null, 'Not Allowed');
   try {
     const existingUser = await db.query.users.findFirst({
-      where: eq(users.email, email),
-    });
-
-    if (!existingUser) {
-      return {
-        success: false,
-        message: '该用户不存在',
-      };
+      where: eq(users.email, email)
+    })
+    if (!existingUser) return {
+      success: false, message: 'User not found'
     }
-    const group = await db.query.groups.findFirst({
-      where: userBasicInfo.groupId ? eq(groups.id, userBasicInfo.groupId) : undefined,
-    });
-    if (!group) {
-      return {
-        success: false,
-        message: 'group not found'
-      }
+    const updateData = {
+      email: user.email,
+      isAdmin: user.isAdmin,
+      groupId: user.groupId,
+      ...(user.password && {
+        password: await hashPassword(user.password)
+      })
     }
-    let updateResult = null;
-    if (userBasicInfo.password) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(userBasicInfo.password, salt);
-      // 更新用户信息
-      updateResult = await db.update(users)
-        .set({
-          email: userBasicInfo.email,
-          password: hashedPassword,
-          isAdmin: userBasicInfo.isAdmin,
-          groupId: userBasicInfo.groupId
-        })
-        .where(eq(users.email, email));
-    } else {
-      updateResult = await db.update(users)
-        .set({
-          email: userBasicInfo.email,
-          isAdmin: userBasicInfo.isAdmin,
-          groupId: userBasicInfo.groupId
-        })
-        .where(eq(users.email, email));
-    }
+    await db.update(users).set(updateData).where(eq(users.email, email))
     return {
       success: true,
-      message: '用户信息已更新',
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: 'database update error'
+      message: 'User updated successfully'
     }
+  } catch (error) {
+    return handleDatabaseError(error, 'User update failed');
   }
 }

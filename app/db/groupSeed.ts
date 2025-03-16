@@ -4,19 +4,16 @@ import { db } from './index';
 import { groups, users } from './schema';
 // 在数据库初始化时检查并创建默认分组
 export async function createDefaultGroups() {
-  await db.transaction(async (tx) => {
-    const defaultGroup = await tx.query.groups.findFirst({
-      where: eq(groups.isDefault, true)
-    });
-
-    if (!defaultGroup) {
-      await tx.insert(groups).values({
-        name: '默认分组',
-        modelType: 'all',
-        isDefault: true
-      });
-    }
+  const defaultGroup = await db.query.groups.findFirst({
+    where: eq(groups.isDefault, true)
   });
+  if (!defaultGroup) {
+    await db.insert(groups).values({
+      name: '默认分组',
+      modelType: 'all',
+      isDefault: true
+    });
+  };
 }
 
 async function setUserDefaultGroups() {

@@ -83,11 +83,16 @@ export async function adminSetup(email: string, password: string, adminCode: str
     // 使用盐值对密码进行哈希处理
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    const defaultGroup = await db.query.groups.findFirst({
+      where: eq(groups.isDefault, true)
+    });
+    const groupId = defaultGroup?.id || null;
     // 将新用户数据插入数据库
     const result = await db.insert(users).values({
       email,
       password: hashedPassword,
       isAdmin: true,
+      groupId: groupId
     });
     // 注册成功后，自动登录
     const signInResponse = await signIn("credentials", {
@@ -120,8 +125,13 @@ export async function adminSetupLogined(adminCode: string) {
       message: 'Admin Code 错误',
     };
   }
+  const defaultGroup = await db.query.groups.findFirst({
+    where: eq(groups.isDefault, true)
+  });
+  const groupId = defaultGroup?.id || null;
   await db.update(users).set({
     isAdmin: true,
+    groupId: groupId,
   })
     .where(eq(users.id, session.user.id));
   // 注册成功后，自动登录

@@ -4,7 +4,6 @@ import { db } from '@/app/db';
 import { eq, inArray } from 'drizzle-orm';
 import { auth } from "@/auth";
 import type { InferSelectModel } from 'drizzle-orm';
-import { withTransaction } from '@/app/utils/db';
 
 type GroupWithModels = Awaited<ReturnType<typeof db.query.groups.findMany>>[number] & {
   models: {
@@ -94,10 +93,7 @@ export async function addGroup(groupInfo: { name: string, modelType?: 'all' | 's
         groupId: group.id,
         modelId
       }));
-
-      return await withTransaction([
-        db.insert(groupModels).values(modelLinks)
-      ]);
+      await db.insert(groupModels).values(modelLinks)
     }
     return { success: true };
 
@@ -201,25 +197,23 @@ export async function updateGroup(groupId: string, groupInfo: GroupActionParams)
   const session = await auth();
   if (!session?.user.isAdmin) throw new Error('Not allowed');
   try {
-    const operations: Promise<any>[] = [
-      db.update(groups)
-        .set({
-          name: groupInfo.name,
-          modelType: groupInfo.modelType,
-        })
-        .where(eq(groups.id, groupId)),
-      db.delete(groupModels)
-        .where(eq(groupModels.groupId, groupId)),
-    ]
+    await db.update(groups)
+      .set({
+        name: groupInfo.name,
+        modelType: groupInfo.modelType,
+      })
+      .where(eq(groups.id, groupId));
+
+    await db.delete(groupModels)
+      .where(eq(groupModels.groupId, groupId))
     if (groupInfo.modelType === 'specific' && groupInfo.models?.length) {
       const modelLinks = groupInfo.models.map(modelId => ({
         groupId: groupId,
         modelId
       }));
-      operations.push(db.insert(groupModels).values(modelLinks));
-
+      await db.insert(groupModels).values(modelLinks);
     }
-    return await withTransaction(operations);
+    return { success: true };
 
   } catch (error) {
     return {
@@ -227,5 +221,4 @@ export async function updateGroup(groupId: string, groupInfo: GroupActionParams)
       message: `Update failed: ${error instanceof Error ? error.message : error}`
     };
   }
-
 }

@@ -1,6 +1,6 @@
 import { db } from '@/app/db';
 import { eq } from 'drizzle-orm';
-import { users } from '@/app/db/schema';
+import { users, groups } from '@/app/db/schema';
 import { OAuthConfig } from "next-auth/providers";
 
 export interface FeishuProfile {
@@ -67,6 +67,10 @@ export default function Feishu(options: {
             feishuUnionId: userData.union_id,
           }).where(eq(users.feishuUserId, userData.user_id));
         } else {
+          const defaultGroup = await db.query.groups.findFirst({
+            where: eq(groups.isDefault, true)
+          });
+          const groupId = defaultGroup?.id || null;
           await db.insert(users).values({
             feishuUserId: userData.user_id,
             name: userData.name || userData.en_name,
@@ -74,6 +78,7 @@ export default function Feishu(options: {
             image: userData.avatar,
             feishuOpenId: userData.open_id,
             feishuUnionId: userData.union_id,
+            groupId: groupId,
           });
         }
         return userData;

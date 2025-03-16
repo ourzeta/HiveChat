@@ -1,7 +1,7 @@
 'use server';
 import bcrypt from "bcryptjs";
 import { eq } from 'drizzle-orm';
-import { users } from '@/app/db/schema';
+import { users, groups } from '@/app/db/schema';
 import { db } from '@/app/db';
 import { signIn } from '@/auth';
 import { fetchAppSettings, setAppSettings } from "@/app/admin/system/actions";
@@ -32,10 +32,15 @@ export async function register(email: string, password: string) {
     // 使用盐值对密码进行哈希处理
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    const defaultGroup = await db.query.groups.findFirst({
+      where: eq(groups.isDefault, true)
+    });
+    const groupId = defaultGroup?.id || null;
     // 将新用户数据插入数据库
     const result = await db.insert(users).values({
       email,
       password: hashedPassword,
+      groupId: groupId
     });
     // 注册成功后，自动登录
     const signInResponse = await signIn("credentials", {

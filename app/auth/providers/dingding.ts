@@ -1,6 +1,6 @@
 import { db } from '@/app/db';
 import { eq } from 'drizzle-orm';
-import { users } from '@/app/db/schema';
+import { users, groups } from '@/app/db/schema';
 import { OAuthConfig } from "next-auth/providers";
 
 export interface DingdingProfile {
@@ -59,11 +59,16 @@ export default function Dingding(options: {
             image: userData.avatarUrl || null,
           }).where(eq(users.dingdingUnionId, userData.unionId));
         } else {
+          const defaultGroup = await db.query.groups.findFirst({
+            where: eq(groups.isDefault, true)
+          });
+          const groupId = defaultGroup?.id || null;
           await db.insert(users).values({
             name: userData.nick,
             email: userData.email || `${userData.unionId}@dingtalk.com`,
             image: userData.avatarUrl || null,
             dingdingUnionId: userData.unionId,
+            groupId: groupId,
           });
         }
         return userData;

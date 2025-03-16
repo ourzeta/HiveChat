@@ -1,6 +1,6 @@
 import { db } from '@/app/db';
 import { eq } from 'drizzle-orm';
-import { users } from '@/app/db/schema';
+import { users, groups } from '@/app/db/schema';
 import { OAuthConfig } from "next-auth/providers";
 
 export interface WecomProfile {
@@ -54,10 +54,15 @@ export default function Wecom(options: {
             userid: userId,
           };
         } else {
+          const defaultGroup = await db.query.groups.findFirst({
+            where: eq(groups.isDefault, true)
+          });
+          const groupId = defaultGroup?.id || null;
           const userInfo = {
             name: userId,
             wecomUserId: userId,
             email: `${userId}@wecom.com`,
+            groupId: groupId,
           }
           await db.insert(users).values(userInfo);
           return userInfo;

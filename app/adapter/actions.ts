@@ -2,7 +2,7 @@
 import { db } from '@/app/db';
 import { eq, and, asc, inArray } from 'drizzle-orm';
 import { LLMModel } from '@/app/adapter/interface';
-import { llmSettingsTable, llmModels, groupModels, groups } from '@/app/db/schema';
+import { llmSettingsTable, llmModels, groupModels, groups, users } from '@/app/db/schema';
 import { llmModelTypeWithAllInfo } from '@/app/db/schema';
 import { getLlmConfigByProvider } from '@/app/utils/llms';
 import { auth } from '@/auth';
@@ -88,9 +88,11 @@ export const fetchAvailableProviders = async () => {
 const getUserModels = async (): Promise<number[]> => {
   const session = await auth();
   const userId = session?.user.id;
-  const groupId = session?.user.groupId;
   if (!userId) return [];
-
+  const dbUserInfo = await db.query.users.findFirst({
+    where: eq(users.id, userId)
+  });
+  const groupId = dbUserInfo?.groupId;
   if (!groupId) {
     return (await db.query.llmModels.findMany({
       columns: { id: true }

@@ -59,7 +59,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               name: user.name,
               email: user.email,
               isAdmin: user.isAdmin || false,
-              groupId: user.groupId  || undefined,
             };
           } else {
             return null;
@@ -81,7 +80,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id;
         token.isAdmin = user.isAdmin;
-        token.groupId = user.groupId;
       }
       if (account?.provider === "credentials" && token.sub) {
         token.provider = 'credentials';
@@ -128,7 +126,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           id: String(token.id),
           isAdmin: Boolean(token.isAdmin), // 添加 isAdmin
           provider: token.provider as string,
-          groupId: String(token.groupId),
         };
       }
       return session;

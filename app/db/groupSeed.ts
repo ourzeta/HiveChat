@@ -32,8 +32,10 @@ async function setUserDefaultGroups() {
 
 // 添加详细的错误处理
 createDefaultGroups()
+  .then(async () => {
+    await setUserDefaultGroups();
+  })
   .then(() => {
-    setUserDefaultGroups();
     console.log("Groups initialized successfully");
     process.exit(0);
   })

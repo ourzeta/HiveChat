@@ -1,7 +1,7 @@
 services:
   app:
     container_name: hivechat
-    image: hivenexus/hivechat:0.0.3
+    image: hivenexus/hivechat:0.0.4
     ports:
       - "3000:3000"
     depends_on:

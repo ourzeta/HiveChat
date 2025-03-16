@@ -24,8 +24,8 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 # 设置环境变量
-ENV NODE_ENV production
-ENV IS_DOCKER true
+ENV NODE_ENV=production
+ENV IS_DOCKER=true
 
 # 复制必要文件
 COPY --from=builder /app/public ./public

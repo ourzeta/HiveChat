@@ -52,7 +52,7 @@ export default function RootLayout({
           </Link>
         </div>
         <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/users') })}>
-          <Link className='w-full flex' href={"/admin/users"}>
+          <Link className='w-full flex' href={"/admin/users/list"}>
             <UserOutlined style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>{t('users')}</span>
           </Link>
         </div>

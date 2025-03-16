@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { LLMModel, LLMModelProvider, LLMModelRealId } from '@/app/adapter/interface';
-import { llmModelTypeWithAllInfo } from '@/app/db/schema';
+import { llmModelType } from '@/app/db/schema';
 
 interface IModelListStore {
   currentModel: LLMModel;
@@ -12,8 +12,8 @@ interface IModelListStore {
   modelListRealId: LLMModelRealId[];
   isPending: Boolean;
   setIsPending: (isPending: boolean) => void;
-  initModelListRealId: (initModels: llmModelTypeWithAllInfo[]) => Promise<void>;
-  initModelList: (initModels: llmModelTypeWithAllInfo[]) => void;
+  initModelListRealId: (initModels: llmModelType[]) => Promise<void>;
+  initModelList: (initModels: llmModelType[]) => void;
   setModelList: (newOrderModels: LLMModel[]) => void;
   setAllProviderList: (newProviderList: LLMModelProvider[]) => void; //排序
   initAllProviderList: (initModels: LLMModelProvider[]) => Promise<void>;
@@ -66,7 +66,7 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
       modelList: newOrderModels,
     }));
   },
-  initModelList: (initModels: llmModelTypeWithAllInfo[]) => {
+  initModelList: (initModels: llmModelType[]) => {
     const newData = initModels.map((model) => ({
       id: model.name,
       displayName: model.displayName,
@@ -101,7 +101,7 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
     }));
 
   },
-  initModelListRealId: async (initModels: llmModelTypeWithAllInfo[]) => {
+  initModelListRealId: async (initModels: llmModelType[]) => {
     const newData = initModels.map((model) => ({
       id: model.id,
       name: model.name,

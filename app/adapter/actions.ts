@@ -3,7 +3,7 @@ import { db } from '@/app/db';
 import { eq, and, asc, inArray } from 'drizzle-orm';
 import { LLMModel } from '@/app/adapter/interface';
 import { llmSettingsTable, llmModels, groupModels, groups, users } from '@/app/db/schema';
-import { llmModelTypeWithAllInfo } from '@/app/db/schema';
+import { llmModelType } from '@/app/db/schema';
 import { getLlmConfigByProvider } from '@/app/utils/llms';
 import { auth } from '@/auth';
 
@@ -111,7 +111,7 @@ const getUserModels = async (): Promise<number[]> => {
     })).map(m => m.modelId);
 
 }
-export const fetchAvailableLlmModels = async (requireAuth: boolean = true): Promise<llmModelTypeWithAllInfo[]> => {
+export const fetchAvailableLlmModels = async (requireAuth: boolean = true): Promise<llmModelType[]> => {
   const userModels = requireAuth ? new Set(await getUserModels()) : new Set<number>();
   const result = await db
     .select()
@@ -127,7 +127,7 @@ export const fetchAvailableLlmModels = async (requireAuth: boolean = true): Prom
         eq(llmModels.selected, true),
       )
     );
-  const llmModelList: llmModelTypeWithAllInfo[] | null = result
+  const llmModelList: llmModelType[] | null = result
     .map((i) => {
       return {
         ...i.models,

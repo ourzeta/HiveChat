@@ -43,24 +43,33 @@ const Home = () => {
   useEffect(() => {
     const fetchDefaultChatModel = async () => {
       const resultValue = await fetchAppSettings('defaultChatModel');
-      if (!resultValue || resultValue === 'lastSelected') {
-        const lastSelectedModel = localStorage.getItem('lastSelectedModel');
-        if (lastSelectedModel) {
-          const [providerId, modelId] = lastSelectedModel.split('|');
-          const matchedModel = modelList.find(model =>
-            model.id === modelId && model.provider.id === providerId
-          );
-          if (matchedModel) {
-            setCurrentModelExact(providerId, modelId);
-          } else {
-            setCurrentModelExact(modelList[0].provider.id, modelList[0].id);
-          }
+
+      if (resultValue && resultValue !== 'lastSelected') {
+        const [providerId, modelId] = resultValue.split('|');
+        // 检查获取的模型是否在当前可用的模型列表中
+        const modelExists = modelList.some(model =>
+          model.id === modelId && model.provider.id === providerId
+        );
+
+        if (modelExists) {
+          setCurrentModelExact(providerId, modelId);
+          return;
+        }
+      }
+
+      const lastSelectedModel = localStorage.getItem('lastSelectedModel');
+      if (lastSelectedModel) {
+        const [providerId, modelId] = lastSelectedModel.split('|');
+        const matchedModel = modelList.find(model =>
+          model.id === modelId && model.provider.id === providerId
+        );
+        if (matchedModel) {
+          setCurrentModelExact(providerId, modelId);
         } else {
           setCurrentModelExact(modelList[0].provider.id, modelList[0].id);
         }
       } else {
-        const [providerId, modelId] = resultValue.split('|');
-        setCurrentModelExact(providerId, modelId);
+        setCurrentModelExact(modelList[0].provider.id, modelList[0].id);
       }
     }
     if (modelList.length > 0) {

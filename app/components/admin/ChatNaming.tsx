@@ -5,18 +5,10 @@ import useModelListStore from '@/app/store/modelList';
 import { adminAndSetAppSettings, fetchAppSettings } from '@/app/admin/system/actions';
 import useGlobalConfigStore from '@/app/store/globalConfig';
 import Spark from "@/app/images/spark.svg";
-import { fetchAvailableLlmModels } from '@/app/adapter/actions';
 
 const ChatNaming = () => {
   const { chatNamingModel, setChatNamingModel } = useGlobalConfigStore();
-  const { initModelList, modelList, providerList } = useModelListStore();
-  useEffect(() => {
-    const initializeModelList = async () => {
-      const remoteModelList = await fetchAvailableLlmModels();
-      await initModelList(remoteModelList);
-    };
-    initializeModelList();
-  }, [initModelList]);
+  const { modelList, providerList } = useModelListStore();
 
   useEffect(() => {
     const fetchSettings = async () => {

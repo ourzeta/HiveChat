@@ -234,21 +234,11 @@ export interface BotType {
 }
 
 export type UserType = typeof users.$inferSelect;
-export type llmModelType = typeof llmModels.$inferSelect;
-export type llmModelTypeWithAllInfo = {
-  id: number;
-  name: string;
-  displayName: string;
-  maxTokens: number | null;
-  supportVision: boolean | null;
-  selected: boolean | null;
-  providerId: string;
-  providerName: string;
+
+export type llmModelType = typeof llmModels.$inferSelect & {
   providerLogo?: string;
-  type: "default" | "custom";
-  createdAt: Date | null;
-  updatedAt: Date | null;
-}
+};
+
 export type llmSettingsType = typeof llmSettingsTable.$inferSelect;
 
 export interface ChatType {

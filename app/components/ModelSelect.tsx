@@ -58,7 +58,6 @@ const ModelSelect = ({ chatId }: { chatId: string | null }) => {
 
           <span className='ml-1'>{model.displayName}</span>
         </div>),
-        // value: model.id,
         value: `${model.provider.id}|${model.id}`,
       }))
     }

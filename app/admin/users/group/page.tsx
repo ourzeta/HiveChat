@@ -48,10 +48,10 @@ const GroupModal = ({ title, open, onOk, onCancel, onFinish, form, initialValues
           <Input type="hidden" />
         </Form.Item>
         <Form.Item label={<span className='font-medium'>{t('groupName')}</span>} name='name'
-          rules={[{ required: true }]}>
+          rules={[{ required: true, message: '请填写分组名称' }]}>
           <Input />
         </Form.Item>
-        <Form.Item label={<span className='font-medium'>{t('availableModels')}
+        <Form.Item style={{ marginBottom: '4px' }} label={<span className='font-medium'>{t('availableModels')}
         </span>} name='modelType'>
           <Radio.Group>
             <Radio value="all">{ct('all')}</Radio>
@@ -200,8 +200,8 @@ const GroupManagementTab = () => {
             >{model.provider.providerName.charAt(0)}</Avatar>
           }
 
-          < span className='ml-1' > {model.provider.providerName} | {model.displayName}</span >
-        </div >),
+          <span className='ml-1'> {model.provider.providerName} | {model.displayName}</span>
+        </div>),
         value: model.id,
       }))
     }
@@ -244,7 +244,7 @@ const GroupManagementTab = () => {
             <tbody>
               {groupList.map((group, index) => (
                 <tr key={group.id} className="hover:bg-slate-50">
-                  <td className='border-t border-r text-sm border-slate-300 p-2'>{group.isDefault ? t('defaultGroup') : group.name}</td>
+                  <td className='border-t border-r text-sm border-slate-300 p-2'>{group.name}{group.isDefault && <Tag style={{ marginLeft: '8px' }}>默认</Tag>}</td>
                   <td className='border-t border-r text-sm border-slate-300 p-2 pb-0'>
                     {group.modelType === 'specific' ? group.modelProviderList && group.modelProviderList.map((model, index) => (
                       <Tag color='#f2f2f2' style={{ marginBottom: 8, color: '#626262' }} key={index} bordered={false}>{model}</Tag>

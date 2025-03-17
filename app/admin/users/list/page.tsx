@@ -149,7 +149,7 @@ const UserListTab = () => {
             <thead>
               <tr className="bg-slate-100">
                 <th className='border-b border-r border-slate-300 p-2'>#</th>
-                <th className='border-b border-r border-slate-300 p-2'>昵称</th>
+                <th className='border-b border-r border-slate-300 p-2 min-w-16'>昵称</th>
                 <th className='border-b border-r border-slate-300 p-2'>Email</th>
                 <th className='border-b border-r border-slate-300 p-2'>{t('role')}</th>
                 <th className='border-b border-r border-slate-300 p-2'>所属分组</th>

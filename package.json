@@ -33,7 +33,7 @@
     "github-markdown-css": "^5.7.0",
     "katex": "^0.16.21",
     "lodash": "^4.17.21",
-    "next": "^14.2.22",
+    "next": "^14.2.25",
     "next-auth": "^5.0.0-beta.25",
     "next-intl": "^3.26.3",
     "openai": "^4.87.4",

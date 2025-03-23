@@ -1,10 +1,11 @@
 'use client'
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button, Input, Tooltip, Modal, Popover, Skeleton, message, Image as AntdImage } from "antd";
-import { PictureOutlined, ClearOutlined, FieldTimeOutlined, ArrowUpOutlined, PlusSquareOutlined } from '@ant-design/icons';
-import { Square } from '@icon-park/react';
+import { PictureOutlined, ClearOutlined, FieldTimeOutlined, ArrowUpOutlined } from '@ant-design/icons';
+import { FontSize, Square } from '@icon-park/react';
 import Eraser from '@/app/images/eraser.svg'
 import CloseIcon from '@/app/images/close.svg'
+import NewChatIcon from '@/app/images/newChat.svg'
 import { useRouter } from 'next/navigation'
 import ChatHeader from '@/app/components/ChatHeader';
 import ResponsingMessage from '@/app/components/ResponsingMessage';
@@ -94,18 +95,6 @@ export const MessageList = (props: { chat_id: string }) => {
     });
   }
 
-  const handleNewChat = (): void => {
-    modal.confirm({
-      title: t('confirmAddNewChat'),
-      okText: t('confirm'),
-      cancelText: t('cancel'),
-      onOk() {
-        router.push('/chat');
-      },
-      onCancel() { },
-    });
-  }
-
   useEffect(() => {
     if (!isUserScrolling) {
       const scrollToBottom = () => {
@@ -187,6 +176,17 @@ export const MessageList = (props: { chat_id: string }) => {
           responseMessage={responseMessage}
           currentProvider={currentModel.provider.id}
         />
+        {responseStatus === 'done' && !isPending &&
+          <div className='md:hidden flex justify-center items-center mt-1'>
+            <div
+              onClick={() => { router.push('/chat') }}
+              className='flex flex-row px-3 py-2 items-center cursor-pointer justify-center border border-gray-300 text-gray-500 text-xs rounded-2xl hover:bg-gray-100 transition-colors duration-200'
+            >
+              <NewChatIcon />
+              <span className='ml-1'>{t('startNewChat')}</span>
+            </div>
+          </div>
+        }
       </div>
       {uploadedImages.length > 0 && <div className="h-24 flex flex-col bg-gray-50 justify-center items-center">
         <div className='flex flex-row h-16 max-w-3xl pl-2 w-full'>
@@ -258,11 +258,6 @@ export const MessageList = (props: { chat_id: string }) => {
             </Button>
           </div>
           <div className='flex flex-row'>
-            <Tooltip title={t('addNewChat')}>
-              <Button onClick={() => {
-                handleNewChat()
-              }} className='ml-2' type="text" size='small'><PlusSquareOutlined style={{ color: 'gray' }} /></Button>
-            </Tooltip>
             <Tooltip title={t('clearHistoryMessage')}>
               <Button onClick={() => {
                 handleClearHistory()

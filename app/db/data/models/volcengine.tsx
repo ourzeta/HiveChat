@@ -34,6 +34,7 @@ export const modelList: LLMModel[] = [
     'displayName': 'Doubao Lite 32K',
     'maxTokens': 32768,
     'supportVision': false,
+    'supportTool': true,
     'selected': true,
     provider
   },

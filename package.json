@@ -21,6 +21,7 @@
     "@emoji-mart/react": "^1.1.1",
     "@icon-park/react": "^1.4.2",
     "@microsoft/fetch-event-source": "^2.0.1",
+    "@modelcontextprotocol/sdk": "^1.7.0",
     "@neondatabase/serverless": "^0.10.4",
     "antd": "^5.23.3",
     "bcryptjs": "^2.4.3",
@@ -35,6 +36,7 @@
     "next": "^14.2.22",
     "next-auth": "^5.0.0-beta.25",
     "next-intl": "^3.26.3",
+    "openai": "^4.87.4",
     "postgres": "^3.4.5",
     "react": "^18",
     "react-copy-to-clipboard": "^5.1.0",
@@ -47,6 +49,7 @@
     "remark-math": "^5.1.1",
     "sortablejs": "^1.15.6",
     "tsx": "^4.19.2",
+    "uuid": "^11.1.0",
     "zod": "^3.24.1",
     "zustand": "^5.0.0-rc.2"
   },

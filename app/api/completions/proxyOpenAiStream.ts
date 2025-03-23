@@ -44,29 +44,34 @@ export default async function proxyOpenAiStream(response: Response,
 
           try {
             const parsedData = JSON.parse(cleanedLine);
+            if (parsedData.choices.length === 0) {
+              continue;
+            }
             const { delta, finish_reason } = parsedData.choices[0];
             const usage = parsedData.usage || parsedData.choices[0].usage; // 兼容 Moonshot
             const { content, reasoning_content } = delta;
-            if (!isThinking) {
-              if (content.startsWith("<think>")) {
-                isThinking = true;
-                const thinkContent = content.slice(7).trim();
-                if (thinkContent) {
-                  completeReasonin += thinkContent;
+            if (content) {
+              if (!isThinking) {
+                if (content.startsWith("<think>")) {
+                  isThinking = true;
+                  const thinkContent = content.slice(7).trim();
+                  if (thinkContent) {
+                    completeReasonin += thinkContent;
+                  }
+                } else {
+                  completeResponse += content;
                 }
               } else {
-                completeResponse += content;
-              }
-            } else {
-              if (content.endsWith("</think>")) {
-                isThinking = false;
-                const thinkContent = content.slice(0, -8).trim();
-                if (thinkContent) {
-                  completeReasonin += thinkContent;
-                }
-              } else {
-                if (content.trim()) {
-                  completeReasonin += content;
+                if (content.endsWith("</think>")) {
+                  isThinking = false;
+                  const thinkContent = content.slice(0, -8).trim();
+                  if (thinkContent) {
+                    completeReasonin += thinkContent;
+                  }
+                } else {
+                  if (content.trim()) {
+                    completeReasonin += content;
+                  }
                 }
               }
             }
@@ -86,7 +91,7 @@ export default async function proxyOpenAiStream(response: Response,
         controller.enqueue(value);
       }
       // 有 ChatId 的存储到 messages 表
-      if (messageInfo.chatId) {
+      if (messageInfo.chatId && completeResponse) {
         const toAddMessage = {
           chatId: messageInfo.chatId,
           content: completeResponse,

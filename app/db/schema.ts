@@ -131,6 +131,7 @@ export const llmModels = pgTable("models", {
   displayName: varchar({ length: 255 }).notNull(),
   maxTokens: integer(),
   supportVision: boolean('support_vision').default(false),
+  supportTool: boolean('support_tool').default(false),
   selected: boolean('selected').default(true),
   providerId: varchar({ length: 255 }).notNull().references(() => llmSettingsTable.provider, {
     onDelete: 'cascade',
@@ -292,6 +293,22 @@ export const groups = pgTable("groups", {
   updatedAt: timestamp('updated_at').defaultNow(),
 })
 
+export const mcpServers = pgTable("mcp_servers", {
+  name: text("name").notNull().primaryKey(),
+  description: text("description"),
+  baseUrl: text("base_url").notNull(),
+  isActive: boolean("is_active").default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
+export const mcpTools = pgTable("mcp_tools", {
+  name: text("name").notNull(),
+  serverName: text("server_name")
+    .notNull()
+    .references(() => mcpServers.name, { onDelete: "cascade" }),
+  description: text("description"),
+  inputSchema: text('input_schema').notNull(),
+})
 
 export const groupModels = pgTable("group_models", {
   groupId: text("groupId").notNull().references(() => groups.id, { onDelete: 'cascade' }),

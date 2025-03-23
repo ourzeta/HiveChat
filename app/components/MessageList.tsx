@@ -5,16 +5,18 @@ import { PictureOutlined, ClearOutlined, FieldTimeOutlined, ArrowUpOutlined } fr
 import { Square } from '@icon-park/react';
 import Eraser from '@/app/images/eraser.svg'
 import CloseIcon from '@/app/images/close.svg'
+import McpIcon from "@/app/images/mcp.svg";
 import { useRouter } from 'next/navigation'
 import ChatHeader from '@/app/components/ChatHeader';
 import ResponsingMessage from '@/app/components/ResponsingMessage';
 import HistorySettings from '@/app/components/HistorySettings';
+import McpServerSelect from '@/app/components/McpServerSelect';
 import MessageItem from '@/app/components/MessageItem';
 import MarkdownRender from '@/app/components/Markdown';
 import useChat from '@/app/hooks/chat/useChat';
 import useImageUpload from '@/app/hooks/chat/useImageUpload';
 import useRouteState from '../hooks/chat/useRouteState';
-import useChatListStore from '@/app/store/chatList';
+import useMcpServerStore from '@/app/store/mcp';
 import { fileToBase64 } from '@/app/utils';
 import { throttle } from 'lodash';
 import { getMessagesInServer } from '@/app/chat/actions/message';
@@ -26,6 +28,7 @@ export const MessageList = (props: { chat_id: string }) => {
   const [modal, contextHolder] = Modal.useModal();
   const messageListRef = useRef<HTMLDivElement>(null);
   const [historySettingOpen, SetHistorySettingOpen] = useState(false);
+  const [mcpServerSelectOpen, SetMcpServerSelectOpen] = useState(false);
   const {
     input,
     chat,
@@ -49,6 +52,7 @@ export const MessageList = (props: { chat_id: string }) => {
     shouldSetNewTitle,
   } = useChat(props.chat_id);
 
+  const { hasUseMcp, hasMcpSelected, clearAllSelect } = useMcpServerStore();
   const { uploadedImages, maxImages, handleImageUpload, removeImage, setUploadedImages } = useImageUpload();
 
   const isFromHome = useRouteState();
@@ -132,6 +136,9 @@ export const MessageList = (props: { chat_id: string }) => {
     };
   }, [throttledHandleScroll]);
 
+  useEffect(() => {
+    clearAllSelect();
+  }, [props.chat_id, clearAllSelect]);
   return (
     <>
       {contextHolder}
@@ -215,6 +222,29 @@ export const MessageList = (props: { chat_id: string }) => {
                 <span className='text-xs -ml-1 text-gray-300'>{t('image')}</span>
               </Button>
             </Tooltip>}
+
+            {hasUseMcp && currentModel.supportTool &&
+              <Popover
+                content={<McpServerSelect chat_id={props.chat_id} />}
+                trigger="click"
+                open={mcpServerSelectOpen}
+                onOpenChange={(open) => { SetMcpServerSelectOpen(open) }}
+              >
+                <Tooltip title="MCP 服务器" placement='bottom' arrow={false} >
+                  {hasMcpSelected ?
+                    <Button type="text" size='small' color="primary" variant="filled">
+                      <McpIcon style={{ width: '13px', height: '13px' }} />
+                      <span className='text-xs -ml-1'>MCP 工具</span>
+                    </Button>
+                    :
+                    <Button type="text" size='small' >
+                      <McpIcon style={{ width: '13px', height: '13px' }} />
+                      <span className='text-xs -ml-1 text-gray-500'>MCP 工具</span>
+                    </Button>
+                  }
+                </Tooltip>
+              </Popover>
+            }
 
             <Popover
               content={<HistorySettings chat_id={props.chat_id} changeVisible={handleHistorySettingOpenChange} />}

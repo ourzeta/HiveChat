@@ -9,6 +9,7 @@ import { usePathname } from 'next/navigation';
 import logo from "@/app/images/logo.png";
 import Assistant from "@/app/images/assistant.svg";
 import Spark from "@/app/images/spark.svg";
+import Mcp from "@/app/images/mcp.svg";
 import { useSession, signOut } from 'next-auth/react';
 import SpinLoading from '@/app/components/loading/SpinLoading';
 import { useTranslations } from 'next-intl';
@@ -56,6 +57,11 @@ export default function RootLayout({
             <UserOutlined style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>{t('users')}</span>
           </Link>
         </div>
+        {/* <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/mcp') })}>
+          <Link className='w-full flex items-center' href={"/admin/mcp"}>
+            <Mcp style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>MCP 服务器</span>
+          </Link>
+        </div> */}
         <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/system') })}>
           <Link className='w-full flex' href={"/admin/system"}>
             <SettingOutlined style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>{t('system')}</span>

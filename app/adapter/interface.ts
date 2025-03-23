@@ -15,6 +15,7 @@ export interface ChatOptions {
   messages: RequestMessage[];
   config: LLMConfig;
   chatId?: string;
+  mcpTools?: MCPTool[];
   onUpdate: (update: ResponseContent) => void;
   onFinish: (message: ResponseContent) => void;
   onError?: (error?: Error) => void;
@@ -34,8 +35,10 @@ export type MessageContent = string | Array<
 >;
 
 export interface RequestMessage {
-  role: 'user' | 'assistant' | 'system';
+  // role: 'user' | 'assistant' | 'system' | 'tool';
+  role: 'developer' | 'system' | 'user' | 'assistant' | 'tool' | 'function';
   content: MessageContent;
+  tool_call_id?: string;
 }
 
 export interface LLMConfig {
@@ -58,6 +61,7 @@ export interface LLMModel {
   apiUrl?: string;
   maxTokens?: number;
   supportVision?: boolean;
+  supportTool?: boolean;
   selected?: boolean;
   provider: LLMModelProvider;
   type?: 'default' | 'custom';
@@ -87,4 +91,26 @@ export default interface TranslaterComponent {
   startTranslate: (question: string, language: string, completeCallback: (result: string) => void) => void;
   stopTranslate: () => void;
   clear: () => void;
+}
+
+export interface MCPToolInputSchema {
+  type: string
+  description?: string
+  required?: string[]
+  properties: Record<string, object>
+}
+
+export interface MCPTool {
+  id: string
+  name: string
+  serverName: string
+  description?: string
+  inputSchema: MCPToolInputSchema
+}
+
+export interface MCPServer {
+  name: string
+  description?: string
+  baseUrl?: string
+  isActive: boolean
 }

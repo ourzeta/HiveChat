@@ -1,8 +1,8 @@
 'use server';
 import { db } from '@/app/db';
 import { auth } from "@/auth";
-import { eq, and, desc } from 'drizzle-orm'
-import { chats, ChatType, messages, appSettings } from '@/app/db/schema';
+import { eq, and, desc, asc } from 'drizzle-orm'
+import { chats, ChatType, messages, appSettings, mcpServers, mcpTools } from '@/app/db/schema';
 
 export const addChatInServer = async (
   chatInfo: {
@@ -224,4 +224,49 @@ export const fetchAppSettings = async (key: string) => {
       where: eq(appSettings.key, key)
     });
   return result?.value;
+}
+
+// export const getActiveMcpServers = async () => {
+//   try {
+//     const result = await db.query.mcpServers.findMany({
+//       where: eq(mcpServers.isActive, true),
+//       orderBy: [mcpServers.createdAt],
+//     });
+//     return result;
+//   } catch (error) {
+//     return [];
+//   }
+// }
+
+export const getMcpServersAndAvailableTools = async () => {
+  try {
+    const tools = await db
+      .select({
+        name: mcpTools.name,
+        description: mcpTools.description,
+        serverName: mcpTools.serverName,
+        inputSchema: mcpTools.inputSchema,
+      })
+      .from(mcpTools)
+      .leftJoin(mcpServers, eq(mcpTools.serverName, mcpServers.name))
+      .orderBy(
+        asc(mcpTools.serverName),
+      )
+      .where(
+        eq(mcpServers.isActive, true)
+      );
+    const servers = await db.query.mcpServers.findMany({
+      where: eq(mcpServers.isActive, true),
+      orderBy: [mcpServers.createdAt],
+    });
+    return {
+      tools,
+      mcpServers: servers
+    };
+  } catch (error) {
+    return {
+      tools: [],
+      mcpServers: []
+    };
+  }
 }

@@ -9,6 +9,7 @@ export const modelList: LLMModel[] = [
     'id': 'gpt-4o',
     'displayName': 'GPT 4o',
     'supportVision': true,
+    'supportTool': true,
     'maxTokens': 131072,
     'selected': true,
     provider
@@ -17,6 +18,7 @@ export const modelList: LLMModel[] = [
     'id': 'gpt-4o-mini',
     'displayName': 'GPT 4o mini',
     'supportVision': true,
+    'supportTool': true,
     'maxTokens': 131072,
     'selected': true,
     provider

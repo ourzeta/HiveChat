@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Message } from '@/app/db/schema';
-import { ChatOptions, LLMApi, RequestMessage, MessageContent } from '@/app/adapter/interface';
+import { ChatOptions, LLMApi, RequestMessage, MessageContent, MCPTool } from '@/app/adapter/interface';
 import useChatStore from '@/app/store/chat';
 import useChatListStore from '@/app/store/chatList';
+import useMcpServerStore from '@/app/store/mcp';
 import { generateTitle } from '@/app/utils';
 import { getLLMInstance } from '@/app/adapter/models';
 import useModelListStore from '@/app/store/modelList';
@@ -25,6 +26,7 @@ const useChat = (chatId: string) => {
   const { chat, initializeChat, historyType, historyCount } = useChatStore();
   const { setNewTitle } = useChatListStore();
   const { chatNamingModel } = useGlobalConfigStore();
+  const { mcpServers, selectedTools } = useMcpServerStore();
 
   useEffect(() => {
     const llmApi = getLLMInstance(currentModel.provider.id);
@@ -70,7 +72,7 @@ const useChat = (chatId: string) => {
       const { status, data } = await getChatInfoInServer(chatId);
       if (status === 'success') {
         initializeChat(data!);
-        if(data?.defaultProvider && data?.defaultModel){
+        if (data?.defaultProvider && data?.defaultModel) {
           setCurrentModelExact(data.defaultProvider, data.defaultModel);
         }
       }
@@ -118,16 +120,17 @@ const useChat = (chatId: string) => {
     setNewTitle,
   ]);
 
-  const sendMessage = useCallback(async (messages: RequestMessage[]) => {
+  const sendMessage = useCallback(async (messages: RequestMessage[], mcpTools?: MCPTool[]) => {
     let lastUpdate = Date.now();
     setResponseStatus("pending");
     const options: ChatOptions = {
       messages: messages,
       config: { model: currentModel.id },
       chatId: chatId,
+      mcpTools,
       onUpdate: (responseContent: ResponseContent) => {
         const now = Date.now();
-        if (now - lastUpdate < 50) return; // 如果距离上次更新小于 50ms，则不更新
+        if (now - lastUpdate < 80) return; // 如果距离上次更新小于 50ms，则不更新
         setResponseMessage(responseContent);
         lastUpdate = now;
       },
@@ -283,7 +286,8 @@ const useChat = (chatId: string) => {
       content: message,
     })
     setUserSendCount(userSendCount + 1);
-    sendMessage(messages);
+    console.log('----- tools---------', selectedTools);
+    sendMessage(messages, selectedTools);
     addMessageInServer(currentMessage);
     setMessageList((m) => ([...m, currentMessage]));
   }, [
@@ -291,6 +295,7 @@ const useChat = (chatId: string) => {
     responseStatus,
     currentModel,
     userSendCount,
+    selectedTools,
     prepareMessage,
     sendMessage,
   ]);

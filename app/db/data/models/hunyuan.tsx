@@ -9,6 +9,7 @@ export const modelList: LLMModel[] = [
     'id': 'hunyuan-turbo-latest',
     'displayName': 'Hunyuan Turbo',
     'supportVision': false,
+    'supportTool': true,
     "maxTokens": 32768,
     'selected': true,
     provider
@@ -17,6 +18,7 @@ export const modelList: LLMModel[] = [
     'id': 'hunyuan-large',
     'displayName': 'Hunyuan Large',
     'supportVision': false,
+    'supportTool': true,
     "maxTokens": 32768,
     'selected': true,
     provider
@@ -25,6 +27,7 @@ export const modelList: LLMModel[] = [
     'id': 'hunyuan-standard-vision',
     'displayName': 'Hunyuan Standard Vision',
     'supportVision': true,
+    'supportTool': true,
     "maxTokens": 8192,
     'selected': true,
     provider
@@ -33,6 +36,7 @@ export const modelList: LLMModel[] = [
     'id': 'hunyuan-lite-vision',
     'displayName': 'Hunyuan Lite Vision',
     'supportVision': true,
+    'supportTool': true,
     "maxTokens": 32768,
     'selected': true,
     provider

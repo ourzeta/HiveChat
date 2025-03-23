@@ -34,6 +34,7 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
     id: 'gpt-4o',
     displayName: 'GPT 4o',
     supportVision: true,
+    supportTool: true,
     maxTokens: 131072,
     selected: true,
     provider: {
@@ -72,6 +73,7 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
       displayName: model.displayName,
       maxTokens: model.maxTokens || undefined,
       supportVision: model.supportVision || undefined,
+      supportTool: model.supportTool || undefined,
       selected: model.selected || false,
       type: model.type ?? 'default',
       provider: {
@@ -108,6 +110,7 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
       displayName: model.displayName,
       maxTokens: model.maxTokens || undefined,
       supportVision: model.supportVision || undefined,
+      supportTool: model.supportTool || undefined,
       selected: model.selected || false,
       type: model.type ?? 'default',
       provider: {

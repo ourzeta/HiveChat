@@ -3,7 +3,7 @@ services:
     container_name: hivechat
     image: hivenexus/hivechat:0.0.4
     ports:
-      - "3000:3000"
+      - "${HOST_PORT}:3000"
     depends_on:
       - db
     environment:

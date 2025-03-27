@@ -78,6 +78,10 @@ const useChat = (chatId: string) => {
       }
     }
     if (localStorage.getItem('f') === 'home') {
+      initializeChat({
+        id: chatId,
+        createdAt: new Date(),
+      });
       fetchLocalMessages();
       localStorage.removeItem('f');
     } else {

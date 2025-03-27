@@ -26,7 +26,6 @@ const ManageAllModelModal: React.FC<ManageAllModelModalProps> = ({
   const fetchRemoteModels = async () => {
     setIsFetching(true);
     const remoteModelsList = await getRemoteModelsByProvider(providerId);
-    console.log('remoteModelsList', remoteModelsList)
     const filterModels = remoteModelsList.filter(i => i.object === 'model');
 
     // 合并 filterModels 和 modelList

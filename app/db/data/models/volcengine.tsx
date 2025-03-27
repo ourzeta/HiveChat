@@ -18,6 +18,7 @@ export const modelList: LLMModel[] = [
     'displayName': 'DeepSeek V3',
     'maxTokens': 65536,
     'supportVision': false,
+    'supportTool': true,
     'selected': true,
     provider
   },
@@ -26,6 +27,7 @@ export const modelList: LLMModel[] = [
     'displayName': 'Doubao 1.5 Pro 256K',
     'maxTokens': 262144,
     'supportVision': false,
+    'supportTool': true,
     'selected': true,
     provider
   },

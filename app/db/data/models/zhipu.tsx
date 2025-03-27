@@ -9,6 +9,7 @@ export const modelList: LLMModel[] = [
     'id': 'GLM-Zero-Preview',
     'displayName': 'GLM Zero',
     'supportVision': false,
+    'supportTool': true,
     "maxTokens": 16384,
     'selected': true,
     provider
@@ -17,6 +18,7 @@ export const modelList: LLMModel[] = [
     'id': 'GLM-4-Plus',
     'displayName': 'GLM4 Plus',
     'supportVision': false,
+    'supportTool': true,
     "maxTokens": 131072,
     'selected': true,
     provider
@@ -25,6 +27,7 @@ export const modelList: LLMModel[] = [
     'id': 'GLM-4-Air',
     'displayName': 'GLM4 Air',
     'supportVision': false,
+    'supportTool': true,
     "maxTokens": 131072,
     'selected': true,
     provider

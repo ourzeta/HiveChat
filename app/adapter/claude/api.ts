@@ -1,40 +1,32 @@
-import { fetchEventSource, EventStreamContentType } from '@microsoft/fetch-event-source';
-import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent } from '@/app/adapter/interface';
+import { fetchEventSource, EventStreamContentType, EventSourceMessage } from '@microsoft/fetch-event-source';
+import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse } from '@/app/adapter/interface';
 import { prettyObject } from '@/app/utils';
+import { callMCPTool } from '@/app/utils/mcpToolsServer';
 import { InvalidAPIKeyError, TimeoutError } from '@/app/adapter/errorTypes';
-
-export type ClaudeMessageType = {
-  role: 'user' | 'assistant' | 'system';
-  content: string | Array<
-    {
-      type: 'text';
-      text: string;
-    }
-    |
-    {
-      type: 'image',
-      source: {
-        type: "base64",
-        media_type: string,
-        data: string,
-      }
-    }
-  >;
-}
+import { mcpToolsToAnthropicTools, anthropicToolUseToMcpTool } from '@/app/utils/mcpToolsClient';
+import { syncMcpTools } from '../actions';
+import {
+  MessageCreateParamsNonStreaming,
+  MessageParam,
+  ToolResultBlockParam,
+  ToolUseBlock
+} from '@anthropic-ai/sdk/resources';
 
 export default class ClaudeApi implements LLMApi {
   private controller: AbortController | null = null;
   private answer = '';
   private reasoning_content = '';
+  private finishReason = '';
+  private mcpTools: MCPToolResponse[] = [];
   private finished = false;
-  prepareMessage<ClaudeMessageType>(messages: RequestMessage[]): ClaudeMessageType[] {
+  prepareMessage<MessageParam>(messages: RequestMessage[]): MessageParam[] {
     return messages.map(msg => {
       // 处理文本消息
       if (typeof msg.content === 'string') {
         return {
           role: msg.role,
           content: msg.content
-        } as ClaudeMessageType;
+        } as MessageParam;
       }
 
       // 处理包含图像的消息
@@ -61,14 +53,14 @@ export default class ClaudeApi implements LLMApi {
         return {
           role: msg.role,
           content: formattedContent
-        } as ClaudeMessageType;
+        } as MessageParam;
       }
 
       // 默认返回文本消息
       return {
         role: msg.role,
         content: ''
-      } as ClaudeMessageType;
+      } as MessageParam;
     });
   }
   async chat(options: ChatOptions) {
@@ -92,6 +84,214 @@ export default class ClaudeApi implements LLMApi {
 
     const messages = this.prepareMessage(options.messages)
 
+    const processOnMessage = async (event: EventSourceMessage) => {
+      const text = event.data;
+      if (text) {
+        try {
+          const json = JSON.parse(text);
+          if (json?.metadata && json?.metadata.isDone) {
+            // 处理工具调用
+            // 将对象形式的 final_tool_calls 转换为数组形式
+            const toolCalls = Object.values(final_tool_calls);
+            if (this.finishReason === 'tool_use' && toolCalls.length > 0) {
+              for (const toolCall of toolCalls) {
+                const mcpTool = anthropicToolUseToMcpTool(options.mcpTools, toolCall)
+                if (mcpTool) {
+                  this.mcpTools.push({
+                    id: toolCall.id,
+                    tool: mcpTool,
+                    status: 'invoking',
+                  });
+                  // 次数还没变空
+                  options.onUpdate({
+                    content: this.answer,
+                    reasoning_content: this.reasoning_content,
+                    mcpTools: this.mcpTools,
+                  });
+                  const toolCallResponse = await callMCPTool(mcpTool);
+                  const toolIndex = this.mcpTools.findIndex(t => t.id === toolCall.id);
+                  if (toolIndex !== -1) {
+                    this.mcpTools[toolIndex] = {
+                      ...this.mcpTools[toolIndex],
+                      status: 'done',
+                      response: toolCallResponse
+                    };
+                  }
+                  // 这里已经为空了
+                  options.onUpdate({
+                    content: this.answer,
+                    reasoning_content: this.reasoning_content,
+                    mcpTools: this.mcpTools,
+                  });
+                  const toolResponsContent: ToolResultBlockParam[] = [];
+                  for (const content of toolCallResponse.content) {
+                    let toolResponseMessage: ToolResultBlockParam;
+                    if (content.type === 'text') {
+                      toolResponseMessage = {
+                        tool_use_id: toolCall.id,
+                        type: 'tool_result',
+                        content: content.text,
+                      };
+
+                    }
+                    else {
+                      console.warn('Unsupported content type:', content.type)
+                      toolResponseMessage = {
+                        tool_use_id: toolCall.id,
+                        type: 'tool_result',
+                        content: 'unsupported content type: ' + content.type
+                      }
+                    }
+                    toolResponsContent.push(toolResponseMessage);
+                    messages.push({
+                      role: 'assistant',
+                      content: [{ ...toolCall, input: JSON.parse(toolCall.input as string) }]
+                    });
+                    messages.push({
+                      role: 'user',
+                      content: [toolResponseMessage]
+                    });
+                  }
+                }
+              }
+              options.onFinish({
+                id: json.metadata.messageId,
+                content: this.answer,
+                reasoning_content: this.reasoning_content,
+                mcpTools: this.mcpTools,
+              }, true);
+              syncMcpTools(json.metadata.messageId, this.mcpTools);
+              this.mcpTools = [];
+
+              if (!this.controller) {
+                this.controller = new AbortController();
+              }
+              // 这里再 fetchEventSource
+              try {
+                await fetchEventSource('/api/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-Provider': 'claude',
+                    'X-Chat-Id': options.chatId!,
+                  },
+                  body: JSON.stringify({
+                    "stream": true,
+                    'max_tokens': 2048,
+                    "model": `${options.config.model}`,
+                    "messages": messages,
+                    ...toolsParameter,
+                  }),
+                  signal: this.controller.signal,
+                  onopen: async (res) => {
+                    clearTimeout(timeoutId);
+                    this.finished = false;
+                    if (
+                      !res.ok ||
+                      !res.headers.get("content-type")?.startsWith(EventStreamContentType) ||
+                      res.status !== 200
+                    ) {
+
+                      let resTextRaw = '';
+                      try {
+                        const resTextJson = await res.clone().json();
+                        resTextRaw = prettyObject(resTextJson);
+                      } catch {
+                        resTextRaw = await res.clone().text();
+                      }
+                      const responseTexts = [resTextRaw];
+
+                      if (res.status === 401) {
+                        options.onError?.(new InvalidAPIKeyError('Invalid API Key'));
+                      } else {
+                        this.answer = responseTexts.join("\n\n");
+                        options.onError?.(new Error(this.answer));
+                      }
+                      clear();
+                    }
+                  },
+                  onmessage: processOnMessage,
+                  onclose: () => {
+                    this.controller = null;
+                    clear();
+                  },
+                  onerror: (err) => {
+                    this.controller = null;
+                    this.finished = true;
+                    this.answer = '';
+                    throw err;
+                  },
+                  openWhenHidden: true,
+                });
+              } catch (error) {
+                if (error instanceof Error) {
+                  options.onError?.(new InvalidAPIKeyError('Invalid API Key'));
+                } else {
+                  options.onError?.(new Error('An unknown error occurred'));
+                }
+                clear();
+              } finally {
+                clearTimeout(timeoutId);
+              }
+            } else {
+              // const shouldContinue: boolean = this.finishReason === 'tool_use';
+              options.onFinish({
+                id: json.metadata.messageId,
+                content: this.answer,
+                reasoning_content: this.reasoning_content,
+                mcpTools: this.mcpTools,
+              }, false);
+              syncMcpTools(json.metadata.messageId, this.mcpTools);
+              this.mcpTools = [];
+              clear();
+              return;
+            }
+            return;
+          }
+          const { type, index, delta, content_block } = JSON.parse(text);
+          if (type === 'message_delta' && delta?.stop_reason) {
+            this.finishReason = delta.stop_reason;
+          }
+          if (content_block && content_block?.type === 'tool_use') {
+            final_tool_calls[index] = {
+              id: content_block.id,
+              name: content_block.name,
+              type: 'tool_use',
+              input: ''
+            };
+          }
+          if (type === 'content_block_delta' && delta.type === 'input_json_delta') {
+            final_tool_calls[index].input += delta.partial_json;
+          }
+
+          if (type === 'content_block_delta' && delta.type === 'text_delta') {
+            const deltaContent = delta?.text;
+            if (deltaContent) {
+              this.answer += deltaContent;
+            }
+            options.onUpdate({
+              content: this.answer,
+              mcpTools: this.mcpTools,
+            });
+          }
+
+        } catch (e) {
+          console.error("[Request] parse error", `--------${text}------`, `===--${event}---`);
+        }
+      }
+    }
+
+    let toolsParameter = {};
+    if (options.mcpTools) {
+      const tools = mcpToolsToAnthropicTools(options.mcpTools);
+      if (tools.length > 0) {
+        toolsParameter = {
+          tools,
+          "tool_choice": { "type": "auto" },
+        }
+      }
+    }
+    const final_tool_calls = {} as Record<number, ToolUseBlock>
     try {
       await fetchEventSource('/api/completions', {
         method: 'POST',
@@ -105,6 +305,7 @@ export default class ClaudeApi implements LLMApi {
           'max_tokens': 2048,
           "model": `${options.config.model}`,
           "messages": messages,
+          ...toolsParameter
         }),
         signal: this.controller.signal,
         onopen: async (res) => {
@@ -134,31 +335,10 @@ export default class ClaudeApi implements LLMApi {
             clear();
           }
         },
-        onmessage: (event) => {
-          const text = event.data;
-          if (text) {
-            try {
-              const json = JSON.parse(text);
-              if (json?.type === "message_stop") {
-                options.onFinish({ content: this.answer });
-                clear();
-                return;
-              }
-              if (json?.type === 'content_block_delta') {
-                const deltaContent = json?.delta?.text;
-                if (deltaContent) {
-                  this.answer += deltaContent;
-                }
-                options.onUpdate({ content: this.answer });
-              }
-            } catch (e) {
-              console.error("[Request] parse error", `--------${text}------`, `===--${event}---`);
-            }
-          }
-        },
+        onmessage: processOnMessage,
         onclose: () => {
           this.controller = null;
-          clear();
+          // clear();
         },
         onerror: (err) => {
           this.controller = null;
@@ -189,9 +369,11 @@ export default class ClaudeApi implements LLMApi {
     }
     callback({
       content: this.answer,
-      reasoning_content: this.reasoning_content
+      reasoning_content: this.reasoning_content,
+      mcpTools: this.mcpTools,
     });
     this.answer = '';
+    this.mcpTools = [];
   }
 
   async check(modelId: string, apikey: string, apiUrl: string): Promise<{ status: 'success' | 'error', message?: string }> {

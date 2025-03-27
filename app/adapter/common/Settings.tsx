@@ -113,7 +113,6 @@ const Settings = (props: { providerId: string }) => {
     const fetchLlmConfig = async (): Promise<void> => {
       const result = await getLlmOriginConfigByProvider(provider.id);
       const endpointUrl = getEndpointBaseUrl(provider.id, result.endpoint?.trim());
-      console.log('endpointUrl', endpointUrl)
       form.setFieldsValue({
         isActive: result.isActive || false,
         apikey: result.apikey || '',

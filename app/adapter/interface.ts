@@ -7,8 +7,10 @@ export abstract class LLMApi {
 }
 
 export interface ResponseContent {
+  id?: number;
   content: string;
   reasoning_content?: string;
+  mcpTools?: MCPToolResponse[];
 }
 
 export interface ChatOptions {
@@ -17,7 +19,7 @@ export interface ChatOptions {
   chatId?: string;
   mcpTools?: MCPTool[];
   onUpdate: (update: ResponseContent) => void;
-  onFinish: (message: ResponseContent) => void;
+  onFinish: (message: ResponseContent, shouldContinue?: boolean) => void;
   onError?: (error?: Error) => void;
   onController?: (controller: AbortController) => void;
 }
@@ -35,7 +37,6 @@ export type MessageContent = string | Array<
 >;
 
 export interface RequestMessage {
-  // role: 'user' | 'assistant' | 'system' | 'tool';
   role: 'developer' | 'system' | 'user' | 'assistant' | 'tool' | 'function';
   content: MessageContent;
   tool_call_id?: string;
@@ -113,4 +114,11 @@ export interface MCPServer {
   description?: string
   baseUrl?: string
   isActive: boolean
+}
+
+export interface MCPToolResponse {
+  id: string // tool call id, it should be unique
+  tool: MCPTool // tool info
+  status: string // 'invoking' | 'done'
+  response?: any
 }

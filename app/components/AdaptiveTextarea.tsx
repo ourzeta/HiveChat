@@ -1,12 +1,15 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
-import { Button, Tooltip, message, Image as AntdImage } from 'antd';
+import { Button, Tooltip, message, Popover, Image as AntdImage } from 'antd';
 import useImageUpload from '@/app/hooks/chat/useImageUpload';
 import ImageIcon from "@/app/images/image.svg";
-import CloseIcon from '@/app/images/close.svg'
+import McpIcon from "@/app/images/mcp.svg";
+import CloseIcon from '@/app/images/close.svg';
+import McpServerSelect from '@/app/components/McpServerSelect';
 import { fileToBase64 } from '@/app/utils';
 import { ArrowUpOutlined } from '@ant-design/icons';
 import { LLMModel } from '@/app/adapter/interface';
+import useMcpServerStore from '@/app/store/mcp';
 import clsx from 'clsx';
 import { useTranslations } from 'next-intl';
 
@@ -22,7 +25,8 @@ const AdaptiveTextarea = (props: {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const testSpanRef = useRef<HTMLSpanElement | null>(null);
   const [isOverflow, setIsOverflow] = useState(false);
-
+  const [mcpServerSelectOpen, SetMcpServerSelectOpen] = useState(false);
+  const { hasUseMcp, hasMcpSelected } = useMcpServerStore();
   const { uploadedImages, maxImages, handleImageUpload, removeImage } = useImageUpload();
   // 创建测试 span
   useEffect(() => {
@@ -213,13 +217,38 @@ const AdaptiveTextarea = (props: {
             }}
           />
           <div className={clsx({ 'w-full justify-end': isOverflow }, 'flex flex-row items-center')}>
+            {hasUseMcp &&
+              <Popover
+                content={<McpServerSelect />}
+                trigger="click"
+                open={mcpServerSelectOpen}
+                onOpenChange={(open) => { SetMcpServerSelectOpen(open) }}
+              >
+                <Tooltip title="MCP 服务器" placement='bottom' arrow={false} >
+                  {hasMcpSelected ?
+                    <Button type="text"
+                      color="primary"
+                      variant="filled"
+                      style={{ marginRight: '4px' }}
+                      icon={<McpIcon style={{ verticalAlign: 'middle', width: '20px', height: '20px' }} />}
+                    />
+                    :
+                    <Button type="text"
+                      style={{ marginRight: '4px' }}
+                      icon={<McpIcon style={{ verticalAlign: 'middle', width: '20px', height: '20px' }} />}
+                    />
+                  }
+                </Tooltip>
+              </Popover>
+            }
+
             {
               props.model?.supportVision ?
                 <Button
                   onClick={() => handleImageUpload()}
                   type='text'
                   className='mr-2'
-                  icon={<ImageIcon style={{ verticalAlign: 'middle' }} width={32} height={32} />}
+                  icon={<ImageIcon style={{ verticalAlign: 'middle' }} width={28} height={28} />}
                 />
                 :
                 <Tooltip title={t('notSupportVision')}>
@@ -227,7 +256,7 @@ const AdaptiveTextarea = (props: {
                     type='text'
                     disabled={true}
                     className='mr-2'
-                    icon={<ImageIcon style={{ verticalAlign: 'middle' }} width={32} height={32} />}
+                    icon={<ImageIcon style={{ verticalAlign: 'middle' }} width={28} height={28} />}
                   />
                 </Tooltip>
             }

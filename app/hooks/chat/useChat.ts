@@ -26,7 +26,7 @@ const useChat = (chatId: string) => {
   const { chat, initializeChat, historyType, historyCount } = useChatStore();
   const { setNewTitle } = useChatListStore();
   const { chatNamingModel } = useGlobalConfigStore();
-  const { mcpServers, selectedTools } = useMcpServerStore();
+  const { selectedTools } = useMcpServerStore();
 
   useEffect(() => {
     const llmApi = getLLMInstance(currentModel.provider.id);
@@ -130,24 +130,28 @@ const useChat = (chatId: string) => {
       mcpTools,
       onUpdate: (responseContent: ResponseContent) => {
         const now = Date.now();
-        if (now - lastUpdate < 80) return; // 如果距离上次更新小于 50ms，则不更新
+        // if (now - lastUpdate < 80) return; // 如果距离上次更新小于 50ms，则不更新
         setResponseMessage(responseContent);
         lastUpdate = now;
       },
-      onFinish: async (responseContent: ResponseContent) => {
+      onFinish: async (responseContent: ResponseContent, shouldContinue?: boolean) => {
         const respMessage: Message = {
+          id: responseContent.id,
           role: "assistant",
           chatId: chatId,
           content: responseContent.content,
           reasoninContent: responseContent.reasoning_content,
+          mcpTools: responseContent.mcpTools,
           providerId: currentModel.provider.id,
           model: currentModel.id,
           type: 'text',
           createdAt: new Date()
         };
         setMessageList(prevList => [...prevList, respMessage]);
-        setResponseStatus("done");
-        setResponseMessage({ content: '', reasoning_content: '' });
+        if (!shouldContinue) {
+          setResponseStatus("done");
+        }
+        setResponseMessage({ content: '', reasoning_content: '', mcpTools: [] });
       },
       onError: async (error) => {
         const respMessage: Message = {
@@ -182,6 +186,7 @@ const useChat = (chatId: string) => {
           role: "assistant",
           chatId: chatId,
           content: responseContent.content,
+          mcpTools: responseContent.mcpTools,
           reasoninContent: responseContent.reasoning_content,
           providerId: currentModel.provider.id,
           model: currentModel.id,
@@ -286,7 +291,6 @@ const useChat = (chatId: string) => {
       content: message,
     })
     setUserSendCount(userSendCount + 1);
-    console.log('----- tools---------', selectedTools);
     sendMessage(messages, selectedTools);
     addMessageInServer(currentMessage);
     setMessageList((m) => ([...m, currentMessage]));

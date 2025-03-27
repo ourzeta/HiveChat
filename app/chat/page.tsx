@@ -14,6 +14,7 @@ import { addChatInServer } from '@/app/chat/actions/chat';
 import { addMessageInServer } from '@/app/chat/actions/message';
 import { fetchAppSettings } from '@/app/chat/actions/chat';
 import { ChatType } from '../db/schema';
+
 import { localDb } from '@/app/db/localDb';
 
 const Home = () => {

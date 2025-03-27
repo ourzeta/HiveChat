@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button, Input, Tooltip, Modal, Popover, Skeleton, message, Image as AntdImage } from "antd";
 import { PictureOutlined, ClearOutlined, FieldTimeOutlined, ArrowUpOutlined } from '@ant-design/icons';
-import { FontSize, Square } from '@icon-park/react';
+import { Square } from '@icon-park/react';
 import Eraser from '@/app/images/eraser.svg'
 import CloseIcon from '@/app/images/close.svg'
 import NewChatIcon from '@/app/images/newChat.svg'
@@ -26,6 +26,7 @@ import { useTranslations } from 'next-intl';
 
 export const MessageList = (props: { chat_id: string }) => {
   const t = useTranslations('Chat');
+  const { selectedTools } = useMcpServerStore();
   const [modal, contextHolder] = Modal.useModal();
   const messageListRef = useRef<HTMLDivElement>(null);
   const [historySettingOpen, SetHistorySettingOpen] = useState(false);
@@ -73,14 +74,14 @@ export const MessageList = (props: { chat_id: string }) => {
             role: 'user' as const,
             content: question
           }];
-          await sendMessage(messages);
+          await sendMessage(messages, selectedTools);
           shouldSetNewTitleRef.current(messages);
           router.replace(`/chat/${props.chat_id}`);
         }
       }
     }
     check();
-  }, [isFromHome, props.chat_id, sendMessage, router]);
+  }, [isFromHome, props.chat_id, selectedTools, router, sendMessage]);
 
   const handleHistorySettingOpenChange = (open: boolean) => {
     SetHistorySettingOpen(open);
@@ -138,8 +139,14 @@ export const MessageList = (props: { chat_id: string }) => {
   }, [throttledHandleScroll]);
 
   useEffect(() => {
-    clearAllSelect();
+    // clearAllSelect();
   }, [props.chat_id, clearAllSelect]);
+
+  useEffect(() => {
+    if (!currentModel.supportTool) {
+      clearAllSelect();
+    }
+  }, [currentModel, clearAllSelect]);
   return (
     <>
       {contextHolder}

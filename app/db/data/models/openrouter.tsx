@@ -17,6 +17,7 @@ export const modelList: LLMModel[] = [
     'id': 'deepseek/deepseek-chat:free',
     'displayName': 'DeepSeek V3 (free)',
     'supportVision': false,
+    'supportTool': true,
     "maxTokens": 128 * 1024,
     'selected': true,
     provider
@@ -32,6 +33,7 @@ export const modelList: LLMModel[] = [
     'id': 'deepseek/deepseek-chat',
     'displayName': 'DeepSeek V3',
     'supportVision': false,
+    'supportTool': true,
     "maxTokens": 134144,
     'selected': true,
     provider

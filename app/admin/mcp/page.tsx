@@ -121,7 +121,7 @@ const McpPage = () => {
           <table className='border-collapse w-full'>
             <thead>
               <tr className="bg-slate-100">
-                <th className='border-b border-r border-slate-300 p-2'>名称</th>
+                <th className='border-b border-r border-slate-300 p-2 w-64'>名称</th>
                 <th className='border-b border-r border-slate-300 p-2'>描述</th>
                 <th className='border-b border-r border-slate-300 p-2 w-16'>类型</th>
                 <th className='border-b border-r border-slate-300 p-2 w-28'>状态</th>
@@ -131,7 +131,9 @@ const McpPage = () => {
             <tbody>
               {mcpServerList.map((mcpServer, index) => (
                 <tr key={mcpServer.name} className="hover:bg-slate-50">
-                  <td className='border-t border-r text-sm border-slate-300 p-2'>{mcpServer.name}</td>
+                  <td className='border-t border-r text-sm border-slate-300 p-2 pl-0'>
+                  <Button size='small' type='link'>{mcpServer.name}</Button>
+                  </td>
                   <td className='border-t border-r text-sm border-slate-300 p-2'>{mcpServer.description}</td>
                   <td className='border-t border-r text-sm border-slate-300 w-16 text-center'><Tag style={{ margin: 0 }}>SSE</Tag></td>
                   <td className='border-t border-r text-sm border-slate-300 p-2 text-center'>{mcpServer.isActive ?

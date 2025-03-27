@@ -59,7 +59,7 @@ class MCPService {
 
       // 设置连接超时时间为30秒
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Connection timeout')), 10000);
+        setTimeout(() => reject(new Error('Connection timeout')), 20000);
       });
 
       await Promise.race([

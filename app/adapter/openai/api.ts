@@ -1,9 +1,10 @@
 'use client'
 import { fetchEventSource, EventStreamContentType, EventSourceMessage } from '@microsoft/fetch-event-source';
-import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent } from '@/app/adapter/interface';
+import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse } from '@/app/adapter/interface';
 import { prettyObject } from '@/app/utils';
 import { InvalidAPIKeyError, TimeoutError } from '@/app/adapter/errorTypes';
 import { callMCPTool } from '@/app/utils/mcpToolsServer';
+import { syncMcpTools } from '../actions';
 import { mcpToolsToOpenAITools, openAIToolsToMcpTool } from '@/app/utils/mcpToolsClient';
 import {
   ChatCompletionMessageToolCall,
@@ -22,6 +23,7 @@ export default class ChatGPTApi implements LLMApi {
   private answer = '';
   private reasoning_content = '';
   private finishReason = '';
+  private mcpTools: MCPToolResponse[] = [];
   private finished = false;
   private isThinking = false;
 
@@ -135,95 +137,100 @@ export default class ChatGPTApi implements LLMApi {
 
     const processOnMessage = async (event: EventSourceMessage) => {
       if (event.data === "[DONE]") {
-        // 调用工具时，第一步 content 没内容返回，无需新增一条消息
-        if (this.answer) {
-          options.onFinish({
-            content: this.answer,
-            reasoning_content: this.reasoning_content,
-          });
-        }
-        clear();
         return;
       }
       const text = event.data;
       try {
         const json = JSON.parse(text);
-        if (json.choices.length === 0) {
-          return;
-        }
-        const delta = json?.choices[0]?.delta;
-        const finishReason = json.choices[0]?.finish_reason
+        if (json?.metadata && json?.metadata.isDone) {
 
-        // 拼接 toolCall 参数
-        if (delta?.tool_calls) {
-          const chunkToolCalls = delta.tool_calls
-          for (const t of chunkToolCalls) {
-            const { index, id, function: fn, type } = t
-            const args = fn && typeof fn.arguments === 'string' ? fn.arguments : ''
-            if (!(index in final_tool_calls)) {
-              final_tool_calls[index] = {
-                id,
-                function: {
-                  name: fn?.name,
-                  arguments: args
-                },
-                type
-              } as ChatCompletionMessageToolCall
-            } else {
-              final_tool_calls[index].function.arguments += args
-            }
-          }
-        }
-
-        // 结束时，如果有 tool_calls 则分别处理
-        if (finishReason === 'tool_calls') {
-          this.finishReason = 'tool_calls';
-          // 需要循环调用 tools 再把获取的结果给到大模型
-          const toolCalls = Object.values(final_tool_calls).map(this.cleanToolCallArgs);
-          messages.push({
-            role: 'assistant',
-            tool_calls: toolCalls
-          } as ChatCompletionAssistantMessageParam);
-          for (const toolCall of toolCalls) {
-            const mcpTool = openAIToolsToMcpTool(options.mcpTools, toolCall);
-            if (!mcpTool) {
-              continue;
-            }
-            // toolCalls 包含了大模型返回的提取的参数
-            const toolCallResponse = await callMCPTool(mcpTool);
-            const toolResponsContent: Array<ChatCompletionContentPartText | string> = [];
-            for (const content of toolCallResponse.content) {
-              if (content.type === 'text') {
-                toolResponsContent.push({
-                  type: 'text',
-                  text: content.text
-                })
+          if (this.finishReason === 'tool_calls') {
+            // 需要循环调用 tools 再把获取的结果给到大模型
+            const toolCalls = Object.values(final_tool_calls).map(this.cleanToolCallArgs);
+            messages.push({
+              role: 'assistant',
+              tool_calls: toolCalls
+            } as ChatCompletionAssistantMessageParam);
+            for (const toolCall of toolCalls) {
+              const mcpTool = openAIToolsToMcpTool(options.mcpTools, toolCall);
+              if (!mcpTool) {
+                continue;
               }
-              else {
-                console.warn('Unsupported content type:', content.type)
-                toolResponsContent.push({
-                  type: 'text',
-                  text: 'unsupported content type: ' + content.type
-                })
+              // toolCalls 包含了大模型返回的提取的参数
+              this.mcpTools.push({
+                id: toolCall.id,
+                tool: mcpTool,
+                status: 'invoking',
+              });
+              options.onUpdate({
+                content: this.answer,
+                reasoning_content: this.reasoning_content,
+                mcpTools: this.mcpTools,
+              });
+              const _mcpTools = this.mcpTools;
+              const toolCallResponse = await callMCPTool(mcpTool);
+              // 还需要更新工具执行状态
+              const toolIndex = _mcpTools.findIndex(t => {
+                return t.id === toolCall.id;
+              });
+              if (toolIndex !== -1) {
+                _mcpTools[toolIndex] = {
+                  ...this.mcpTools[toolIndex],
+                  status: 'done',
+                  response: toolCallResponse
+                };
+              }
+              options.onUpdate({
+                content: this.answer,
+                reasoning_content: this.reasoning_content,
+                mcpTools: _mcpTools,
+              });
+
+              const toolResponsContent: Array<ChatCompletionContentPartText | string> = [];
+              for (const content of toolCallResponse.content) {
+                if (content.type === 'text') {
+                  toolResponsContent.push({
+                    type: 'text',
+                    text: content.text
+                  })
+                }
+                else {
+                  console.warn('Unsupported content type:', content.type)
+                  toolResponsContent.push({
+                    type: 'text',
+                    text: 'unsupported content type: ' + content.type
+                  })
+                }
+              }
+
+              if (options.config.model.toLocaleLowerCase().includes('gpt')) {
+                messages.push({
+                  role: 'tool',
+                  content: toolResponsContent,
+                  tool_call_id: toolCall.id
+                } as ChatCompletionToolMessageParam)
+              } else {
+                messages.push({
+                  role: 'tool',
+                  content: JSON.stringify(toolResponsContent),
+                  tool_call_id: toolCall.id
+                } as ChatCompletionToolMessageParam)
               }
             }
+            const shouldContinue: boolean = this.finishReason === 'tool_calls';
+            options.onFinish({
+              id: json.metadata.messageId,
+              content: this.answer,
+              reasoning_content: this.reasoning_content,
+              mcpTools: this.mcpTools,
+            }, shouldContinue);
+            syncMcpTools(json.metadata.messageId, this.mcpTools);
 
+            this.mcpTools = [];
 
-            if (options.config.model.toLocaleLowerCase().includes('gpt')) {
-              messages.push({
-                role: 'tool',
-                content: toolResponsContent,
-                tool_call_id: toolCall.id
-              } as ChatCompletionToolMessageParam)
-            } else {
-              messages.push({
-                role: 'tool',
-                content: JSON.stringify(toolResponsContent),
-                tool_call_id: toolCall.id
-              } as ChatCompletionToolMessageParam)
+            if (!this.controller) {
+              this.controller = new AbortController();
             }
-
-            //call tool request
             try {
               await fetchEventSource('/api/completions', {
                 method: 'POST',
@@ -240,6 +247,7 @@ export default class ChatGPTApi implements LLMApi {
                     "include_usage": true
                   }
                 }),
+                signal: this.controller?.signal,
                 onopen: async (res) => {
                   clearTimeout(timeoutId);
                   this.finished = false;
@@ -280,6 +288,44 @@ export default class ChatGPTApi implements LLMApi {
               })
             } catch (e) { }
             //call tool request end------
+          } else {
+            options.onFinish({
+              id: json.metadata.messageId,
+              content: this.answer,
+              reasoning_content: this.reasoning_content,
+              mcpTools: this.mcpTools,
+            }, false);
+            syncMcpTools(json.metadata.messageId, this.mcpTools);
+            this.mcpTools = [];
+            clear();
+            return;
+          }
+          return;
+        }
+        if (json?.choices.length === 0) {
+          return;
+        }
+        const delta = json?.choices[0]?.delta;
+        const finishReason = json.choices[0]?.finish_reason
+        this.finishReason = finishReason;
+        // 拼接 toolCall 参数
+        if (delta?.tool_calls) {
+          const chunkToolCalls = delta.tool_calls
+          for (const t of chunkToolCalls) {
+            const { index, id, function: fn, type } = t
+            const args = fn && typeof fn.arguments === 'string' ? fn.arguments : ''
+            if (!(index in final_tool_calls)) {
+              final_tool_calls[index] = {
+                id,
+                function: {
+                  name: fn?.name,
+                  arguments: args
+                },
+                type
+              } as ChatCompletionMessageToolCall
+            } else {
+              final_tool_calls[index].function.arguments += args
+            }
           }
         }
         //------------end-of-toolCall----------
@@ -317,9 +363,10 @@ export default class ChatGPTApi implements LLMApi {
         options.onUpdate({
           content: this.answer,
           reasoning_content: this.reasoning_content,
+          mcpTools: this.mcpTools,
         });
       } catch (e) {
-        console.error("[Request] parse error", text, event);
+        console.error("[Request] parse error", text, e);
       }
     }
 
@@ -379,7 +426,7 @@ export default class ChatGPTApi implements LLMApi {
         },
         onmessage: processOnMessage,
         onclose: () => {
-          clear();
+          // clear();
         },
         onerror: (err) => {
           this.controller = null;
@@ -409,10 +456,12 @@ export default class ChatGPTApi implements LLMApi {
     }
     callback({
       content: this.answer,
-      reasoning_content: this.reasoning_content
+      reasoning_content: this.reasoning_content,
+      mcpTools: this.mcpTools,
     });
     this.answer = '';
     this.reasoning_content = '';
+    this.mcpTools = [];
   }
 
   async check(modelId: string, apikey: string, apiUrl: string): Promise<{ status: 'success' | 'error', message?: string }> {

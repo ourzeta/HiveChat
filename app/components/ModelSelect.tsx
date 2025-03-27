@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Select, ConfigProvider } from "antd";
 import { Avatar } from "antd";
 import useModelListStore from '@/app/store/modelList';
@@ -9,6 +9,33 @@ import { useTranslations } from 'next-intl';
 const ModelSelect = ({ chatId }: { chatId: string | null }) => {
   const { modelList, currentModel, allProviderListByKey, providerList, isPending, setCurrentModelExact } = useModelListStore();
   const t = useTranslations('Chat');
+
+  const selectOptions = useMemo(() => {
+    return providerList.map((provider) => ({
+      label: <span>{provider.providerName}</span>,
+      title: provider.providerName,
+      options: modelList.filter((model) => model.provider.id === provider.id && model.selected).map((model) => ({
+        key: `${model.provider.id}|${model.id}`, // 添加唯一 key 避免重复渲染
+        label: (<div className='flex flex-row items-center'>
+          {allProviderListByKey && allProviderListByKey[provider.id]?.providerLogo ?
+            <Avatar
+              size={20}
+              src={allProviderListByKey[provider.id].providerLogo}
+            />
+            :
+            <Avatar
+              size={20}
+              style={{ backgroundColor: '#1c78fa' }}
+            >{allProviderListByKey && allProviderListByKey[provider.id].providerName.charAt(0)}</Avatar>
+          }
+
+          <span className='ml-1'>{model.displayName}</span>
+        </div>),
+        value: `${model.provider.id}|${model.id}`,
+      }))
+    }));
+  }, [providerList, modelList, allProviderListByKey]);
+
   const handleChangeModel = (value: string) => {
     localStorage.setItem('lastSelectedModel', value);
     const [providerId, modelId] = value.split('|');
@@ -38,30 +65,6 @@ const ModelSelect = ({ chatId }: { chatId: string | null }) => {
       </div>
     );
   }
-  const options = providerList.map((provider) => {
-    return {
-      label: <span>{provider.providerName}</span>,
-      title: provider.providerName,
-      options: modelList.filter((model) => model.provider.id === provider.id && model.selected).map((model) => ({
-        label: (<div className='flex flex-row items-center'>
-          {allProviderListByKey && allProviderListByKey[provider.id]?.providerLogo ?
-            <Avatar
-              size={20}
-              src={allProviderListByKey[provider.id].providerLogo}
-            />
-            :
-            <Avatar
-              size={20}
-              style={{ backgroundColor: '#1c78fa' }}
-            >{allProviderListByKey && allProviderListByKey[provider.id].providerName.charAt(0)}</Avatar>
-          }
-
-          <span className='ml-1'>{model.displayName}</span>
-        </div>),
-        value: `${model.provider.id}|${model.id}`,
-      }))
-    }
-  });
 
   return (
     <ConfigProvider
@@ -83,7 +86,7 @@ const ModelSelect = ({ chatId }: { chatId: string | null }) => {
         style={{ width: 230, border: 'none', backgroundColor: 'transparent' }}
         onChange={handleChangeModel}
         listHeight={320}
-        options={options}
+        options={selectOptions}
       />
     </ConfigProvider>
   );

@@ -41,6 +41,10 @@ ol {
   list-style: disc;
 }
 
+.markdown-body p {
+  text-align: left;
+}
+
 .answer-content ol,
 .answer-content ul {
   padding-left: 1.2em !important;

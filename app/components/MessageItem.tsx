@@ -1,8 +1,8 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, memo, useMemo } from 'react';
 import { Message } from '@/app/db/schema';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Button, Tooltip, message, Alert, Avatar, Popconfirm, Image as AntdImage } from "antd";
-import { CopyOutlined, SyncOutlined, DeleteOutlined, DownOutlined } from '@ant-design/icons';
+import { CopyOutlined, SyncOutlined, DeleteOutlined, DownOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import useModelListStore from '@/app/store/modelList';
 import ThinkingIcon from '@/app/images/thinking.svg';
 import MarkdownRender from '@/app/components/Markdown';
@@ -33,7 +33,7 @@ const MessageItem = memo((props: {
     }
   }, [props.item]);
 
-  const ProviderAvatar = () => {
+  const ProviderAvatar = useMemo(() => {
     if (allProviderListByKey) {
       return (allProviderListByKey && allProviderListByKey[props.item.providerId]?.providerLogo) ? <Avatar
         style={{ marginTop: '0.2rem', 'fontSize': '24px', 'border': '1px solid #eee', 'padding': '2px' }}
@@ -45,13 +45,13 @@ const MessageItem = memo((props: {
       return <div className='bg-blue-500 flex mt-1 text-cyan-50 items-center justify-center rounded-full w-8 h-8'>
         Bot</div>
     }
-  }
+  }, [allProviderListByKey, props.item.providerId])
 
   if (props.item.type === 'error' && props.item.errorType === 'TimeoutError') {
     return (
       <div className="flex container mx-auto px-4 max-w-screen-md w-full flex-col justify-center items-center" >
         <div className='items-start flex  max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
-          <ProviderAvatar />
+          {ProviderAvatar}
           <div className='flex flex-col w-0 grow group max-w-80'>
             <Alert
               showIcon
@@ -84,7 +84,7 @@ const MessageItem = memo((props: {
     return (
       <div className="flex container mx-auto px-4 max-w-screen-md w-full flex-col justify-center items-center" >
         <div className='items-start flex  max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
-          <ProviderAvatar />
+          {ProviderAvatar}
           <div className='flex flex-col w-0 grow group max-w-96'>
             <Alert
               showIcon
@@ -209,17 +209,15 @@ const MessageItem = memo((props: {
       <div className="flex container mx-auto px-4 max-w-screen-md w-full flex-col justify-center items-center" >
         <div className='items-start flex max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
           {contextHolderMessage}
-          <ProviderAvatar />
+          {ProviderAvatar}
           <div className='flex flex-col w-0 grow group'>
             <div className='px-3 py-2 ml-2  bg-gray-100  text-gray-600 w-full grow markdown-body answer-content rounded-xl'>
+
               {props.item.reasoninContent &&
                 <details open={true} className='text-sm mt-1 mb-4'>
-                  <summary 
+                  <summary
                     className='flex text-xs flex-row items-center hover:bg-gray-200 text-gray-800 bg-gray-100 rounded-md p-2'
                     style={{ display: 'flex' }}
-                    onClick={(e) => {
-                      setIsOpen(!isOpen);
-                    }}
                   >
                     <ThinkingIcon width={16} height={16} style={{ 'fontSize': '10px' }} />
                     <span className='ml-1'>{t('thought')}</span>
@@ -227,7 +225,7 @@ const MessageItem = memo((props: {
                       className='ml-auto mr-1'
                       style={{
                         color: '#999',
-                        transform: `rotate(${isOpen ? 0 : -90}deg)`,
+                        transform: ``,
                         transition: 'transform 0.2s ease'
                       }}
                     />
@@ -237,6 +235,34 @@ const MessageItem = memo((props: {
                   </div>
                 </details>}
               <MarkdownRender content={props.item.content as string} />
+              {
+                props.item.mcpTools && props.item.mcpTools.map((mcp, index) => {
+                  return <details open={false} key={index} className='flex flex-row bg-gray-100 hover:bg-slate-100 text-gray-800 rounded-md mb-3  border border-gray-200 text-sm'>
+
+                    <summary
+                      className='flex text-xs flex-row items-center rounded-md p-4'
+                      style={{ display: 'flex' }}
+                      onClick={() => { setIsOpen(!isOpen) }}
+                    >
+                      <span className='mr-2'>调用 {mcp.tool?.serverName} 的工具： {mcp.tool?.name}</span>
+                      <div>
+                        <CheckCircleOutlined style={{ color: 'green' }} /><span className='ml-1 text-green-700'>已完成</span>
+                      </div>
+                      <DownOutlined
+                        className='ml-auto mr-1'
+                        style={{
+                          color: '#999',
+                          transform: `rotate(${isOpen ? -90 : 0}deg)`,
+                          transition: 'transform 0.2s ease'
+                        }}
+                      />
+                    </summary>
+                    <div className='p-4 text-xs border-t'>
+                      {JSON.stringify(mcp.response)}
+                    </div>
+                  </details>
+                })
+              }
             </div>
             <div className='invisible flex flex-row items-center pl-1 group-hover:visible'>
               <CopyToClipboard text={plainText} onCopy={() => {

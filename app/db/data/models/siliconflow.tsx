@@ -9,6 +9,7 @@ export const modelList: LLMModel[] = [
     'id': 'deepseek-ai/DeepSeek-V3',
     'displayName': 'DeepSeek V3',
     'supportVision': false,
+    'supportTool': true,
     'maxTokens': 65536,
     'selected': true,
     provider

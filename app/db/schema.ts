@@ -12,6 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 import { customAlphabet } from 'nanoid';
+import { MCPToolResponse, MCPServer } from '@/app/adapter/interface'
 const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 10)
 
 export const users = pgTable("user", {
@@ -198,6 +199,8 @@ export const messages = pgTable("messages", {
   model: varchar({ length: 255 }),
   providerId: varchar({ length: 255 }).notNull(),
   type: varchar('message_type').notNull().default('text'),
+  // enabledMCPs: json('enabled_mcps').$type<MCPServer[]>(),
+  mcpTools: json('mcp_tools').$type<MCPToolResponse[]>(),
   inputTokens: integer('input_tokens'),
   outputTokens: integer('output_tokens'),
   totalTokens: integer('total_tokens'),
@@ -275,6 +278,8 @@ export interface Message {
     }
   >;
   reasoninContent?: string;
+  // enabledMCPs?: MCPServer[];
+  mcpTools?: MCPToolResponse[];
   providerId: string;
   model: string;
   type: 'text' | 'image' | 'error' | 'break';

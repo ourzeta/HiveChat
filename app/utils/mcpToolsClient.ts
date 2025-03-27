@@ -1,5 +1,6 @@
 'use client';
 import { MCPTool } from '@/app/adapter/interface';
+import { Tool, ToolUnion, ToolUseBlock } from '@anthropic-ai/sdk/resources'
 import { ChatCompletionTool, ChatCompletionMessageToolCall } from 'openai/resources';
 
 const supportedAttributes = [
@@ -18,7 +19,6 @@ function filterPropertieAttributes(tool: MCPTool) {
   const getSubMap = (obj: Record<string, any>, keys: string[]) => {
     return Object.fromEntries(Object.entries(obj).filter(([key]) => keys.includes(key)))
   }
-
   for (const [key, val] of Object.entries(roperties)) {
     roperties[key] = getSubMap(val, supportedAttributes)
   }
@@ -39,12 +39,40 @@ export function mcpToolsToOpenAITools(mcpTools: MCPTool[]): ChatCompletionTool[]
   }))
 }
 
+export function mcpToolsToAnthropicTools(mcpTools: MCPTool[]): Array<ToolUnion> {
+  return mcpTools.map((tool) => {
+    const t: Tool = {
+      name: tool.id,
+      description: tool.description,
+      // @ts-ignore no check
+      input_schema: { ...(tool.inputSchema), type: 'object' }
+    }
+    return t
+  })
+}
+
+export function anthropicToolUseToMcpTool(mcpTools: MCPTool[] | undefined, toolUse: ToolUseBlock): MCPTool | undefined {
+  if (!mcpTools) return undefined
+  const tool = mcpTools.find((tool) => tool.id === toolUse.name)
+  if (!tool) {
+    return undefined
+  }
+  // @ts-ignore ignore type as it it unknow
+  tool.inputSchema = toolUse.input
+  // use this to parse the arguments and avoid parsing errors
+  try {
+    tool.inputSchema = JSON.parse(toolUse.input as string)
+  } catch (e) {
+    console.error('Error parsing arguments', e)
+  }
+  return tool
+}
+
 export function openAIToolsToMcpTool(
   mcpTools: MCPTool[] | undefined,
   llmTool: ChatCompletionMessageToolCall
 ): MCPTool | undefined {
   if (!mcpTools) return undefined
-  // const tool = mcpTools.find((tool) => tool.id === llmTool.function.name)
   const tool = mcpTools.find((tool) => tool.name === llmTool.function.name)
   if (!tool) {
     return undefined

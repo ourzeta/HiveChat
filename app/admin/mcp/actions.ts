@@ -26,7 +26,6 @@ export async function addMcpServer(mcpServerInfo: {
   description?: string;
   baseUrl: string;
 }) {
-  console.log(mcpServerInfo)
   const session = await auth();
   if (!session?.user.isAdmin) {
     throw new Error('not allowed');
@@ -46,20 +45,29 @@ export async function addMcpServer(mcpServerInfo: {
     // 连接测试
     if (mcpServerInfo.isActive) {
       try {
-        mcpService.addServer(mcpServerInfo);
-        const tools = await mcpService.listTools([mcpServerInfo.name]);
-        await db.insert(mcpTools).values(tools.map(tool => ({
-          ...tool,
-          inputSchema: JSON.stringify(tool.inputSchema),
-        })));
+        await mcpService.addServer(mcpServerInfo);
+        try {
+          const tools = await mcpService.listTools([mcpServerInfo.name]);
+          await db.insert(mcpServers).values(mcpServerInfo);
+          await db.insert(mcpTools).values(tools.map(tool => ({
+            ...tool,
+            inputSchema: JSON.stringify(tool.inputSchema),
+          })));
+        } catch (e) {
+          return {
+            success: false,
+            message: `添加失败`
+          }
+        }
       } catch (error) {
         return {
           success: false,
           message: `添加失败：${(error as Error).message}`
         }
       }
+    } else {
+      await db.insert(mcpServers).values(mcpServerInfo);
     }
-    const result = await db.insert(mcpServers).values(mcpServerInfo);
     return {
       success: true,
     }

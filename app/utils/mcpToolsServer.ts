@@ -19,7 +19,6 @@ export async function callMCPTool(tool: MCPTool): Promise<any> {
   }
   try {
     const resp = await mcpService.callTool(toolInfo)
-    // console.log(`[MCP] Tool called: ${tool.serverName} ${tool.name}`, resp)
     return resp
   } catch (e) {
     console.error(`[MCP] Error calling Tool: ${tool.serverName} ${tool.name}`, e)

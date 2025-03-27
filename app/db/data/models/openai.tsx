@@ -43,6 +43,7 @@ export const modelList: LLMModel[] = [
     'id': 'gpt-4-turbo-preview',
     'displayName': 'GPT 4 Turbo',
     'supportVision': true,
+    'supportTool': true,
     'maxTokens': 131072,
     'selected': false,
     provider
@@ -51,6 +52,7 @@ export const modelList: LLMModel[] = [
     'id': 'gpt-4-32k',
     'displayName': 'GPT 4 32k',
     'supportVision': true,
+    'supportTool': true,
     'maxTokens': 32768,
     'selected': false,
     provider

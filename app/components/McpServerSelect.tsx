@@ -1,7 +1,7 @@
 import { Switch } from 'antd';
 import useMcpServerStore from '@/app/store/mcp';
 
-const McpServerSelect = (props: { chat_id: string }) => {
+const McpServerSelect = (props: { chat_id?: string }) => {
   const { mcpServers, selectedTools, changeMcpServerSelect } = useMcpServerStore();
 
   return (
@@ -17,13 +17,12 @@ const McpServerSelect = (props: { chat_id: string }) => {
             <div className="flex items-center justify-center">
               <Switch
                 size='small'
-                defaultChecked={false}
+                checked={server.selected}
                 onChange={(checked) => { changeMcpServerSelect(server.name, checked) }} />
             </div>
           </div>
         })
       }
-      {/* <div>{JSON.stringify(selectedTools.length)}</div> */}
     </div>
   )
 }

@@ -1,7 +1,8 @@
 'use server';
 import { db } from '@/app/db';
 import { auth } from "@/auth";
-import { eq, and, asc } from 'drizzle-orm'
+import { MCPToolResponse } from '@/app/adapter/interface';
+import { eq, and, asc } from 'drizzle-orm';
 import { messages } from '@/app/db/schema';
 
 export const clearMessageInServer = async (chatId: string) => {
@@ -80,6 +81,7 @@ export const addMessageInServer = async (message: {
     }
   >,
   reasoninContent?: string,
+  mcpTools?: MCPToolResponse[],
   providerId: string,
   model: string,
   type: 'text' | 'image' | 'error' | 'break',
@@ -97,13 +99,14 @@ export const addMessageInServer = async (message: {
     }
   }
 
-  const result = await db.insert(messages)
+  const [result] = await db.insert(messages)
     .values({
       chatId: message.chatId,
       userId: session.user.id,
       role: message.role,
       content: message.content,
       reasoninContent: message.reasoninContent,
+      mcpTools: message.mcpTools,
       model: message.model,
       providerId: message.providerId,
       type: message.type,
@@ -112,6 +115,7 @@ export const addMessageInServer = async (message: {
       totalTokens: message.totalTokens,
       errorType: message.errorType,
       errorMessage: message.errorMessage,
-    });
-
+    })
+    .returning();
+  return result.id;
 }

@@ -5,8 +5,6 @@ import { Tag, Button, Modal, Form, Input, Divider, message, Skeleton, Select, Ra
 import { useTranslations } from 'next-intl';
 import useModelListStore from '@/app/store/modelList';
 import { fetchAvailableLlmModels } from '@/app/adapter/actions';
-import { set } from 'lodash';
-import { asyncDebounce } from '@/app/utils/request';
 
 type FormValues = {
   id: string;
@@ -149,22 +147,20 @@ const GroupManagementTab = () => {
   }, [initModelListRealId]);
 
 
-  const onFinish = asyncDebounce(
-    async (values: FormValues) => {
-      setIsSubmitting(true);
-      const result = await addGroup(values);
-      if (result.success) {
-        const groupList = await getGroupList();
-        setGroupList(groupList);
-        message.success(t('addUserSuccess'));
-        form.resetFields();
-        setIsModalOpen(false);
-      } else {
-        message.error(result.message)
-      }
-      setIsSubmitting(false);
-    }, 300
-  )
+  const onFinish = async (values: FormValues) => {
+    setIsSubmitting(true);
+    const result = await addGroup(values);
+    if (result.success) {
+      const groupList = await getGroupList();
+      setGroupList(groupList);
+      message.success(t('addUserSuccess'));
+      form.resetFields();
+      setIsModalOpen(false);
+    } else {
+      message.error(result.message)
+    }
+    setIsSubmitting(false);
+  }
 
   const onEditGroupFinish = async (values: FormValues) => {
     setIsSubmitting(true);

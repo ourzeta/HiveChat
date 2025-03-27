@@ -5,6 +5,7 @@ WORKDIR /app
 # 复制依赖文件
 COPY package.json package-lock.json* ./
 
+RUN npm config set registry https://registry.npmmirror.com
 # 安装依赖
 RUN npm ci
 

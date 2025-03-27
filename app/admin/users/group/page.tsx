@@ -22,7 +22,7 @@ export interface groupType {
   modelProviderList?: string[];
 }
 
-const GroupModal = ({ title, open, onOk, onCancel, onFinish, form, initialValues, options, tagRender }: {
+const GroupModal = ({ title, open, onOk, onCancel, onFinish, form, initialValues, options, tagRender, confirmLoading }: {
   title: string;
   open: boolean;
   onOk: () => void;
@@ -32,11 +32,21 @@ const GroupModal = ({ title, open, onOk, onCancel, onFinish, form, initialValues
   initialValues?: any;
   options?: any;
   tagRender?: any;
+  confirmLoading?: boolean;
 }) => {
   const t = useTranslations('Admin.Users');
   const ct = useTranslations('Common');
   return (
-    <Modal title={title} open={open} onOk={onOk} onCancel={onCancel}>
+    <Modal
+      title={title}
+      open={open}
+      onOk={onOk}
+      onCancel={onCancel}
+      confirmLoading={confirmLoading}
+      okButtonProps={{
+        disabled: confirmLoading
+      }}
+    >
       <Form
         layout="vertical"
         form={form}
@@ -96,6 +106,7 @@ const GroupManagementTab = () => {
   const [userFetchStatus, setUserFetchStatus] = useState(true);
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const showAddUserModal = () => {
     setIsModalOpen(true);
   };
@@ -137,6 +148,7 @@ const GroupManagementTab = () => {
 
 
   const onFinish = async (values: FormValues) => {
+    setIsSubmitting(true);
     const result = await addGroup(values);
     if (result.success) {
       const groupList = await getGroupList();
@@ -147,9 +159,11 @@ const GroupManagementTab = () => {
     } else {
       message.error(result.message)
     }
-  };
+    setIsSubmitting(false);
+  }
 
   const onEditGroupFinish = async (values: FormValues) => {
+    setIsSubmitting(true);
     const result = await updateGroup(values.id, values);
     if (result.success) {
       const groupList = await getGroupList();
@@ -160,6 +174,7 @@ const GroupManagementTab = () => {
     } else {
       message.error(result.message)
     }
+    setIsSubmitting(false);
   };
 
 
@@ -301,6 +316,7 @@ const GroupManagementTab = () => {
         form={form}
         options={options}
         tagRender={tagRender}
+        confirmLoading={isSubmitting}
       />
       <GroupModal
         title={ct('edit')}
@@ -311,6 +327,7 @@ const GroupManagementTab = () => {
         form={editForm}
         options={options}
         tagRender={tagRender}
+        confirmLoading={isSubmitting}
       />
     </div>
   );

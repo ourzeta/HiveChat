@@ -5,6 +5,8 @@ import { Tag, Button, Modal, Form, Input, Divider, message, Skeleton, Select, Ra
 import { useTranslations } from 'next-intl';
 import useModelListStore from '@/app/store/modelList';
 import { fetchAvailableLlmModels } from '@/app/adapter/actions';
+import { set } from 'lodash';
+import { asyncDebounce } from '@/app/utils/request';
 
 type FormValues = {
   id: string;
@@ -22,7 +24,7 @@ export interface groupType {
   modelProviderList?: string[];
 }
 
-const GroupModal = ({ title, open, onOk, onCancel, onFinish, form, initialValues, options, tagRender }: {
+const GroupModal = ({ title, open, onOk, onCancel, onFinish, form, initialValues, options, tagRender, confirmLoading }: {
   title: string;
   open: boolean;
   onOk: () => void;
@@ -32,11 +34,21 @@ const GroupModal = ({ title, open, onOk, onCancel, onFinish, form, initialValues
   initialValues?: any;
   options?: any;
   tagRender?: any;
+  confirmLoading?: boolean;
 }) => {
   const t = useTranslations('Admin.Users');
   const ct = useTranslations('Common');
   return (
-    <Modal title={title} open={open} onOk={onOk} onCancel={onCancel}>
+    <Modal
+      title={title}
+      open={open}
+      onOk={onOk}
+      onCancel={onCancel}
+      confirmLoading={confirmLoading}
+      okButtonProps={{
+        disabled: confirmLoading
+      }}
+    >
       <Form
         layout="vertical"
         form={form}
@@ -96,6 +108,7 @@ const GroupManagementTab = () => {
   const [userFetchStatus, setUserFetchStatus] = useState(true);
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const showAddUserModal = () => {
     setIsModalOpen(true);
   };
@@ -136,20 +149,25 @@ const GroupManagementTab = () => {
   }, [initModelListRealId]);
 
 
-  const onFinish = async (values: FormValues) => {
-    const result = await addGroup(values);
-    if (result.success) {
-      const groupList = await getGroupList();
-      setGroupList(groupList);
-      message.success(t('addUserSuccess'));
-      form.resetFields();
-      setIsModalOpen(false);
-    } else {
-      message.error(result.message)
-    }
-  };
+  const onFinish = asyncDebounce(
+    async (values: FormValues) => {
+      setIsSubmitting(true);
+      const result = await addGroup(values);
+      if (result.success) {
+        const groupList = await getGroupList();
+        setGroupList(groupList);
+        message.success(t('addUserSuccess'));
+        form.resetFields();
+        setIsModalOpen(false);
+      } else {
+        message.error(result.message)
+      }
+      setIsSubmitting(false);
+    }, 300
+  )
 
   const onEditGroupFinish = async (values: FormValues) => {
+    setIsSubmitting(true);
     const result = await updateGroup(values.id, values);
     if (result.success) {
       const groupList = await getGroupList();
@@ -160,6 +178,7 @@ const GroupManagementTab = () => {
     } else {
       message.error(result.message)
     }
+    setIsSubmitting(false);
   };
 
 
@@ -301,6 +320,7 @@ const GroupManagementTab = () => {
         form={form}
         options={options}
         tagRender={tagRender}
+        confirmLoading={isSubmitting}
       />
       <GroupModal
         title={ct('edit')}
@@ -311,6 +331,7 @@ const GroupManagementTab = () => {
         form={editForm}
         options={options}
         tagRender={tagRender}
+        confirmLoading={isSubmitting}
       />
     </div>
   );

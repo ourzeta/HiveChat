@@ -14,6 +14,7 @@ type GroupWithModels = Awaited<ReturnType<typeof db.query.groups.findMany>>[numb
       provider: {
         providerName: string;
         provider: string;
+        isActive: boolean;
       };
     };
   }[];
@@ -49,8 +50,9 @@ export async function getGroupList() {
                 provider: {
                   columns: {
                     providerName: true,
-                    provider: true
-                  }
+                    provider: true,
+                    isActive: true,
+                  },
                 } as const
               }
             }
@@ -63,8 +65,8 @@ export async function getGroupList() {
     const groupsTableList = result.map(group => ({
       id: group.id,
       name: group.name,
-      modelProviderList: (group as unknown as GroupWithModels).models.map(m => `${m.model.provider.providerName || 'unknown'} | ${m.model.displayName}`),
-      models: (group as unknown as GroupWithModels).models.map(m => m.model.id),
+      modelProviderList: (group as unknown as GroupWithModels).models.filter(m => m.model.provider.isActive) .map(m => `${m.model.provider.providerName || 'unknown'} | ${m.model.displayName}`),
+      models: (group as unknown as GroupWithModels).models.filter(m => m.model.provider.isActive) .map(m => m.model.id),
       modelType: group.modelType,
       createdAt: group.createdAt,
       updatedAt: group.updatedAt,

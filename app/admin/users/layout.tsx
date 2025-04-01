@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, MenuProps } from 'antd';
+import { Menu, MenuProps, Button } from 'antd';
+import ToggleSidebar from "@/app/images/hideSidebar.svg";
+import useAdminSidebarCollapsed from '@/app/store/adminSidebarCollapsed';
 import { useTranslations } from 'next-intl';
-
 
 const UserListPage = ({
   children,
@@ -14,7 +15,7 @@ const UserListPage = ({
   const t = useTranslations('Admin.Users');
   const pathname = usePathname();
   const [current, setCurrent] = useState('');
-
+  const { isSidebarCollapsed, toggleSidebar } = useAdminSidebarCollapsed();
   const items = [
     {
       label: <Link href="/admin/users/list">{t('userList')}</Link>,
@@ -38,9 +39,20 @@ const UserListPage = ({
     }
   }, [pathname]);
   return (
-    <div className='container max-w-4xl mb-6 px-4 md:px-0 pt-4'>
-      <Menu onClick={onClick} selectedKeys={[current]} mode="horizontal" items={items} />
-      {children}
+    <div className='flex flex-col w-full'>
+      <div className='flex flex-row w-full items-center h-10 px-1'>
+        {isSidebarCollapsed &&
+          <Button
+            icon={<ToggleSidebar style={{ 'color':'#999','fontSize': '20px', 'verticalAlign': 'middle' }} />}
+            type='text'
+            onClick={toggleSidebar}
+          />
+        }
+      </div>
+      <div className='container mb-6 px-8'>
+        <Menu onClick={onClick} selectedKeys={[current]} mode="horizontal" items={items} />
+        {children}
+      </div>
     </div>
   );
 };

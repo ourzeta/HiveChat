@@ -1,32 +1,23 @@
 'use client'
-import { fetchEventSource, EventStreamContentType } from '@microsoft/fetch-event-source';
-import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent } from '@/app/adapter/interface';
+import { fetchEventSource, EventStreamContentType, EventSourceMessage } from '@microsoft/fetch-event-source';
+import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse } from '@/app/adapter/interface';
 import { prettyObject } from '@/app/utils';
-import { InvalidAPIKeyError, TimeoutError } from '@/app/adapter/errorTypes';
-
-export type MessageType = {
-  role: 'user' | 'model' | 'system';
-  parts: Array<
-    {
-      text: string;
-    }
-    |
-    {
-      'inline_data': {
-        mime_type: string,
-        data: string,
-      }
-    }
-  >;
-}
+import { InvalidAPIKeyError, OverQuotaError, TimeoutError } from '@/app/adapter/errorTypes';
+import { FunctionCallPart, FunctionResponsePart } from '@google/generative-ai';
+import { syncMcpTools } from '../actions';
+import { callMCPTool } from '@/app/utils/mcpToolsServer';
+import { mcpToolsToGeminiTools, geminiFunctionCallToMcpTool } from '@/app/utils/mcpToolsClient';
 
 export default class GeminiApi implements LLMApi {
   private controller: AbortController | null = null;
   private answer = '';
   private reasoning_content = '';
+  private finishReason = '';
+  private mcpTools: MCPToolResponse[] = [];
+  private fcallParts: FunctionCallPart[] = [];
   private finished = false;
 
-  prepareMessage<MessageType>(messages: RequestMessage[]): MessageType[] {
+  prepareMessage<Content>(messages: RequestMessage[]): Content[] {
     return messages.map(msg => {
       let newRoleName = 'user';
       if (msg.role === 'system') {
@@ -39,7 +30,7 @@ export default class GeminiApi implements LLMApi {
           parts: [{
             text: msg.content
           }]
-        } as MessageType;
+        } as Content;
       }
 
       // 处理包含图像的消息
@@ -63,14 +54,14 @@ export default class GeminiApi implements LLMApi {
         return {
           role: newRoleName,
           parts: formattedContent
-        } as MessageType;
+        } as Content;
       }
 
       // 默认返回文本消息
       return {
         role: newRoleName,
         parts: ['']
-      } as MessageType;
+      } as Content;
     });
   }
   async chat(options: ChatOptions) {
@@ -92,7 +83,186 @@ export default class GeminiApi implements LLMApi {
       options.onError?.(new TimeoutError('Timeout'));
     }, 30000);
 
-    const messages = this.prepareMessage(options.messages)
+    const processOnMessage = async (event: EventSourceMessage) => {
+      const text = event.data;
+      try {
+        const json = JSON.parse(text);
+
+        // 是否结束，结束后 tools 调用
+        if (json?.metadata && json?.metadata.isDone) {
+          if (this.fcallParts.length > 0) {
+            const fcRespParts: FunctionResponsePart[] = [];
+            for (const fcallPart of this.fcallParts) {
+              const mcpTool = geminiFunctionCallToMcpTool(options.mcpTools, fcallPart.functionCall);
+              if (!mcpTool) {
+                continue;
+              }
+              this.mcpTools.push({
+                id: mcpTool.id,
+                tool: mcpTool,
+                status: 'invoking',
+              });
+              options.onUpdate({
+                content: this.answer,
+                reasoning_content: this.reasoning_content,
+                mcpTools: this.mcpTools,
+              });
+              const _mcpTools = this.mcpTools;
+              // fcallParts.push(fcallPart)
+              const toolCallResponse = await callMCPTool(mcpTool);
+              // 还需要更新工具执行状态
+              const toolIndex = _mcpTools.findIndex(t => {
+                return t.id === fcallPart.functionCall.name;
+              });
+              if (toolIndex !== -1) {
+                _mcpTools[toolIndex] = {
+                  ...this.mcpTools[toolIndex],
+                  status: 'done',
+                  response: toolCallResponse
+                };
+              }
+
+              options.onUpdate({
+                content: this.answer,
+                reasoning_content: this.reasoning_content,
+                mcpTools: _mcpTools,
+              });
+
+              fcRespParts.push({
+                functionResponse: {
+                  name: mcpTool.id,
+                  response: toolCallResponse
+                }
+              })
+            }
+
+            messages.push({
+              role: 'model',
+              parts: this.fcallParts
+            });
+            messages.push({
+              role: 'model',
+              parts: fcRespParts
+            });
+
+            options.onFinish({
+              id: json.metadata.messageId,
+              content: this.answer,
+              reasoning_content: this.reasoning_content,
+              mcpTools: this.mcpTools,
+            }, true);
+            syncMcpTools(json.metadata.messageId, this.mcpTools);
+
+            this.mcpTools = [];
+            this.finishReason = '';
+            this.fcallParts = [];
+            if (!this.controller) {
+              this.controller = new AbortController();
+            }
+            try {
+              await fetchEventSource('/api/completions', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-Provider': 'gemini',
+                  'X-Model': options.config.model,
+                  'X-Chat-Id': options.chatId!,
+                },
+                body: JSON.stringify({
+                  "contents": messages,
+                  ...toolsParameter,
+                }),
+                signal: this.controller.signal,
+                onopen: async (res) => {
+                  clearTimeout(timeoutId);
+                  this.finished = false;
+                  if (
+                    !res.ok ||
+                    !res.headers.get("content-type")?.startsWith(EventStreamContentType) ||
+                    res.status !== 200
+                  ) {
+
+                    let resTextRaw = '';
+                    try {
+                      const resTextJson = await res.clone().json();
+                      resTextRaw = prettyObject(resTextJson);
+                    } catch {
+                      resTextRaw = await res.clone().text();
+                    }
+                    const responseTexts = [resTextRaw];
+                    if (res.status >= 400 && res.status < 500) {
+                      options.onError?.(new InvalidAPIKeyError('Invalid API Key'));
+                    } else {
+                      this.answer = responseTexts.join("\n\n");
+                      options.onError?.(new Error(this.answer));
+                    }
+                    clear();
+                  }
+                },
+                onmessage: processOnMessage,
+                onclose: () => {
+                  clear();
+                },
+                onerror: (err) => {
+                  this.controller = null;
+                  this.finished = true;
+                  this.answer = '';
+                  // 需要 throw，不然框架会自动重试
+                  throw err;
+                },
+                openWhenHidden: true,
+              });
+            } catch (error) {
+              if (error instanceof Error) {
+                options.onError?.(new InvalidAPIKeyError('Invalid API Key'));
+              } else {
+                options.onError?.(new Error('An unknown error occurred'));
+              }
+              clear();
+            } finally {
+              clearTimeout(timeoutId);
+            }
+          } else {
+            options.onFinish({ content: this.answer }, false);
+            clear();
+            return;
+          }
+        }
+        //tool 调用 end
+
+        const firstCandidate = json?.candidates[0];
+        if (firstCandidate.content.parts) {
+          const deltaContent = firstCandidate.content.parts[0]?.text;
+          if (deltaContent) {
+            this.answer += deltaContent;
+            options.onUpdate({ content: this.answer });
+          }
+
+          const fcallParts: FunctionCallPart[] = firstCandidate.content.parts
+            .filter((part: any) => 'functionCall' in part);
+          this.fcallParts.push(...fcallParts);
+        }
+
+        if (firstCandidate.finishReason) {
+          this.finishReason = firstCandidate.finishReason;
+          return;
+        }
+      } catch (e) {
+        console.error("[Request] parse error", text);
+      }
+    }
+
+    const messages = this.prepareMessage(options.messages);
+
+    let toolsParameter = {};
+    if (options.mcpTools) {
+      const tools = mcpToolsToGeminiTools(options.mcpTools);
+      if (tools.length > 0) {
+        toolsParameter = {
+          tools: tools
+        }
+      }
+    }
     try {
       await fetchEventSource('/api/completions', {
         method: 'POST',
@@ -104,6 +274,7 @@ export default class GeminiApi implements LLMApi {
         },
         body: JSON.stringify({
           "contents": messages,
+          ...toolsParameter,
         }),
         signal: this.controller.signal,
         onopen: async (res) => {
@@ -123,7 +294,9 @@ export default class GeminiApi implements LLMApi {
               resTextRaw = await res.clone().text();
             }
             const responseTexts = [resTextRaw];
-            if (res.status >= 400 && res.status < 500) {
+            if (res.status === 429) {
+              options.onError?.(new OverQuotaError('Over Quota'));
+            } else if (res.status >= 400 && res.status < 500) {
               options.onError?.(new InvalidAPIKeyError('Invalid API Key'));
             } else {
               this.answer = responseTexts.join("\n\n");
@@ -132,25 +305,7 @@ export default class GeminiApi implements LLMApi {
             clear();
           }
         },
-        onmessage: (event) => {
-          const text = event.data;
-          try {
-            const json = JSON.parse(text);
-            const candidates = json?.candidates[0];
-            const deltaContent = candidates.content.parts[0]?.text;
-            if (deltaContent) {
-              this.answer += deltaContent;
-            }
-            options.onUpdate({ content: this.answer });
-            if (candidates.finishReason) {
-              options.onFinish({ content: this.answer });
-              clear();
-              return;
-            }
-          } catch (e) {
-            console.error("[Request] parse error", text, event);
-          }
-        },
+        onmessage: processOnMessage,
         onclose: () => {
           clear();
         },

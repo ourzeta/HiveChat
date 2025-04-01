@@ -9,6 +9,8 @@ import { fetchAvailableLlmModels } from '@/app/adapter/actions';
 type FormValues = {
   id: string;
   name: string;
+  tokenLimitType: 'unlimited' | 'limited';
+  dailyTokenLimit?: number | null;
   models: number[];
   modelType: 'all' | 'specific';
 }
@@ -18,6 +20,8 @@ export interface groupType {
   name: string;
   models: number[];
   modelType?: 'all' | 'specific';
+  tokenLimitType: 'unlimited' | 'limited';
+  dailyTokenLimit?: number | null;
   id?: string;
   modelProviderList?: string[];
 }
@@ -52,17 +56,56 @@ const GroupModal = ({ title, open, onOk, onCancel, onFinish, form, initialValues
         form={form}
         onFinish={onFinish}
         validateTrigger="onBlur"
-        initialValues={{ modelType: 'all', ...initialValues }}
+        initialValues={{ modelType: 'all', tokenLimitType: 'unlimited', ...initialValues }}
       >
         <Form.Item name="id" hidden>
           <Input type="hidden" />
         </Form.Item>
-        <Form.Item label={<span className='font-medium'>{t('groupName')}</span>} name='name'
-          rules={[{ required: true, message: '请填写分组名称' }]}>
+        <Form.Item
+          name='name'
+          label={<span className='font-medium'>{t('groupName')}</span>}
+          rules={[{ required: true, message: '请填写分组名称' }]}
+        >
           <Input />
         </Form.Item>
-        <Form.Item style={{ marginBottom: '4px' }} label={<span className='font-medium'>{t('availableModels')}
-        </span>} name='modelType'>
+
+        <Form.Item
+          style={{ marginBottom: '6px' }}
+          label={<span className='font-medium'>每日 Token 限额</span>}
+          rules={[{ required: true, message: '请设置每日 Token 限额' }]}
+          name='tokenLimitType'
+        >
+          <Radio.Group>
+            <Radio value="unlimited">不限</Radio>
+            <Radio value="limited">限制</Radio>
+          </Radio.Group>
+        </Form.Item>
+
+        <Form.Item
+          noStyle
+          shouldUpdate={(prev, cur) => prev.tokenLimitType !== cur.tokenLimitType}
+        >
+          {({ getFieldValue }) => {
+            return getFieldValue('tokenLimitType') === 'limited' && (
+              <Form.Item
+                name="dailyTokenLimit"
+                extra={<span className='text-xs text-gray-400 my-2'>包含输入和输出。参考数值：普通文本对话，10,000 Tokens 约能进行 20 次对话</span>}
+                style={{ margin: 0 }}
+              >
+                <Input
+                  placeholder="请输入限制"
+                />
+              </Form.Item>
+            );
+          }}
+        </Form.Item>
+
+        <Form.Item
+          name='modelType'
+          style={{ marginTop: '20px', marginBottom: '6px' }}
+          rules={[{ required: true, message: '请设置模型' }]}
+          label={<span className='font-medium'>{t('availableModels')}</span>}
+        >
           <Radio.Group>
             <Radio value="all">{ct('all')}</Radio>
             <Radio value="specific">{t('specificModel')}</Radio>
@@ -241,7 +284,7 @@ const GroupManagementTab = () => {
   }
 
   return (
-    <div className='container max-w-4xl mb-6 px-4 md:px-0 pt-6'>
+    <div className='container mb-6 px-4 md:px-0 pt-6'>
       <div className='w-full mb-6 flex flex-row justify-between items-center'>
         <p className='text-sm text-gray-500'>{t('groupManagementTip')}</p>
         <Button type='primary' onClick={showAddUserModal}>{t('addGroup')}</Button>
@@ -250,10 +293,11 @@ const GroupManagementTab = () => {
         <><div className="overflow-hidden rounded-lg border border-slate-300">
           <table className='border-collapse w-full'>
             <thead>
-              <tr className="bg-slate-100">
+              <tr className="bg-slate-100 text-sm">
                 <th className='border-b border-r border-slate-300 w-36'>{t('groupName')}</th>
                 <th className='border-b border-r border-slate-300'>{t('availableModels')}</th>
-                <th className='border-b border-slate-300 p-2 w-36'>{t('action')}</th>
+                <th className='border-b border-r border-slate-300'>每日 Token 限额</th>
+                <th className='border-b border-slate-300 p-2 w-32'>{t('action')}</th>
               </tr>
             </thead>
             <tbody>
@@ -264,6 +308,9 @@ const GroupManagementTab = () => {
                     {group.modelType === 'specific' ? group.modelProviderList && group.modelProviderList.map((model, index) => (
                       <Tag color='#f2f2f2' style={{ marginBottom: 8, color: '#626262' }} key={index} bordered={false}>{model}</Tag>
                     )) : <Tag color='blue' style={{ marginBottom: 8 }}>{ct('all')}</Tag>}
+                  </td>
+                  <td className='border-t border-r p-2 text-sm text-right w-32 border-slate-300'>
+                    {(group.tokenLimitType === 'limited') ? <span className='text-xs'>{group.dailyTokenLimit?.toLocaleString()} Tokens</span> : <Tag>不限</Tag>}
                   </td>
                   <td className='border-t text-center text-sm w-32 border-slate-300 p-2'>
                     <Button

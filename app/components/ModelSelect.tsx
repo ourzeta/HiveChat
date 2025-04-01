@@ -16,7 +16,7 @@ const ModelSelect = ({ chatId }: { chatId: string | null }) => {
       title: provider.providerName,
       options: modelList.filter((model) => model.provider.id === provider.id && model.selected).map((model) => ({
         key: `${model.provider.id}|${model.id}`, // 添加唯一 key 避免重复渲染
-        label: (<div className='flex flex-row items-center'>
+        label: (<div className='flex flex-row items-center w-fit'>
           {allProviderListByKey && allProviderListByKey[provider.id]?.providerLogo ?
             <Avatar
               size={20}
@@ -83,7 +83,9 @@ const ModelSelect = ({ chatId }: { chatId: string | null }) => {
     >
       <Select
         value={`${currentModel.provider.id}|${currentModel.id}`}
-        style={{ width: 230, border: 'none', backgroundColor: 'transparent' }}
+        style={{ border: 'none', backgroundColor: 'transparent' }}
+        popupMatchSelectWidth={false}
+        popupClassName="model-select-dropdown"
         onChange={handleChangeModel}
         listHeight={320}
         options={selectOptions}

@@ -2,7 +2,7 @@
 import { fetchEventSource, EventStreamContentType, EventSourceMessage } from '@microsoft/fetch-event-source';
 import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse } from '@/app/adapter/interface';
 import { prettyObject } from '@/app/utils';
-import { InvalidAPIKeyError, TimeoutError } from '@/app/adapter/errorTypes';
+import { InvalidAPIKeyError, OverQuotaError, TimeoutError } from '@/app/adapter/errorTypes';
 import { callMCPTool } from '@/app/utils/mcpToolsServer';
 import { syncMcpTools } from '../actions';
 import { mcpToolsToOpenAITools, openAIToolsToMcpTool } from '@/app/utils/mcpToolsClient';
@@ -266,6 +266,8 @@ export default class ChatGPTApi implements LLMApi {
                     const responseTexts = [resTextRaw];
                     if (res.status === 401) {
                       options.onError?.(new InvalidAPIKeyError('Invalid API Key'));
+                    } else if (res.status === 429) {
+                      options.onError?.(new OverQuotaError('Over Quota'));
                     } else {
                       this.answer = responseTexts.join("\n\n");
                       options.onError?.(new Error(this.answer));
@@ -417,6 +419,8 @@ export default class ChatGPTApi implements LLMApi {
             const responseTexts = [resTextRaw];
             if (res.status === 401) {
               options.onError?.(new InvalidAPIKeyError('Invalid API Key'));
+            } else if (res.status === 429) {
+              options.onError?.(new OverQuotaError('Over Quota'));
             } else {
               this.answer = responseTexts.join("\n\n");
               options.onError?.(new Error(this.answer));

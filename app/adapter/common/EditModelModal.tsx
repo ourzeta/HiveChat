@@ -29,6 +29,7 @@ const EditModelModalProps: React.FC<EditModelModalProps> = ({
         modelDisplayName: model.displayName,
         modelMaxTokens: typeof model?.maxTokens === 'number' ? model.maxTokens / 1024 : 32,
         modelVisionSupport: model.supportVision,
+        modelToolSupport: model.supportTool,
       });
     }
   }, [model, customModelForm]);
@@ -40,13 +41,15 @@ const EditModelModalProps: React.FC<EditModelModalProps> = ({
     modelId: string;
     modelDisplayName: string;
     modelMaxTokens: number;
-    modelVisionSupport: boolean
+    modelVisionSupport: boolean;
+    modelToolSupport: boolean;
   }) => {
     await updateCustomModel(values.oldModelId, {
       id: values.modelId,
       displayName: values.modelDisplayName,
       maxTokens: values.modelMaxTokens * 1024,
       supportVision: values.modelVisionSupport,
+      supportTool: values.modelToolSupport,
       selected: true,
       type: 'custom',
       provider: {
@@ -59,6 +62,7 @@ const EditModelModalProps: React.FC<EditModelModalProps> = ({
       displayName: values.modelDisplayName,
       maxTokens: values.modelMaxTokens * 1024,
       supportVision: values.modelVisionSupport,
+      supportTool: values.modelToolSupport,
       selected: true,
       type: 'custom',
       name: values.modelId,
@@ -119,6 +123,13 @@ const EditModelModalProps: React.FC<EditModelModalProps> = ({
             name='modelVisionSupport'
             valuePropName="checked"
             label={<span className='font-medium'>支持视觉识别</span>}
+          >
+            <Switch defaultChecked={false} />
+          </Form.Item>
+          <Form.Item
+            name='modelToolSupport'
+            valuePropName="checked"
+            label={<span className='font-medium'>支持工具调用</span>}
           >
             <Switch defaultChecked={false} />
           </Form.Item>

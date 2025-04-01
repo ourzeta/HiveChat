@@ -1,9 +1,11 @@
 import { addMessageInServer } from '@/app/chat/actions/message';
+import { updateUsage } from './actions';
 
 export default async function proxyOpenAiStream(response: Response,
   messageInfo: {
     chatId?: string,
     model: string,
+    userId: string,
     providerId: string
   }): Promise<Response> {
   const transformStream = new TransformStream({
@@ -44,11 +46,16 @@ export default async function proxyOpenAiStream(response: Response,
 
           try {
             const parsedData = JSON.parse(cleanedLine);
+            const usage = parsedData.usage || parsedData.choices[0].usage; // 兼容 Moonshot
+            if (usage) {
+              promptTokens = usage.prompt_tokens;
+              completionTokens = usage.completion_tokens;
+              totalTokens = usage.total_tokens;
+            }
             if (parsedData.choices.length === 0) {
               continue;
             }
             const { delta, finish_reason } = parsedData.choices[0];
-            const usage = parsedData.usage || parsedData.choices[0].usage; // 兼容 Moonshot
             const { content, reasoning_content } = delta;
             if (content) {
               if (!isThinking) {
@@ -78,11 +85,6 @@ export default async function proxyOpenAiStream(response: Response,
             if (reasoning_content) {
               completeReasonin += reasoning_content;
             }
-            if (finish_reason && usage) {
-              promptTokens = usage.prompt_tokens;
-              completionTokens = usage.completion_tokens;
-              totalTokens = usage.total_tokens;
-            }
 
           } catch (error) {
             console.error("JSON parse error:", error, "in line:", cleanedLine);
@@ -91,7 +93,6 @@ export default async function proxyOpenAiStream(response: Response,
         controller.enqueue(value);
       }
       // 有 ChatId 的存储到 messages 表
-      // if (messageInfo.chatId && completeResponse) {
       if (messageInfo.chatId) {
         const toAddMessage = {
           chatId: messageInfo.chatId,
@@ -114,6 +115,16 @@ export default async function proxyOpenAiStream(response: Response,
         const metadataString = `data: ${JSON.stringify({ metadata: metadataEvent })}\n\n`;
         controller.enqueue(new TextEncoder().encode(metadataString));
       }
+      updateUsage(messageInfo.userId, {
+        chatId: messageInfo.chatId,
+        date: new Date().toISOString().split('T')[0],
+        userId: messageInfo.userId,
+        modelId: messageInfo.model,
+        providerId: messageInfo.providerId,
+        inputTokens: promptTokens,
+        outputTokens: completionTokens,
+        totalTokens: totalTokens,
+      });
       controller.close();
     }
   });

@@ -4,7 +4,7 @@ import { Avatar } from "antd";
 import { ResponseContent } from '@/app/adapter/interface';
 import DotsLoading from '@/app/components/loading/DotsLoading';
 import BallsLoading from '@/app/components/loading/BallsLoading';
-import { CheckCircleOutlined, RedoOutlined, DownOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, RedoOutlined, DownOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import ThinkingIcon from '@/app/images/thinking.svg';
 import useModelListStore from '@/app/store/modelList';
 import { useTranslations } from 'next-intl';
@@ -63,14 +63,20 @@ const ResponsingMessage = (props: {
                         onClick={() => { setIsOpen(!isOpen) }}
                       >
                         <span className='mr-2'>调用 {mcp.tool.serverName} 的工具： {mcp.tool.name}</span>
-                        {mcp.status === 'done' ?
-                          <div>
-                            <CheckCircleOutlined style={{ color: 'green' }} /><span className='ml-1 text-green-700'>已完成</span>
-                          </div> :
-                          <div>
+                        {mcp.status === 'done' && mcp.response.isError &&
+                          <div><CloseCircleOutlined style={{ color: 'red' }} /><span className='ml-1 text-red-600'>调用失败</span></div>
+                        }
+
+                        {mcp.status === 'done' && !mcp.response.isError &&
+                          <div><CheckCircleOutlined style={{ color: 'green' }} /><span className='ml-1 text-green-700'>已完成</span></div>
+                        }
+
+                        {
+                          mcp.status === 'invoking' && <div>
                             <RedoOutlined spin={true} style={{ color: 'green' }} /><span className='ml-1 text-green-700'>执行中</span>
                           </div>
                         }
+
                         <DownOutlined
                           className='ml-auto mr-1'
                           style={{
@@ -80,8 +86,8 @@ const ResponsingMessage = (props: {
                           }}
                         />
                       </summary>
-                      <div className='p-4 text-xs border-t'>
-                        {JSON.stringify(mcp.response)}
+                      <div className='p-4 pb-0 text-xs border-t'>
+                        <pre className='scrollbar-thin'>{JSON.stringify(mcp.response, null, 2)}</pre>
                       </div>
                     </details>
                   })
@@ -98,7 +104,7 @@ const ResponsingMessage = (props: {
               }
             </div>
           </div>
-        </div>
+        </div >
       }
     </>
   )

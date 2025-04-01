@@ -20,11 +20,12 @@ type GroupWithModels = Awaited<ReturnType<typeof db.query.groups.findMany>>[numb
   }[];
 }
 
-type GroupModel = InferSelectModel<typeof llmModels>;
 type GroupActionParams = {
   name: string;
   modelType?: 'all' | 'specific';
   models?: number[];
+  tokenLimitType: 'unlimited' | 'limited',
+  dailyTokenLimit?: number | null,
 };
 
 
@@ -65,8 +66,10 @@ export async function getGroupList() {
     const groupsTableList = result.map(group => ({
       id: group.id,
       name: group.name,
-      modelProviderList: (group as unknown as GroupWithModels).models.filter(m => m.model.provider.isActive) .map(m => `${m.model.provider.providerName || 'unknown'} | ${m.model.displayName}`),
-      models: (group as unknown as GroupWithModels).models.filter(m => m.model.provider.isActive) .map(m => m.model.id),
+      tokenLimitType: group.tokenLimitType,
+      dailyTokenLimit: group.dailyTokenLimit,
+      modelProviderList: (group as unknown as GroupWithModels).models.filter(m => m.model.provider.isActive).map(m => `${m.model.provider.providerName || 'unknown'} | ${m.model.displayName}`),
+      models: (group as unknown as GroupWithModels).models.filter(m => m.model.provider.isActive).map(m => m.model.id),
       modelType: group.modelType,
       createdAt: group.createdAt,
       updatedAt: group.updatedAt,
@@ -78,16 +81,23 @@ export async function getGroupList() {
   }
 }
 
-export async function addGroup(groupInfo: { name: string, modelType?: 'all' | 'specific', models?: number[] }) {
+export async function addGroup(groupInfo: {
+  name: string, modelType?: 'all' | 'specific',
+  tokenLimitType: 'unlimited' | 'limited',
+  dailyTokenLimit?: number | null,
+  models?: number[]
+}) {
   const session = await auth();
   if (!session?.user.isAdmin) throw new Error('Not allowed');
 
-  let allModels: typeof llmModels.$inferSelect[] = []
+  // let allModels: typeof llmModels.$inferSelect[] = []
   try {
 
     const [group] = await db.insert(groups).values({
       name: groupInfo.name,
       modelType: groupInfo.modelType,
+      tokenLimitType: groupInfo.tokenLimitType,
+      dailyTokenLimit: groupInfo.dailyTokenLimit,
     }).returning();
 
     if (groupInfo.modelType === 'specific' && groupInfo.models?.length) {
@@ -147,53 +157,6 @@ export async function deleteGroup(groupId: string) {
     }
   }
 }
-export async function updateGroup2(groupId: string, groupInfo: {
-  models?: number[];
-  name: string;
-  modelType: 'all' | 'specific';
-}) {
-  const session = await auth();
-  if (!session?.user.isAdmin) {
-    throw new Error('not allowed');
-  }
-  let allModels: typeof llmModels.$inferSelect[] = []
-  try {
-    if (groupInfo.modelType === 'all') {
-      allModels = []
-    } else if (groupInfo.models?.length) {
-      allModels = await db.query.llmModels.findMany({
-        where: (inArray(llmModels.id, groupInfo.models))
-      })
-
-    }
-    await db.update(groups)
-      .set({
-        name: groupInfo.name,
-        modelType: groupInfo.modelType
-      })
-      .where(eq(groups.id, groupId));
-    await db.delete(groupModels)
-      .where(eq(groupModels.groupId, groupId));
-    if (allModels.length > 0) {
-      await db.insert(groupModels)
-        .values(
-          allModels.map(model => ({
-            groupId: groupId,
-            modelId: model.id,
-          }))
-        )
-    }
-    return {
-      success: true,
-      message: 'update success'
-    }
-  } catch (error) {
-    return {
-      success: false,
-      message: 'update fail \n' + error
-    }
-  }
-}
 
 export async function updateGroup(groupId: string, groupInfo: GroupActionParams) {
   const session = await auth();
@@ -203,6 +166,8 @@ export async function updateGroup(groupId: string, groupInfo: GroupActionParams)
       .set({
         name: groupInfo.name,
         modelType: groupInfo.modelType,
+        tokenLimitType: groupInfo.tokenLimitType,
+        dailyTokenLimit: groupInfo.dailyTokenLimit,
       })
       .where(eq(groups.id, groupId));
 

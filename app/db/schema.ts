@@ -8,11 +8,12 @@ import {
   integer,
   varchar,
   json,
+  date,
   unique
 } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 import { customAlphabet } from 'nanoid';
-import { MCPToolResponse, MCPServer } from '@/app/adapter/interface'
+import { MCPToolResponse } from '@/app/adapter/interface'
 const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 10)
 
 export const users = pgTable("user", {
@@ -31,6 +32,8 @@ export const users = pgTable("user", {
   isAdmin: boolean("isAdmin").default(false),
   image: text("image"),
   groupId: text("groupId"),
+  todayTotalTokens: integer('today_total_tokens').notNull().default(0),
+  usageUpdatedAt: timestamp('usage_updated_at').notNull().defaultNow(),
   createdAt: timestamp('created_at').defaultNow(),
 })
 
@@ -173,6 +176,9 @@ export const chats = pgTable("chats", {
   avatarType: avatarType('avatar_type').notNull().default('none'),
   prompt: text(),
   starAt: timestamp('star_at'),
+  inputTokens: integer('input_tokens').notNull().default(0),
+  outputTokens: integer('output_tokens').notNull().default(0),
+  totalTokens: integer('total_tokens').notNull().default(0),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
@@ -283,20 +289,43 @@ export interface Message {
   providerId: string;
   model: string;
   type: 'text' | 'image' | 'error' | 'break';
+  inputTokens?: number,
+  outputTokens?: number,
+  totalTokens?: number,
   errorType?: string,
   errorMessage?: string,
   createdAt: Date;
 }
 export const groupModelType = pgEnum('group_model_type', ['all', 'specific'])
+export const tokenLimitType = pgEnum('token_limit_type', ['unlimited', 'limited'])
 
 export const groups = pgTable("groups", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
   modelType: groupModelType('model_type').notNull().default('all'),
+  tokenLimitType: tokenLimitType('token_limit_type').notNull().default('unlimited'),
+  dailyTokenLimit: integer('daily_token_limit'),
   isDefault: boolean("is_default").default(false),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 })
+
+export const usageReport = pgTable("usage_report", {
+  date: date("date").notNull(),
+  userId: text("user_id"),
+  modelId: varchar('model_id', { length: 255 }),
+  providerId: varchar("provider_id", { length: 255 }),
+  inputTokens: integer('input_tokens').notNull().default(0),
+  outputTokens: integer('output_tokens').notNull().default(0),
+  totalTokens: integer('total_tokens').notNull().default(0),
+},
+  (usageReport) => [
+    {
+      compositePK: primaryKey({
+        columns: [usageReport.date, usageReport.userId, usageReport.modelId, usageReport.providerId],
+      }),
+    },
+  ])
 
 export const mcpServers = pgTable("mcp_servers", {
   name: text("name").notNull().primaryKey(),

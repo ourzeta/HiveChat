@@ -18,7 +18,6 @@ const CustomModelModal: React.FC<CustomModelModalProps> = ({
   providerName,
 }) => {
   const t = useTranslations('Admin.Models');
-  const [messageApi, contextHolder] = message.useMessage();
   const [customModelForm] = Form.useForm();
   const { addCustomModel } = useModelListStore();
 
@@ -26,36 +25,40 @@ const CustomModelModal: React.FC<CustomModelModalProps> = ({
     modelId: string;
     modelDisplayName: string;
     modelMaxTokens: number;
-    modelVisionSupport: boolean
+    modelVisionSupport: boolean;
+    modelToolSupport: boolean;
   }) => {
-    await addCustomModel({
-      id: values.modelId,
-      displayName: values.modelDisplayName,
-      maxTokens: values.modelMaxTokens * 1024,
-      supportVision: values.modelVisionSupport,
-      selected: true,
-      type: 'custom',
-      provider: {
-        id: providerId,
-        providerName: providerName
-      }
-    });
+
     const result = await addCustomModelInServer({
       name: values.modelId,
       displayName: values.modelDisplayName,
       maxTokens: values.modelMaxTokens * 1024,
       supportVision: values.modelVisionSupport,
+      supportTool: values.modelToolSupport,
       selected: true,
       type: 'custom',
       providerId: providerId,
       providerName: providerName
-    })
+    });
     if (result.status === 'success') {
-      messageApi.success(t('addModelSuccess'));
+      await addCustomModel({
+        id: values.modelId,
+        displayName: values.modelDisplayName,
+        maxTokens: values.modelMaxTokens * 1024,
+        supportVision: values.modelVisionSupport,
+        supportTool: values.modelToolSupport,
+        selected: true,
+        type: 'custom',
+        provider: {
+          id: providerId,
+          providerName: providerName
+        }
+      });
+      message.success(t('addModelSuccess'));
       customModelForm.resetFields();
       setIsCustomModelModalOpen(false);
     } else {
-      messageApi.error(result.message);
+      message.error(result.message);
     }
   };
 
@@ -105,6 +108,13 @@ const CustomModelModal: React.FC<CustomModelModalProps> = ({
             name='modelVisionSupport'
             valuePropName="checked"
             label={<span className='font-medium'>{t('supportVision')}</span>}
+          >
+            <Switch defaultChecked={false} />
+          </Form.Item>
+          <Form.Item
+            name='modelToolSupport'
+            valuePropName="checked"
+            label={<span className='font-medium'>支持工具调用</span>}
           >
             <Switch defaultChecked={false} />
           </Form.Item>

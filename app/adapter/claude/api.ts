@@ -391,7 +391,7 @@ export default class ClaudeApi implements LLMApi {
         method: 'POST',
         headers,
         body: JSON.stringify({
-          "stream": false,
+          "stream": true,
           'max_tokens': 2048,
           "model": modelId,
           "messages": [{

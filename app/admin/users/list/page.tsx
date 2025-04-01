@@ -17,7 +17,7 @@ const UserListTab = () => {
   const t = useTranslations('Admin.Users');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
-  const [userList, setUserList] = useState<UserType[]>([]);
+  const [userList, setUserList] = useState<(UserType & { group: (null | { dailyTokenLimit: number | null, tokenLimitType: 'limited' | 'unlimited', name: string }) })[]>([]);
   const [userFetchStatus, setUserFetchStatus] = useState(true);
   const [passwordVisible, setPasswordVisible] = React.useState(false);
   const [form] = Form.useForm();
@@ -128,7 +128,7 @@ const UserListTab = () => {
     }
   }
   return (
-    <div className='container max-w-4xl mb-6 px-4 md:px-0 pt-6'>
+    <div className='container mb-6 px-4 md:px-0 pt-6'>
       <div className='w-full mb-6 flex flex-row justify-between items-center'>
         <section>
           分组：
@@ -147,25 +147,32 @@ const UserListTab = () => {
         <><div className="overflow-hidden rounded-lg border border-slate-300">
           <table className='border-collapse w-full'>
             <thead>
-              <tr className="bg-slate-100">
+              <tr className="bg-slate-100 text-sm">
                 <th className='border-b border-r border-slate-300 p-2'>#</th>
                 <th className='border-b border-r border-slate-300 p-2 min-w-16'>昵称</th>
                 <th className='border-b border-r border-slate-300 p-2'>Email</th>
                 <th className='border-b border-r border-slate-300 p-2'>{t('role')}</th>
                 <th className='border-b border-r border-slate-300 p-2'>所属分组</th>
+                <th className='border-b border-r border-slate-300 p-2'>每日限额</th>
+                <th className='border-b border-r border-slate-300 p-2'>今日用量</th>
                 <th className='border-b border-r border-slate-300 p-2'>{t('registerAt')}</th>
-                <th className='border-b border-slate-300 p-2 w-36'>{t('action')}</th>
+                <th className='border-b border-slate-300 p-2 w-32'>{t('action')}</th>
               </tr>
             </thead>
             <tbody>
               {userList.map((user, index) => (
-                <tr key={user.id} className="hover:bg-slate-50">
+                <tr key={user.id} className="hover:bg-slate-50 ">
                   <td className='border-t border-r text-center text-sm border-slate-300 p-2'>{index + 1}</td>
                   <td className='border-t border-r text-sm border-slate-300 p-2'>{user.name ? user.name : '-'}</td>
                   <td className='border-t border-r text-sm border-slate-300 p-2'>{user.email ? user.email : '-'}</td>
                   <td className='border-t border-r text-sm text-center border-slate-300 p-2'>{user.isAdmin ? <Tag color="blue">{t('roleAdmin')}</Tag> : <Tag>{t('roleUser')}</Tag>}</td>
                   <td className='border-t border-r text-sm text-center w-48 border-slate-300 p-2'>{user.groupId ? groupList.filter((group) => group.id === user.groupId)[0]?.name : '-'}</td>
-                  <td className='border-t border-r text-sm text-center w-48 border-slate-300 p-2'>{user.createdAt?.toLocaleString('sv-SE')}</td>
+                  <td className='border-t border-r text-sm text-right border-slate-300 p-2'>{
+                    user.group?.tokenLimitType === 'unlimited' ? <Tag>不限</Tag> :
+                      <span className='text-xs'>{user.group?.dailyTokenLimit?.toLocaleString()} Tokens</span>
+                  }</td>
+                  <td className='border-t border-r text-xs text-right border-slate-300 p-2'>{user.todayTotalTokens.toLocaleString()} Tokens</td>
+                  <td className='border-t border-r text-xs text-center w-36 border-slate-300 p-2'>{user.createdAt?.toLocaleString('sv-SE')}</td>
                   <td className='border-t text-center text-sm w-32 border-slate-300 p-2'>
                     <Button
                       size='small'

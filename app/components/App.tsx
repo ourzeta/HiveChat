@@ -56,7 +56,10 @@ const App: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div
           className={clsx(
             "h-full w-0 grow flex flex-col transition-all duration-300 ease-in-out overflow-y-auto",
-            { "w-full -ml-72": isSidebarCollapsed }
+            {
+              "md:w-full md:-ml-72": isSidebarCollapsed,
+              "w-full": isSidebarCollapsed
+            }
           )}
         >
           {children}

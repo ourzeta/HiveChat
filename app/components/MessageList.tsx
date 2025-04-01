@@ -191,7 +191,7 @@ export const MessageList = (props: { chat_id: string }) => {
           currentProvider={currentModel.provider.id}
         />
         {responseStatus === 'done' && !isPending &&
-          <div className='md:hidden flex justify-center items-center mt-1'>
+          <div className='md:hidden flex justify-center items-center mt-2'>
             <div
               onClick={() => { router.push('/chat') }}
               className='flex flex-row px-3 py-2 items-center cursor-pointer justify-center border border-gray-300 text-gray-500 text-xs rounded-2xl hover:bg-gray-100 transition-colors duration-200'

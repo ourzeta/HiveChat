@@ -1,9 +1,11 @@
 import { addMessageInServer } from '@/app/chat/actions/message';
+import { updateUsage } from './actions';
 
 export default async function proxyGeminiStream(response: Response,
   messageInfo: {
     chatId?: string,
     model: string,
+    userId: string,
     providerId: string
   }): Promise<Response> {
   const transformStream = new TransformStream({
@@ -72,8 +74,25 @@ export default async function proxyGeminiStream(response: Response,
           model: messageInfo.model,
           providerId: messageInfo.providerId,
         }
-        addMessageInServer(toAddMessage);
+        const id = await addMessageInServer(toAddMessage);
+        // 发送一个自定义的消息，包含消息ID
+        const metadataEvent = {
+          isDone: true,
+          messageId: id
+        };
+        const metadataString = `data: ${JSON.stringify({ metadata: metadataEvent })}\n\n`;
+        controller.enqueue(new TextEncoder().encode(metadataString));
       }
+      updateUsage(messageInfo.userId, {
+        chatId: messageInfo.chatId,
+        date: new Date().toISOString().split('T')[0],
+        userId: messageInfo.userId,
+        modelId: messageInfo.model,
+        providerId: messageInfo.providerId,
+        inputTokens: promptTokens,
+        outputTokens: completionTokens,
+        totalTokens: totalTokens,
+      });
       controller.close();
     }
   });

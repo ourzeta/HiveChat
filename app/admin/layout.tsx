@@ -1,13 +1,15 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import Image from "next/image";
 import Link from 'next/link';
-import { Popconfirm } from 'antd';
+import { Popconfirm, Button } from 'antd';
 import { SettingOutlined, LogoutOutlined, RollbackOutlined, UserOutlined } from '@ant-design/icons';
 import clsx from 'clsx';
 import { usePathname } from 'next/navigation';
 import logo from "@/app/images/logo.png";
 import Assistant from "@/app/images/assistant.svg";
+import ToggleSidebar from "@/app/images/hideSidebar.svg";
+import useAdminSidebarCollapsed from '@/app/store/adminSidebarCollapsed';
 import Spark from "@/app/images/spark.svg";
 import Mcp from "@/app/images/mcp.svg";
 import { useSession, signOut } from 'next-auth/react';
@@ -22,6 +24,7 @@ export default function RootLayout({
   const c = useTranslations('Common');
   const t = useTranslations('Admin');
   const pathname = usePathname();
+  const { isSidebarCollapsed, setIsSidebarCollapsed } = useAdminSidebarCollapsed();
   const { data: session, status } = useSession();
   if (status === 'loading') {
     return <main className="h-dvh flex justify-center items-center">
@@ -34,12 +37,28 @@ export default function RootLayout({
   }
   return (
     <div className="flex flex-row min-h-screen h-dvh">
-      <div className="flex flex-col w-64 bg-gray-100 min-h-screen h-screen p-4 box-border">
-        <div className="flex items-center flex-row flex-grow-0 mb-2 h-10 mr-4">
+      {/* 移动端遮罩层 */}
+      {!isSidebarCollapsed && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/30 z-40"
+          onClick={() => setIsSidebarCollapsed(true)}
+        />
+      )}
+      <div className={clsx(
+        "flex flex-col w-64 bg-gray-100 h-screen p-4 box-border transition-transform duration-300 ease-in-out z-50",
+        "fixed md:relative",
+        isSidebarCollapsed ? "md:-translate-x-full -translate-x-64" : ""
+      )}>
+        <div className="flex items-center flex-row flex-grow-0 mb-2 h-10 justify-between">
           <Link href="/" className='flex items-center'>
             <Image src={logo} className="ml-1" alt="HiveChat logo" width={24} height={24} />
             <span className='text-xl ml-2'>Hivechat Admin</span>
           </Link>
+          <Button
+            icon={<ToggleSidebar style={{ 'color': '#999', 'fontSize': '20px', 'verticalAlign': 'middle' }} />}
+            type='text'
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          />
         </div>
         <hr className='mb-4' />
         <div className={clsx('hover:bg-gray-200 rounded-lg p-2', { 'bg-gray-200': pathname.startsWith('/admin/llm') })}>
@@ -57,11 +76,11 @@ export default function RootLayout({
             <UserOutlined style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>{t('users')}</span>
           </Link>
         </div>
-        {/* <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/mcp') })}>
+        <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/mcp') })}>
           <Link className='w-full flex items-center' href={"/admin/mcp"}>
             <Mcp style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>MCP 服务器</span>
           </Link>
-        </div> */}
+        </div>
         <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/system') })}>
           <Link className='w-full flex' href={"/admin/system"}>
             <SettingOutlined style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>{t('system')}</span>
@@ -98,7 +117,10 @@ export default function RootLayout({
           </div>
         </div>
       </div>
-      <div className='flex flex-row w-0 grow mx-auto justify-center overflow-auto h-dvh'>
+      <div className={clsx(
+        'flex flex-row grow mx-auto justify-center overflow-auto transition-all duration-300 ease-in-out h-dvh',
+        isSidebarCollapsed ? 'md:-ml-64' : 'md:ml-0'
+      )}>
         {children}
       </div>
     </div>

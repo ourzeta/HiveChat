@@ -224,21 +224,32 @@ const AdaptiveTextarea = (props: {
                 open={mcpServerSelectOpen}
                 onOpenChange={(open) => { SetMcpServerSelectOpen(open) }}
               >
-                <Tooltip title="MCP 服务器" placement='bottom' arrow={false} >
-                  {hasMcpSelected ?
-                    <Button type="text"
-                      color="primary"
-                      variant="filled"
-                      style={{ marginRight: '4px' }}
-                      icon={<McpIcon style={{ verticalAlign: 'middle', width: '20px', height: '20px' }} />}
-                    />
+                {
+                  props.model?.supportTool ?
+                    <Tooltip title="MCP 服务器" placement='bottom' arrow={false} >
+                      {hasMcpSelected ?
+                        <Button type="text"
+                          color="primary"
+                          variant="filled"
+                          style={{ marginRight: '4px' }}
+                          icon={<McpIcon style={{ verticalAlign: 'middle', width: '20px', height: '20px' }} />}
+                        />
+                        :
+                        <Button type="text"
+                          style={{ marginRight: '4px' }}
+                          icon={<McpIcon style={{ verticalAlign: 'middle', width: '20px', height: '20px' }} />}
+                        />
+                      }
+                    </Tooltip>
                     :
-                    <Button type="text"
+                    <Tooltip title="当前模型不支持 MCP 工具"><Button type="text"
+                      disabled
                       style={{ marginRight: '4px' }}
                       icon={<McpIcon style={{ verticalAlign: 'middle', width: '20px', height: '20px' }} />}
                     />
-                  }
-                </Tooltip>
+                    </Tooltip>
+                }
+
               </Popover>
             }
 

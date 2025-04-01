@@ -51,3 +51,45 @@ export async function updatePassword(email: string, oldPassword: string, newPass
     }
   }
 }
+
+export const getUserUsage = async () => {
+  const session = await auth();
+  if (!session?.user) {
+    throw new Error('not allowed');
+  }
+  let userTodayTotalTokens = 0;
+  let userDailyTokenLimit = 0;
+  let userTokenLimitType = 'limited';
+  const userDetail = await db.query.users.findFirst({
+    where: eq(users.id, session.user.id),
+    with: {
+      group: {
+        columns: {
+          tokenLimitType: true,
+          dailyTokenLimit: true,
+        }
+      }
+    }
+  });
+
+  if (userDetail && userDetail.group) {
+    const { tokenLimitType, dailyTokenLimit } = userDetail.group;
+    userTokenLimitType = tokenLimitType || 'limited' as const;
+    userDailyTokenLimit = dailyTokenLimit || 0;
+  }
+
+  // 获取今天0点的时间
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (userDetail?.usageUpdatedAt && new Date(userDetail.usageUpdatedAt) < today) {
+    userTodayTotalTokens = 0;
+  } else {
+    userTodayTotalTokens = userDetail?.todayTotalTokens || 0;
+  }
+  return {
+    todayTotalTokens: userTodayTotalTokens,
+    dailyTokenLimit: userDailyTokenLimit,
+    tokenLimitType: userTokenLimitType,
+  }
+}

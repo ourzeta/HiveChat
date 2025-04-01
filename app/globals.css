@@ -176,3 +176,21 @@ ol {
 .-translate-x-full {
   transform: translateX(-100%);
 }
+
+.model-select-dropdown ::-webkit-scrollbar {
+  width: 6px;
+}
+
+.model-select-dropdown ::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.model-select-dropdown ::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.model-select-dropdown ::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}

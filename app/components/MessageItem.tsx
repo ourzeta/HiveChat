@@ -2,7 +2,7 @@ import React, { useState, useEffect, memo, useMemo } from 'react';
 import { Message } from '@/app/db/schema';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Button, Tooltip, message, Alert, Avatar, Popconfirm, Image as AntdImage } from "antd";
-import { CopyOutlined, SyncOutlined, DeleteOutlined, DownOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { CopyOutlined, SyncOutlined, DeleteOutlined, DownOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import useModelListStore from '@/app/store/modelList';
 import ThinkingIcon from '@/app/images/thinking.svg';
 import MarkdownRender from '@/app/components/Markdown';
@@ -57,6 +57,39 @@ const MessageItem = memo((props: {
               showIcon
               style={{ marginLeft: '0.75rem' }}
               message={t('apiTimeout')}
+              type="warning"
+            />
+            <div className='invisible flex flex-row items-center ml-3 my-1 group-hover:visible'>
+              <Tooltip title={t('deleteNotice')}>
+                <Popconfirm
+                  title={t('deleteNotice')}
+                  description={t('currentMessageDelete')}
+                  onConfirm={() => props.deleteMessage(props.index)}
+                  okText={t('confirm')}
+                  cancelText={t('cancel')}
+                  placement='bottom'
+                >
+                  <Button type="text" size='small'>
+                    <DeleteOutlined style={{ color: 'gray' }} />
+                  </Button>
+                </Popconfirm>
+              </Tooltip>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  if (props.item.type === 'error' && props.item.errorType === 'OverQuotaError') {
+    return (
+      <div className="flex container mx-auto px-4 max-w-screen-md w-full flex-col justify-center items-center" >
+        <div className='items-start flex  max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
+          {ProviderAvatar}
+          <div className='flex flex-col w-0 grow group' style={{ maxWidth: '28rem' }}>
+            <Alert
+              showIcon
+              style={{ marginLeft: '0.75rem' }}
+              message="超出今日使用限额。请次日再重试，或联系管理员增加额度。"
               type="warning"
             />
             <div className='invisible flex flex-row items-center ml-3 my-1 group-hover:visible'>
@@ -245,9 +278,11 @@ const MessageItem = memo((props: {
                       onClick={() => { setIsOpen(!isOpen) }}
                     >
                       <span className='mr-2'>调用 {mcp.tool?.serverName} 的工具： {mcp.tool?.name}</span>
-                      <div>
-                        <CheckCircleOutlined style={{ color: 'green' }} /><span className='ml-1 text-green-700'>已完成</span>
-                      </div>
+                      {
+                        mcp.response.isError ?
+                          <div><CloseCircleOutlined style={{ color: 'red' }} /><span className='ml-1 text-red-600'>调用失败</span></div>
+                          : <div><CheckCircleOutlined style={{ color: 'green' }} /><span className='ml-1 text-green-700'>已完成</span></div>
+                      }
                       <DownOutlined
                         className='ml-auto mr-1'
                         style={{
@@ -257,8 +292,11 @@ const MessageItem = memo((props: {
                         }}
                       />
                     </summary>
-                    <div className='p-4 text-xs border-t'>
-                      {JSON.stringify(mcp.response)}
+                    <div className='p-4 pb-0 text-xs border-t'>
+                      <span className='mb-2 font-medium'>输入参数</span>
+                      <pre className='scrollbar-thin' style={{ marginTop: '6px' }}>{JSON.stringify(mcp.tool.inputSchema, null, 2)}</pre>
+                      <span className='mb-2 font-medium'>调用返回</span>
+                      <pre className='scrollbar-thin bg-white' style={{ marginTop: '6px' }}>{JSON.stringify(mcp.response, null, 2)}</pre>
                     </div>
                   </details>
                 })
@@ -297,6 +335,11 @@ const MessageItem = memo((props: {
                   </Button>
                 </Popconfirm>
               </Tooltip>
+              {props.item.totalTokens && <>
+                <span className='text-xs text-gray-500 ml-2'>Tokens:{props.item.totalTokens.toLocaleString()}</span>
+                <span className='text-xs text-gray-500 ml-2'>↑{props.item.inputTokens?.toLocaleString()}</span>
+                <span className='text-xs text-gray-500 ml-2'>↓{props.item.outputTokens?.toLocaleString()}</span>
+              </>}
             </div>
           </div>
         </div>

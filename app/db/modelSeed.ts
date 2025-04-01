@@ -39,6 +39,7 @@ export async function initializeModels() {
     displayName: model.displayName,
     maxTokens: model.maxTokens,
     supportVision: model.supportVision,
+    supportTool: model.supportTool,
     selected: model.selected,
     providerId: model.provider.id,
     providerName: model.provider.providerName,

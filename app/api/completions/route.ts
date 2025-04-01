@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { auth } from "@/auth";
 import { getLlmConfigByProvider, completeEndpoint } from '@/app/utils/llms';
+import { isUserWithinQuota } from './actions';
 import proxyOpenAiStream from './proxyOpenAiStream';
 import proxyClaudeStream from './proxyClaudeStream';
 import proxyGeminiStream from './proxyGeminiStream';
@@ -12,6 +13,14 @@ export async function POST(req: NextRequest) {
   if (!session) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+  const userId = session.user.id;
+  const isUserWithinQuotaResult = await isUserWithinQuota(userId);
+  if (!isUserWithinQuotaResult) {
+    return new Response(JSON.stringify({ error: 'Out of quota' }), {
+      status: 429,
       headers: { 'Content-Type': 'application/json' },
     });
   }
@@ -73,18 +82,21 @@ export async function POST(req: NextRequest) {
         return proxyClaudeStream(response, {
           chatId: xChatId || undefined,
           model: parsedBody?.model || xModel,
+          userId: userId,
           providerId: xProvider
         });
       case 'gemini':
         return proxyGeminiStream(response, {
           chatId: xChatId || undefined,
           model: parsedBody?.model || xModel,
+          userId: userId,
           providerId: xProvider
         });
       default:
         return proxyOpenAiStream(response, {
           chatId: xChatId || undefined,
           model: parsedBody?.model || xModel,
+          userId: userId,
           providerId: xProvider!
         });
     }

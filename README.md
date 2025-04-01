@@ -10,8 +10,13 @@
 管理员一人配置，全团队轻松使用各种 AI 模型。
 
 * 支持配置邮箱登录或企业微信、钉钉、飞书登录
-* LaTeX 和 Markdown 渲染
+* 支持分组管理用户
+    * 针对分组用户设置不同可使用的模型
+    * 针对分组用户可分别设置每日 Token 限额
+
+* 支持配置 MCP 服务器（SSE 模式）
 * DeepSeek 思维链展示
+* LaTeX 和 Markdown 渲染
 * 图像理解
 * AI 智能体
 * 云端数据存储
@@ -37,20 +42,29 @@
 
 ![image](https://jiantuku.oss-cn-beijing.aliyuncs.com/share/003.png)
 
+MCP 使用
+
+![image](https://jiantuku.oss-cn-beijing.aliyuncs.com/share/mcp-use.png)
+
 ### 管理后台
+
 * 管理员配置 AI 大模型服务商
 * 可手动添加用户，也可开启或关闭账号注册，适用于公司/学校/组织等小型团队
 * 查看和管理全部用户
 
-![image](https://jiantuku.oss-cn-beijing.aliyuncs.com/share/001.png)
+![image](https://jiantuku.oss-cn-beijing.aliyuncs.com/share/model.png)
 
 <details>
   <summary>更多图片</summary>
-   用户管理
-   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/002.png" />
-   开启或关闭用户注册
-   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/004.png" />
+   用户管理，可以为用户设置分组，针对不同分组设置可见模型和 Token 限额
+   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/users.png" />
+   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/user-group.png" />
+   邮箱以及第三方登录
+   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/system.png" />
+   MCP 配置
+   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/mcp.png" />
 </details>
+
 
 ## 2. 在线演示
 
@@ -150,6 +164,9 @@ npm run start
 访问 `http://localhost:3000/setup` (实际使用的域名和端口号)，即可进入管理员账号设置页面，设置完成后，即可正常使用系统。
 
 ### 方法 2：Docker 部署
+
+由于近期更新频繁，暂未提供 Docker 升级数据库的 SQL 脚本，如果是历史版本升级，测试用途的用户可直接删除存储卷下的 `hivechat_postgres_data`，数据库会自动重新初始化。如果正式环境 Docker 部署有升级需求，可联系作者(wechat:wuhaoworld)。 其他部署方式没有此问题。
+
 1. 克隆本项目到本地
 ```
 git clone https://github.com/HiveNexus/hivechat.git
@@ -205,6 +222,7 @@ docker compose up -d
 
 4. 初始化管理员账号
    
+
 访问 `http://localhost:3000/setup` (实际使用的域名和端口号)，即可进入管理员账号设置页面，设置完成后，即可正常使用系统。
 
 

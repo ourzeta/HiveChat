@@ -1,5 +1,6 @@
 'use server';
 import { mcpServers, mcpTools } from '@/app/db/schema';
+import { MCPTool } from '@/app/adapter/interface';
 import mcpService from '@/app/service/MCPService';
 import { db } from '@/app/db';
 import { eq } from 'drizzle-orm';
@@ -154,5 +155,26 @@ export async function deleteMcpServer(name: string) {
       success: false,
       message: 'database delete error'
     }
+  }
+}
+
+export async function fetchToolList(serverName: string): Promise<MCPTool[]> {
+  const session = await auth();
+  if (!session?.user.isAdmin) {
+    return [];
+  }
+  try {
+    const result = await db.query.mcpTools.findMany({
+      where: eq(mcpTools.serverName, serverName),
+    });
+    return result.map(item => ({
+      id: item.name,
+      name: item.name,
+      description: item.description || undefined,
+      serverName: item.serverName,
+      inputSchema: JSON.parse(item.inputSchema)
+    }));
+  } catch (error) {
+    return [];
   }
 }

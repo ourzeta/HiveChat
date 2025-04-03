@@ -33,10 +33,10 @@ const ModelSelect = ({ chatId }: { chatId: string | null }) => {
 
             <span className='ml-1'>{model.displayName}</span>
           </div>
-          <div>
+          <div className='ml-4'>
             {model?.supportVision &&
               <Tooltip title='支持图像理解'>
-                <PictureOutlined style={{ color: '#888', fontSize: '12px', marginLeft: '24px' }} />
+                <PictureOutlined style={{ color: '#888', fontSize: '12px', marginLeft: '8px' }} />
               </Tooltip>
             }
             {model?.supportTool &&

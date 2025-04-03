@@ -49,9 +49,6 @@ jobs:
         with:
           images: hivenexus/hivechat
           tags: |
-            type=ref,event=branch
-            type=ref,event=tag
-            type=sha,format=short
             type=raw,value=${{ github.event.inputs.version || 'latest' }}
       
       - name: Build and push

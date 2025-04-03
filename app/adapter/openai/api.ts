@@ -23,6 +23,9 @@ export default class ChatGPTApi implements LLMApi {
   private answer = '';
   private reasoning_content = '';
   private finishReason = '';
+  private inputTokens = 0;
+  private outputTokens = 0;
+  private totalTokens = 0;
   private mcpTools: MCPToolResponse[] = [];
   private finished = false;
   private isThinking = false;
@@ -143,7 +146,6 @@ export default class ChatGPTApi implements LLMApi {
       try {
         const json = JSON.parse(text);
         if (json?.metadata && json?.metadata.isDone) {
-
           if (this.finishReason === 'tool_calls') {
             // 需要循环调用 tools 再把获取的结果给到大模型
             const toolCalls = Object.values(final_tool_calls).map(this.cleanToolCallArgs);
@@ -222,6 +224,9 @@ export default class ChatGPTApi implements LLMApi {
               id: json.metadata.messageId,
               content: this.answer,
               reasoning_content: this.reasoning_content,
+              inputTokens: this.inputTokens,
+              outputTokens: this.outputTokens,
+              totalTokens: this.totalTokens,
               mcpTools: this.mcpTools,
             }, shouldContinue);
             syncMcpTools(json.metadata.messageId, this.mcpTools);
@@ -295,6 +300,9 @@ export default class ChatGPTApi implements LLMApi {
               id: json.metadata.messageId,
               content: this.answer,
               reasoning_content: this.reasoning_content,
+              inputTokens: this.inputTokens,
+              outputTokens: this.outputTokens,
+              totalTokens: this.totalTokens,
               mcpTools: this.mcpTools,
             }, false);
             syncMcpTools(json.metadata.messageId, this.mcpTools);
@@ -303,6 +311,12 @@ export default class ChatGPTApi implements LLMApi {
             return;
           }
           return;
+        }
+        const usage = json.usage || json.choices[0].usage; // 兼容 Moonshot
+        if (usage) {
+          this.inputTokens = usage.prompt_tokens;
+          this.outputTokens = usage.completion_tokens;
+          this.totalTokens = usage.total_tokens;
         }
         if (json?.choices.length === 0) {
           return;
@@ -489,6 +503,9 @@ export default class ChatGPTApi implements LLMApi {
             "role": "user",
             "content": "hello"
           }],
+          "stream_options": {
+            "include_usage": true
+          }
         }),
       });
       if (!res.ok) {

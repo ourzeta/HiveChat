@@ -13,6 +13,9 @@ export default class GeminiApi implements LLMApi {
   private answer = '';
   private reasoning_content = '';
   private finishReason = '';
+  private inputTokens = 0;
+  private outputTokens = 0;
+  private totalTokens = 0;
   private mcpTools: MCPToolResponse[] = [];
   private fcallParts: FunctionCallPart[] = [];
   private finished = false;
@@ -149,6 +152,9 @@ export default class GeminiApi implements LLMApi {
               id: json.metadata.messageId,
               content: this.answer,
               reasoning_content: this.reasoning_content,
+              inputTokens: this.inputTokens,
+              outputTokens: this.outputTokens,
+              totalTokens: this.totalTokens,
               mcpTools: this.mcpTools,
             }, true);
             syncMcpTools(json.metadata.messageId, this.mcpTools);
@@ -222,8 +228,14 @@ export default class GeminiApi implements LLMApi {
             } finally {
               clearTimeout(timeoutId);
             }
+            return;
           } else {
-            options.onFinish({ content: this.answer }, false);
+            options.onFinish({
+              content: this.answer,
+              inputTokens: this.inputTokens,
+              outputTokens: this.outputTokens,
+              totalTokens: this.totalTokens,
+            }, false);
             clear();
             return;
           }
@@ -242,7 +254,12 @@ export default class GeminiApi implements LLMApi {
             .filter((part: any) => 'functionCall' in part);
           this.fcallParts.push(...fcallParts);
         }
-
+        const usage = json?.usageMetadata;
+        if (firstCandidate.finishReason && usage) {
+          this.inputTokens = usage.promptTokenCount;
+          this.outputTokens = usage.candidatesTokenCount;
+          this.totalTokens = usage.totalTokenCount;
+        }
         if (firstCandidate.finishReason) {
           this.finishReason = firstCandidate.finishReason;
           return;

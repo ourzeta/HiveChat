@@ -165,6 +165,7 @@
       "currentModelWillbeDeleted": "当前模型将被删除",
       "deleteSuccess": "删除成功",
       "supportVision": "支持图像理解",
+      "supportTool": "支持 MCP 工具调用",
       "conversationUpTo": "单个会话最多支持",
       "allAdded": "已全部添加",
       "confirmAndRetry": "确认并重试",

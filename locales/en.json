@@ -165,6 +165,7 @@
       "currentModelWillbeDeleted": "Current Model Will be Deleted",
       "deleteSuccess": "Deleted successfully",
       "supportVision": "Support Vision",
+      "supportTool": "Support MCP Tools",
       "conversationUpTo": "The conversation supports up to",
       "allAdded": "All models have been added.",
       "confirmAndRetry": "Confirm and Retry",

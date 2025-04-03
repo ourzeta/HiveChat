@@ -23,9 +23,9 @@ export default async function proxyGeminiStream(response: Response,
     async start(controller: ReadableStreamDefaultController) {
       let bufferedData = '';
       let completeResponse = '';
-      let promptTokens = null;
-      let completionTokens = null;
-      let totalTokens = null;
+      let promptTokens = 0;
+      let completionTokens = 0;
+      let totalTokens = 0;
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;

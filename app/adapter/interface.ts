@@ -10,6 +10,9 @@ export interface ResponseContent {
   id?: number;
   content: string;
   reasoning_content?: string;
+  inputTokens?: number,
+  outputTokens?: number,
+  totalTokens?: number,
   mcpTools?: MCPToolResponse[];
 }
 

@@ -16,6 +16,9 @@ export default class ClaudeApi implements LLMApi {
   private controller: AbortController | null = null;
   private answer = '';
   private reasoning_content = '';
+  private inputTokens = 0;
+  private outputTokens = 0;
+  private totalTokens = 0;
   private finishReason = '';
   private mcpTools: MCPToolResponse[] = [];
   private finished = false;
@@ -158,9 +161,14 @@ export default class ClaudeApi implements LLMApi {
                 id: json.metadata.messageId,
                 content: this.answer,
                 reasoning_content: this.reasoning_content,
+                inputTokens: this.inputTokens,
+                outputTokens: this.outputTokens,
+                totalTokens: this.totalTokens,
                 mcpTools: this.mcpTools,
               }, true);
               syncMcpTools(json.metadata.messageId, this.mcpTools);
+              this.answer = '';
+              this.reasoning_content = '';
               this.mcpTools = [];
 
               if (!this.controller) {
@@ -234,11 +242,13 @@ export default class ClaudeApi implements LLMApi {
                 clearTimeout(timeoutId);
               }
             } else {
-              // const shouldContinue: boolean = this.finishReason === 'tool_use';
               options.onFinish({
                 id: json.metadata.messageId,
                 content: this.answer,
                 reasoning_content: this.reasoning_content,
+                inputTokens: this.inputTokens,
+                outputTokens: this.outputTokens,
+                totalTokens: this.totalTokens,
                 mcpTools: this.mcpTools,
               }, false);
               syncMcpTools(json.metadata.messageId, this.mcpTools);
@@ -273,6 +283,13 @@ export default class ClaudeApi implements LLMApi {
               content: this.answer,
               mcpTools: this.mcpTools,
             });
+          }
+
+          if (type === 'message_stop') {
+            const usage = json.usage || json['amazon-bedrock-invocationMetrics'];
+            this.inputTokens = usage.inputTokenCount;
+            this.outputTokens = usage.outputTokenCount;
+            this.totalTokens = usage.inputTokenCount + usage.outputTokenCount;
           }
 
         } catch (e) {

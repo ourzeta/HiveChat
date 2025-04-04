@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { MCPTool } from '@/app/adapter/interface';
 import { getMcpServerList, addMcpServer, updateMcpServer, deleteMcpServer, fetchToolList } from './actions';
 import { Tag, Button, Modal, Form, Input, Switch, Divider, message, Skeleton } from 'antd';
-import MarkdownRender from '@/app/components/Markdown';
 import { useTranslations } from 'next-intl';
 type FormValues = {
   name: string;

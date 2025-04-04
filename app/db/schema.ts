@@ -33,6 +33,7 @@ export const users = pgTable("user", {
   image: text("image"),
   groupId: text("groupId"),
   todayTotalTokens: integer('today_total_tokens').notNull().default(0),
+  currentMonthTotalTokens: integer('current_month_total_tokens').notNull().default(0),
   usageUpdatedAt: timestamp('usage_updated_at').notNull().defaultNow(),
   createdAt: timestamp('created_at').defaultNow(),
 })
@@ -304,7 +305,7 @@ export const groups = pgTable("groups", {
   name: text("name").notNull(),
   modelType: groupModelType('model_type').notNull().default('all'),
   tokenLimitType: tokenLimitType('token_limit_type').notNull().default('unlimited'),
-  dailyTokenLimit: integer('daily_token_limit'),
+  monthlyTokenLimit: integer('monthly_token_limit'),
   isDefault: boolean("is_default").default(false),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),

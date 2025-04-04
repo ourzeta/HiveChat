@@ -25,7 +25,7 @@ type GroupActionParams = {
   modelType?: 'all' | 'specific';
   models?: number[];
   tokenLimitType: 'unlimited' | 'limited',
-  dailyTokenLimit?: number | null,
+  monthlyTokenLimit?: number | null,
 };
 
 
@@ -67,7 +67,7 @@ export async function getGroupList() {
       id: group.id,
       name: group.name,
       tokenLimitType: group.tokenLimitType,
-      dailyTokenLimit: group.dailyTokenLimit,
+      monthlyTokenLimit: group.monthlyTokenLimit,
       modelProviderList: (group as unknown as GroupWithModels).models.filter(m => m.model.provider.isActive).map(m => `${m.model.provider.providerName || 'unknown'} | ${m.model.displayName}`),
       models: (group as unknown as GroupWithModels).models.filter(m => m.model.provider.isActive).map(m => m.model.id),
       modelType: group.modelType,
@@ -84,7 +84,7 @@ export async function getGroupList() {
 export async function addGroup(groupInfo: {
   name: string, modelType?: 'all' | 'specific',
   tokenLimitType: 'unlimited' | 'limited',
-  dailyTokenLimit?: number | null,
+  monthlyTokenLimit?: number | null,
   models?: number[]
 }) {
   const session = await auth();
@@ -97,7 +97,7 @@ export async function addGroup(groupInfo: {
       name: groupInfo.name,
       modelType: groupInfo.modelType,
       tokenLimitType: groupInfo.tokenLimitType,
-      dailyTokenLimit: groupInfo.dailyTokenLimit,
+      monthlyTokenLimit: groupInfo.monthlyTokenLimit,
     }).returning();
 
     if (groupInfo.modelType === 'specific' && groupInfo.models?.length) {
@@ -167,7 +167,7 @@ export async function updateGroup(groupId: string, groupInfo: GroupActionParams)
         name: groupInfo.name,
         modelType: groupInfo.modelType,
         tokenLimitType: groupInfo.tokenLimitType,
-        dailyTokenLimit: groupInfo.dailyTokenLimit,
+        monthlyTokenLimit: groupInfo.monthlyTokenLimit,
       })
       .where(eq(groups.id, groupId));
 

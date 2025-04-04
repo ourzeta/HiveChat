@@ -22,7 +22,8 @@ const AccountPage = () => {
   const { data: session } = useSession();
   const [usageInfo, setUsageInfo] = useState<{
     todayTotalTokens: number;
-    dailyTokenLimit: number;
+    currentMonthTotalTokens: number;
+    monthlyTokenLimit: number;
     tokenLimitType: string;
   }>();
 
@@ -102,20 +103,20 @@ const AccountPage = () => {
                   status="normal"
                   format={() => {
                     return <div className='flex flex-col items-center'>
-                      <span className='text-xs'>{usageInfo.todayTotalTokens} / 不限 Tokens</span>
-                      <span className='text-xs text-gray-500'>(今日已用 / 今日上限)</span>
+                      <span className='text-xs'>{usageInfo.currentMonthTotalTokens} / 不限 Tokens</span>
+                      <span className='text-xs text-gray-500'>(本月已用 / 本月上限)</span>
                     </div>
                   }}
                 />
               }
-              {usageInfo?.tokenLimitType === 'limited' &&  usageInfo?.dailyTokenLimit &&
+              {usageInfo?.tokenLimitType === 'limited' &&  usageInfo?.monthlyTokenLimit &&
                 <Progress
-                  percent={Math.round(usageInfo.todayTotalTokens * 100 / usageInfo.dailyTokenLimit)}
+                  percent={Math.round(usageInfo.currentMonthTotalTokens * 100 / usageInfo.monthlyTokenLimit)}
                   status="normal"
                   format={() => {
                     return <div className='flex flex-col items-center'>
-                      <span className='text-xs'>{usageInfo.todayTotalTokens} / {usageInfo.dailyTokenLimit} Tokens</span>
-                      <span className='text-xs text-gray-500'>(今日已用 / 今日上限)</span>
+                      <span className='text-xs'>{usageInfo.currentMonthTotalTokens} / {usageInfo.monthlyTokenLimit} Tokens</span>
+                      <span className='text-xs text-gray-500'>(本月已用 / 本月上限)</span>
                     </div>
                   }}
                 />

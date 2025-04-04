@@ -17,7 +17,7 @@ const UserListTab = () => {
   const t = useTranslations('Admin.Users');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
-  const [userList, setUserList] = useState<(UserType & { group: (null | { dailyTokenLimit: number | null, tokenLimitType: 'limited' | 'unlimited', name: string }) })[]>([]);
+  const [userList, setUserList] = useState<(UserType & { group: (null | { monthlyTokenLimit: number | null, tokenLimitType: 'limited' | 'unlimited', name: string }) })[]>([]);
   const [userFetchStatus, setUserFetchStatus] = useState(true);
   const [passwordVisible, setPasswordVisible] = React.useState(false);
   const [form] = Form.useForm();
@@ -153,8 +153,9 @@ const UserListTab = () => {
                 <th className='border-b border-r border-slate-300 p-2'>Email</th>
                 <th className='border-b border-r border-slate-300 p-2'>{t('role')}</th>
                 <th className='border-b border-r border-slate-300 p-2'>所属分组</th>
-                <th className='border-b border-r border-slate-300 p-2'>每日限额</th>
+                <th className='border-b border-r border-slate-300 p-2'>每月限额</th>
                 <th className='border-b border-r border-slate-300 p-2'>今日用量</th>
+                <th className='border-b border-r border-slate-300 p-2'>本月用量</th>
                 <th className='border-b border-r border-slate-300 p-2'>{t('registerAt')}</th>
                 <th className='border-b border-slate-300 p-2 w-32'>{t('action')}</th>
               </tr>
@@ -169,9 +170,10 @@ const UserListTab = () => {
                   <td className='border-t border-r text-sm text-center w-48 border-slate-300 p-2'>{user.groupId ? groupList.filter((group) => group.id === user.groupId)[0]?.name : '-'}</td>
                   <td className='border-t border-r text-sm text-right border-slate-300 p-2'>{
                     user.group?.tokenLimitType === 'unlimited' ? <Tag>不限</Tag> :
-                      <span className='text-xs'>{user.group?.dailyTokenLimit?.toLocaleString()} Tokens</span>
+                      <span className='text-xs'>{user.group?.monthlyTokenLimit?.toLocaleString()} Tokens</span>
                   }</td>
                   <td className='border-t border-r text-xs text-right border-slate-300 p-2'>{user.todayTotalTokens.toLocaleString()} Tokens</td>
+                  <td className='border-t border-r text-xs text-right border-slate-300 p-2'>{user.currentMonthTotalTokens.toLocaleString()} Tokens</td>
                   <td className='border-t border-r text-xs text-center w-36 border-slate-300 p-2'>{user.createdAt?.toLocaleString('sv-SE')}</td>
                   <td className='border-t text-center text-sm w-32 border-slate-300 p-2'>
                     <Button

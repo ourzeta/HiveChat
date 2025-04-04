@@ -27,26 +27,26 @@ export const isUserWithinQuota = async (userId: string): Promise<boolean> => {
       group: {
         columns: {
           tokenLimitType: true,
-          dailyTokenLimit: true,
+          monthlyTokenLimit: true,
         }
       }
     }
   });
   if (result && result.group) {
-    const { tokenLimitType, dailyTokenLimit } = result.group;
-    const dailyTokenLimitNumber = dailyTokenLimit || 0;
+    const { tokenLimitType, monthlyTokenLimit } = result.group;
+    const monthlyTokenLimitNumber = monthlyTokenLimit || 0;
     if (tokenLimitType === 'unlimited') {
       return true;
     } else {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const now = new Date();
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
 
-      let realTodayTotalTokens = 0;
-      if (result.usageUpdatedAt > today) {
-        realTodayTotalTokens = result.todayTotalTokens;
+      let realMonthlyTotalTokens = 0;
+      if (result.usageUpdatedAt > firstDayOfMonth) {
+        realMonthlyTotalTokens = result.currentMonthTotalTokens;
       }
 
-      if (realTodayTotalTokens < dailyTokenLimitNumber) {
+      if (realMonthlyTotalTokens < monthlyTokenLimitNumber) {
         return true;
       } else {
         return false;
@@ -82,18 +82,30 @@ export const updateUserUsage = async (userId: string, usage: UsageType) => {
   // 获取今天0点的时间
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
 
-  if (userDetail?.usageUpdatedAt && new Date(userDetail.usageUpdatedAt) < today) {
-    // 如果最后更新时间早于今天0点，重置计数
+  if (userDetail?.usageUpdatedAt && new Date(userDetail.usageUpdatedAt) < firstDayOfMonth) {
+    // 如果最后更新时间早于本月 1 日 0点，重置计数
     await db.update(users).set({
       todayTotalTokens: usage.totalTokens,
+      currentMonthTotalTokens: usage.totalTokens,
+      usageUpdatedAt: new Date(),
+    })
+      .where(eq(users.id, userId));
+  } else if (userDetail?.usageUpdatedAt && new Date(userDetail.usageUpdatedAt) < today) {
+    // 如果最后更新时间早于今日 0点，重置当日计数
+    await db.update(users).set({
+      todayTotalTokens: usage.totalTokens,
+      currentMonthTotalTokens: sql`${users.currentMonthTotalTokens} + ${usage.totalTokens}`,
       usageUpdatedAt: new Date(),
     })
       .where(eq(users.id, userId));
   } else {
-    // 如果是今天内的更新，累加计数
+    // 如果是本日内的更新，累加计数
     await db.update(users).set({
       todayTotalTokens: sql`${users.todayTotalTokens} + ${usage.totalTokens}`,
+      currentMonthTotalTokens: sql`${users.currentMonthTotalTokens} + ${usage.totalTokens}`,
       usageUpdatedAt: new Date(),
     })
       .where(eq(users.id, userId));

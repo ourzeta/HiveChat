@@ -10,7 +10,7 @@ import "./globals.css";
 
 
 export const metadata: Metadata = {
-  title: "Hivechat - Chat With All AI",
+  title: "Hivechat - Chatbot for team",
   description: "同时和多个机器人聊天，最快获取最佳结果",
 };
 

@@ -10,7 +10,7 @@ type FormValues = {
   id: string;
   name: string;
   tokenLimitType: 'unlimited' | 'limited';
-  dailyTokenLimit?: number | null;
+  monthlyTokenLimit?: number | null;
   models: number[];
   modelType: 'all' | 'specific';
 }
@@ -21,7 +21,7 @@ export interface groupType {
   models: number[];
   modelType?: 'all' | 'specific';
   tokenLimitType: 'unlimited' | 'limited';
-  dailyTokenLimit?: number | null;
+  monthlyTokenLimit?: number | null;
   id?: string;
   modelProviderList?: string[];
 }
@@ -71,8 +71,8 @@ const GroupModal = ({ title, open, onOk, onCancel, onFinish, form, initialValues
 
         <Form.Item
           style={{ marginBottom: '6px' }}
-          label={<span className='font-medium'>每日 Token 限额</span>}
-          rules={[{ required: true, message: '请设置每日 Token 限额' }]}
+          label={<span className='font-medium'>每月 Token 限额</span>}
+          rules={[{ required: true, message: '请设置每月 Token 限额（以自然月计算）' }]}
           name='tokenLimitType'
         >
           <Radio.Group>
@@ -88,8 +88,8 @@ const GroupModal = ({ title, open, onOk, onCancel, onFinish, form, initialValues
           {({ getFieldValue }) => {
             return getFieldValue('tokenLimitType') === 'limited' && (
               <Form.Item
-                name="dailyTokenLimit"
-                extra={<span className='text-xs text-gray-400 my-2'>包含输入和输出。参考数值：普通文本对话，10,000 Tokens 约能进行 20 次对话</span>}
+                name="monthlyTokenLimit"
+                extra={<span className='text-xs text-gray-400 my-2'>以自然月计算，包含输入和输出。参考数值：普通文本对话，10,000 Tokens 约能进行 20 次对话</span>}
                 style={{ margin: 0 }}
               >
                 <Input
@@ -296,7 +296,7 @@ const GroupManagementTab = () => {
               <tr className="bg-slate-100 text-sm">
                 <th className='border-b border-r border-slate-300 w-36'>{t('groupName')}</th>
                 <th className='border-b border-r border-slate-300'>{t('availableModels')}</th>
-                <th className='border-b border-r border-slate-300'>每日 Token 限额</th>
+                <th className='border-b border-r border-slate-300'>每月 Token 限额</th>
                 <th className='border-b border-slate-300 p-2 w-32'>{t('action')}</th>
               </tr>
             </thead>
@@ -310,7 +310,7 @@ const GroupManagementTab = () => {
                     )) : <Tag color='blue' style={{ marginBottom: 8 }}>{ct('all')}</Tag>}
                   </td>
                   <td className='border-t border-r p-2 text-sm text-right w-32 border-slate-300'>
-                    {(group.tokenLimitType === 'limited') ? <span className='text-xs'>{group.dailyTokenLimit?.toLocaleString()} Tokens</span> : <Tag>不限</Tag>}
+                    {(group.tokenLimitType === 'limited') ? <span className='text-xs'>{group.monthlyTokenLimit?.toLocaleString()} Tokens</span> : <Tag>不限</Tag>}
                   </td>
                   <td className='border-t text-center text-sm w-32 border-slate-300 p-2'>
                     <Button

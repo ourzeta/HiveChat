@@ -204,7 +204,7 @@
       "updateUserSuccess": "更新成功",
       "editUser": "编辑用户",
       "groupManagement": "分组管理",
-      "groupManagementTip": "使用用户分组，可以控制不同用户可以使用哪些模型，以及每日的 Token 用量。",
+      "groupManagementTip": "使用用户分组，可以控制不同用户可以使用哪些模型，以及每月的 Token 用量。",
       "addGroup": "添加分组",
       "groupName": "分组名称",
       "availableModels": "可使用的模型",

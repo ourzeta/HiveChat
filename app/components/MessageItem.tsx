@@ -89,7 +89,7 @@ const MessageItem = memo((props: {
             <Alert
               showIcon
               style={{ marginLeft: '0.75rem' }}
-              message="超出今日使用限额。请次日再重试，或联系管理员增加额度。"
+              message="超出本月使用限额。请次月再重试，或联系管理员增加额度。"
               type="warning"
             />
             <div className='invisible flex flex-row items-center ml-3 my-1 group-hover:visible'>

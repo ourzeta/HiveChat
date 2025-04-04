@@ -37,7 +37,7 @@ export async function getUserList(groupId?: string) {
             columns: {
               name: true,
               tokenLimitType: true,
-              dailyTokenLimit: true,
+              monthlyTokenLimit: true,
             }
           }
         }
@@ -51,7 +51,7 @@ export async function getUserList(groupId?: string) {
             columns: {
               name: true,
               tokenLimitType: true,
-              dailyTokenLimit: true,
+              monthlyTokenLimit: true,
             }
           }
         }
@@ -62,12 +62,17 @@ export async function getUserList(groupId?: string) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
     // 处理每条记录的 todayTotalTokens
     result = result.map(user => ({
       ...user,
       todayTotalTokens: new Date(user.usageUpdatedAt) >= today
         ? user.todayTotalTokens
-        : 0
+        : 0,
+      currentMonthTotalTokens: new Date(user.usageUpdatedAt) >= firstDayOfMonth
+        ? user.currentMonthTotalTokens
+        : 0,
     }));
     return result;
   } catch (error) {

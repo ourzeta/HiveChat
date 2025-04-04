@@ -2,7 +2,7 @@ import { Switch } from 'antd';
 import useMcpServerStore from '@/app/store/mcp';
 
 const McpServerSelect = (props: { chat_id?: string }) => {
-  const { mcpServers, selectedTools, changeMcpServerSelect } = useMcpServerStore();
+  const { mcpServers, changeMcpServerSelect } = useMcpServerStore();
 
   return (
     <div className='flex flex-col p-2 w-72'>

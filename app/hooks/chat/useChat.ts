@@ -1,13 +1,12 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Message } from '@/app/db/schema';
-import { ChatOptions, LLMApi, RequestMessage, MessageContent, MCPTool } from '@/app/adapter/interface';
+import { ChatOptions, LLMApi, RequestMessage, MessageContent, MCPTool } from '@/types/llm';
 import useChatStore from '@/app/store/chat';
 import useChatListStore from '@/app/store/chatList';
 import useMcpServerStore from '@/app/store/mcp';
-import { generateTitle } from '@/app/utils';
-import { getLLMInstance } from '@/app/adapter/models';
+import { generateTitle, getLLMInstance } from '@/app/utils';
 import useModelListStore from '@/app/store/modelList';
-import { ResponseContent } from '@/app/adapter/interface';
+import { ResponseContent } from '@/types/llm';
 import { getChatInfoInServer } from '@/app/chat/actions/chat';
 import { addMessageInServer, getMessagesInServer, deleteMessageInServer, clearMessageInServer } from '@/app/chat/actions/message';
 import useGlobalConfigStore from '@/app/store/globalConfig';

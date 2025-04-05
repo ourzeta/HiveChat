@@ -1,4 +1,4 @@
-import { LLMModel } from "@/app/adapter/interface"
+import { LLMModel } from "@/types/llm"
 export const provider = {
   id: 'volcengine',
   providerName: '火山方舟（豆包）',

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { LLMModel, LLMModelProvider, LLMModelRealId } from '@/app/adapter/interface';
+import { LLMModel, LLMModelProvider, LLMModelRealId } from '@/types/llm';
 import { llmModelType } from '@/app/db/schema';
 
 interface IModelListStore {

@@ -1,4 +1,4 @@
-import { LLMModel } from "@/app/adapter/interface"
+import { LLMModel } from "@/types/llm"
 export const provider = {
   id: 'qianfan',
   providerName: '百度云千帆',

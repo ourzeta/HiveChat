@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import MarkdownRender from '@/app/components/Markdown';
 import { Avatar } from "antd";
-import { ResponseContent } from '@/app/adapter/interface';
+import { ResponseContent } from '@/types/llm';
 import DotsLoading from '@/app/components/loading/DotsLoading';
 import BallsLoading from '@/app/components/loading/BallsLoading';
 import { CheckCircleOutlined, RedoOutlined, DownOutlined, CloseCircleOutlined } from '@ant-design/icons';

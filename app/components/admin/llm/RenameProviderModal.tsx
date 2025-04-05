@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Form, Input, Select, message } from 'antd';
 import useModelListStore from '@/app/store/modelList';
-import { saveToServer } from '@/app/adapter/actions';
+import { saveToServer } from '@/app/admin/llm/actions';
 import { useTranslations } from 'next-intl';
 
 type RenameProviderModalProps = {

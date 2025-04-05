@@ -1,6 +1,6 @@
 'use server';
 import { mcpServers, mcpTools } from '@/app/db/schema';
-import { MCPTool } from '@/app/adapter/interface';
+import { MCPTool } from '@/types/llm';
 import mcpService from '@/app/service/MCPService';
 import { db } from '@/app/db';
 import { eq } from 'drizzle-orm';

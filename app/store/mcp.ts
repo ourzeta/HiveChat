@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { MCPServer, MCPTool } from '@/app/adapter/interface';
+import { MCPServer, MCPTool } from '@/types/llm';
 
 interface IGlobalMcpServerStore {
   hasUseMcp: boolean;

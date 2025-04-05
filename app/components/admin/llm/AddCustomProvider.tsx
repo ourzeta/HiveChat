@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Form, Input, Select, message } from 'antd';
 import useModelListStore from '@/app/store/modelList';
-import { addCustomProviderInServer } from '@/app/adapter/actions';
+import { addCustomProviderInServer } from '@/app/admin/llm/actions';
 import { useRouter } from "next/navigation";
 import { useTranslations } from 'next-intl';
 

@@ -8,7 +8,7 @@ import CloseIcon from '@/app/images/close.svg';
 import McpServerSelect from '@/app/components/McpServerSelect';
 import { fileToBase64 } from '@/app/utils';
 import { ArrowUpOutlined } from '@ant-design/icons';
-import { LLMModel } from '@/app/adapter/interface';
+import { LLMModel } from '@/types/llm';
 import useMcpServerStore from '@/app/store/mcp';
 import clsx from 'clsx';
 import { useTranslations } from 'next-intl';

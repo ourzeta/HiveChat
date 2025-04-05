@@ -1,5 +1,5 @@
 'use server';
-import { MCPTool } from '@/app/adapter/interface';
+import { MCPTool } from '@/types/llm';
 import mcpService from '@/app/service/MCPService';
 
 export async function getToolList(serverNames: string[]): Promise<MCPTool[]> {

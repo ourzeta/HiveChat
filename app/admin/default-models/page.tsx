@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect } from 'react';
 import useModelListStore from '@/app/store/modelList';
-import { fetchAvailableLlmModels } from '@/app/adapter/actions';
+import { fetchAvailableLlmModels } from '@/app/admin/llm/actions';
 import ChatNaming from '@/app/components/admin/ChatNaming';
 import { Button } from 'antd';
 import ToggleSidebar from "@/app/images/hideSidebar.svg";

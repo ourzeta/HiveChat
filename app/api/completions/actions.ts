@@ -20,7 +20,8 @@ type UsageDetail = {
   totalTokens: number,
 }
 
-export const isUserWithinQuota = async (userId: string): Promise<boolean> => {
+export const isUserWithinQuota = async (userId: string, providerId: string, modelId: string):
+  Promise<{ tokenPassFlag: boolean, modelPassFlag: boolean }> => {
   const result = await db.query.users.findFirst({
     where: eq(users.id, userId),
     with: {
@@ -28,15 +29,41 @@ export const isUserWithinQuota = async (userId: string): Promise<boolean> => {
         columns: {
           tokenLimitType: true,
           monthlyTokenLimit: true,
+          modelType: true,
+        },
+        with: {
+          models: {
+            with: {
+              model: {
+                columns: {
+                  id: true,
+                  providerId: true,
+                }
+              }
+            }
+          }
         }
       }
     }
-  });
+  }) as {
+    group: {
+      modelType: 'all' | 'specific',
+      tokenLimitType: 'unlimited' | 'limited',
+      monthlyTokenLimit: number | null,
+      models?: { model: { id: number, providerId: string } }[]
+    } | null,
+    usageUpdatedAt: Date,
+    currentMonthTotalTokens: number
+  } | null;
+  
+  let tokenPassFlag = false;
+  let modelPassFlag = false;
+
   if (result && result.group) {
     const { tokenLimitType, monthlyTokenLimit } = result.group;
     const monthlyTokenLimitNumber = monthlyTokenLimit || 0;
     if (tokenLimitType === 'unlimited') {
-      return true;
+      tokenPassFlag = true;
     } else {
       const now = new Date();
       const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
@@ -47,13 +74,28 @@ export const isUserWithinQuota = async (userId: string): Promise<boolean> => {
       }
 
       if (realMonthlyTotalTokens < monthlyTokenLimitNumber) {
-        return true;
+        tokenPassFlag = true;
       } else {
-        return false;
+        tokenPassFlag = false;
       }
     }
+
+    if (result.group.modelType === 'all') {
+      modelPassFlag = true;
+    } else {
+      const hasMatchingModel = result.group.models?.some(
+        (groupModel) =>
+          groupModel.model.providerId === providerId &&
+          groupModel.model.id.toString() === modelId
+      );
+      modelPassFlag = hasMatchingModel || false;
+    }
   } else {
-    return false;
+    tokenPassFlag = false;
+  }
+  return {
+    tokenPassFlag,
+    modelPassFlag,
   }
 }
 

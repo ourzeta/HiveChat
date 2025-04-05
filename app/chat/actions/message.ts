@@ -1,7 +1,7 @@
 'use server';
 import { db } from '@/app/db';
 import { auth } from "@/auth";
-import { MCPToolResponse } from '@/app/adapter/interface';
+import { MCPToolResponse } from '@/types/llm';
 import { eq, and, asc } from 'drizzle-orm';
 import { messages } from '@/app/db/schema';
 

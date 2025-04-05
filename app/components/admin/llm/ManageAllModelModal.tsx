@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Modal, Tooltip, Divider, Button } from 'antd';
 import { PictureOutlined, MinusOutlined, PlusOutlined, SyncOutlined } from '@ant-design/icons';
 import useModelListStore from '@/app/store/modelList';
-import { LLMModel } from '@/app/adapter/interface';
-import { changeModelSelectInServer, getRemoteModelsByProvider } from '@/app/adapter/actions';
+import { LLMModel } from '@/types/llm';
+import { changeModelSelectInServer, getRemoteModelsByProvider } from '@/app/admin/llm/actions';
 import { useTranslations } from 'next-intl';
 
 type ManageAllModelModalProps = {

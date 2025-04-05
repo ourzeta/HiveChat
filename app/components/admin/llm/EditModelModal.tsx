@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Input, InputNumber, Switch } from 'antd';
 import useModelListStore from '@/app/store/modelList';
-import { LLMModel } from '@/app/adapter/interface';
-import { updateCustomModelInServer } from '@/app/adapter/actions';
+import { LLMModel } from '@/types/llm';
+import { updateCustomModelInServer } from '@/app/admin/llm/actions';
 
 
 type EditModelModalProps = {

@@ -1,4 +1,4 @@
-import { LLMModel, LLMModelProvider } from "@/app/adapter/interface"
+import { LLMModel, LLMModelProvider } from "@/types/llm"
 export const provider: LLMModelProvider = {
   id: 'claude',
   providerName: 'Claude',

@@ -1,19 +1,17 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react'
-import { fetchAllLlmSettings } from '@/app/adapter/actions';
+import { fetchAllLlmSettings, saveProviderOrder } from '@/app/admin/llm/actions';
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { useTranslations } from 'next-intl';
-import { Skeleton } from "antd";
+import { Button, Skeleton } from "antd";
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import { Button } from 'antd';
 import ToggleSidebar from "@/app/images/hideSidebar.svg";
 import useAdminSidebarCollapsed from '@/app/store/adminSidebarCollapsed';
 import ProviderItem from '@/app/components/ProviderItem';
 import Link from 'next/link';
-import { saveProviderOrder } from '@/app/adapter/actions';
 import useModelListStore from '@/app/store/modelList';
-import AddCustomProvider from '@/app/components/admin/AddCustomProvider';
+import AddCustomProvider from '@/app/components/admin/llm/AddCustomProvider';
 import Sortable from 'sortablejs';
 
 export default function LLMLayout({

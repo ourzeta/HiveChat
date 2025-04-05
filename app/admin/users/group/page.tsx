@@ -4,7 +4,7 @@ import { getGroupList, addGroup, deleteGroup, updateGroup } from './actions';
 import { Tag, Button, Modal, Form, Input, Divider, message, Skeleton, Select, Radio, Avatar, Tooltip, Popconfirm, FormInstance } from 'antd';
 import { useTranslations } from 'next-intl';
 import useModelListStore from '@/app/store/modelList';
-import { fetchAvailableLlmModels } from '@/app/adapter/actions';
+import { fetchAvailableLlmModels } from '@/app/admin/llm/actions';
 
 type FormValues = {
   id: string;

@@ -1,10 +1,10 @@
 'use client'
 import { fetchEventSource, EventStreamContentType, EventSourceMessage } from '@microsoft/fetch-event-source';
-import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse } from '@/app/adapter/interface';
+import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse } from '@/types/llm';
 import { prettyObject } from '@/app/utils';
-import { InvalidAPIKeyError, OverQuotaError, TimeoutError } from '@/app/adapter/errorTypes';
+import { InvalidAPIKeyError, OverQuotaError, TimeoutError } from '@/types/errorTypes';
 import { callMCPTool } from '@/app/utils/mcpToolsServer';
-import { syncMcpTools } from '../actions';
+import { syncMcpTools } from '@/app/admin/llm/actions';
 import { mcpToolsToOpenAITools, openAIToolsToMcpTool } from '@/app/utils/mcpToolsClient';
 import {
   ChatCompletionMessageToolCall,
@@ -242,6 +242,7 @@ export default class ChatGPTApi implements LLMApi {
                 headers: {
                   'Content-Type': 'application/json',
                   'X-Provider': this.providerId,
+                  'X-Model': options.config.model,
                   'X-Chat-Id': options.chatId!,
                 },
                 body: JSON.stringify({
@@ -402,6 +403,7 @@ export default class ChatGPTApi implements LLMApi {
         headers: {
           'Content-Type': 'application/json',
           'X-Provider': this.providerId,
+          'X-Model': options.config.model,
           'X-Chat-Id': options.chatId!,
         },
         body: JSON.stringify({
@@ -487,6 +489,7 @@ export default class ChatGPTApi implements LLMApi {
       'Content-Type': 'application/json',
       'X-Apikey': `${apikey}`,
       'X-Provider': this.providerId,
+      'X-Model': modelId,
       'X-Endpoint': apiUrl
     };
     const controller = new AbortController();

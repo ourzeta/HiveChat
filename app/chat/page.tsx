@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Alert } from 'antd';
 import useModelListStore from '@/app/store/modelList';
 import ChatHeader from '@/app/components/ChatHeader';
-import { MessageContent } from '@/app/adapter/interface';
+import { MessageContent } from '@/types/llm';
 import AdaptiveTextarea from '@/app/components/AdaptiveTextarea';
 import { useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';

@@ -1,6 +1,8 @@
-import { ChatOptions, RequestMessage } from '@/app/adapter/interface';
-import { ResponseContent } from '@/app/adapter/interface';
-import { getLLMInstance } from '@/app/adapter/models';
+import { ChatOptions, RequestMessage } from '@/types/llm';
+import { ResponseContent } from '@/types/llm';
+import ChatGPTApi from '@/app/provider/OpenAIProvider';
+import Claude from '@/app/provider/ClaudeProvider';
+import GeminiApi from '@/app/provider/GeminiProvider';
 
 export function prettyObject(msg: any) {
   const obj = msg;
@@ -53,3 +55,19 @@ export const fileToBase64 = (file: File): Promise<string> => {
     };
   });
 };
+
+export const getLLMInstance = (providerId: string) => {
+  let llmApi;
+  switch (providerId) {
+    case 'claude':
+      llmApi = new Claude();
+      break;
+    case 'gemini':
+      llmApi = new GeminiApi();
+      break;
+    default:
+      llmApi = new ChatGPTApi(providerId);
+      break;
+  }
+  return llmApi;
+}

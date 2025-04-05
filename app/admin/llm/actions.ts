@@ -1,7 +1,7 @@
 'use server';
 import { db } from '@/app/db';
-import { eq, and, asc, inArray } from 'drizzle-orm';
-import { LLMModel, MCPToolResponse } from '@/app/adapter/interface';
+import { eq, and, asc } from 'drizzle-orm';
+import { LLMModel, MCPToolResponse } from '@/types/llm';
 import { llmSettingsTable, llmModels, groupModels, groups, users, messages } from '@/app/db/schema';
 import { llmModelType } from '@/app/db/schema';
 import { getLlmConfigByProvider } from '@/app/utils/llms';

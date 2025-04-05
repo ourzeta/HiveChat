@@ -1,4 +1,4 @@
-import { LLMModel } from "@/app/adapter/interface"
+import { LLMModel } from "@/types/llm"
 export const provider = {
   id: 'openai',
   providerName: 'Open AI',

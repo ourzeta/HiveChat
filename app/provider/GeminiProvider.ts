@@ -1,10 +1,10 @@
 'use client'
 import { fetchEventSource, EventStreamContentType, EventSourceMessage } from '@microsoft/fetch-event-source';
-import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse } from '@/app/adapter/interface';
+import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse } from '@/types/llm';
 import { prettyObject } from '@/app/utils';
-import { InvalidAPIKeyError, OverQuotaError, TimeoutError } from '@/app/adapter/errorTypes';
+import { InvalidAPIKeyError, OverQuotaError, TimeoutError } from '@/types/errorTypes';
 import { FunctionCallPart, FunctionResponsePart } from '@google/generative-ai';
-import { syncMcpTools } from '../actions';
+import { syncMcpTools } from '@/app/admin/llm/actions';
 import { callMCPTool } from '@/app/utils/mcpToolsServer';
 import { mcpToolsToGeminiTools, geminiFunctionCallToMcpTool } from '@/app/utils/mcpToolsClient';
 

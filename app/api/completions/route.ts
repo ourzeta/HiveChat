@@ -17,20 +17,28 @@ export async function POST(req: NextRequest) {
     });
   }
   const userId = session.user.id;
-  const isUserWithinQuotaResult = await isUserWithinQuota(userId);
-  if (!isUserWithinQuotaResult) {
-    return new Response(JSON.stringify({ error: 'Out of quota' }), {
-      status: 429,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
   try {
     // 获取原始请求的 headers
     const userRequestHeaders = req.headers;
-    const xProvider = userRequestHeaders.get('X-Provider'); //必填
-    const xChatId = userRequestHeaders.get('x-chat-id');    //对话时必填，测试时不需要
-    const xEndpoint = userRequestHeaders.get('X-Endpoint'); //选填，测试 URL 时需要
-    const xModel = userRequestHeaders.get('X-Model');       //选填，gemini 这种特殊的才有
+    const xProvider = userRequestHeaders.get('X-Provider')  || ''; //必填
+    const xModel = userRequestHeaders.get('X-Model')  || '';       //必填
+    const xChatId = userRequestHeaders.get('x-chat-id');           //对话时必填，测试时不需要
+    const xEndpoint = userRequestHeaders.get('X-Endpoint');        //选填，测试 URL 时需要
+
+    const isUserWithinQuotaResult = await isUserWithinQuota(userId, xProvider, xModel);
+    if (!isUserWithinQuotaResult.tokenPassFlag) {
+      return new Response(JSON.stringify({ error: 'Out of quota' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!isUserWithinQuotaResult.modelPassFlag) {
+      return new Response(JSON.stringify({ error: 'Model not allowed' }), {
+        status: 428,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     const { endpoint, apikey } = await getLlmConfigByProvider(xProvider || 'openai');
     // 测试连接下，会传 X-apikey，优先使用

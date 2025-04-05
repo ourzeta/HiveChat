@@ -14,8 +14,8 @@ import FeishuLogin from "@/app/components/FeishuLoginButton"
 import WecomLogin from "@/app/components/WecomLoginButton"
 import DingdingLogin from "@/app/components/DingdingLoginButton"
 import { useTranslations } from 'next-intl';
-import useModelListStore from '../store/modelList';
-import { fetchAvailableLlmModels } from '../adapter/actions';
+import useModelListStore from '@/app/store/modelList';
+import { fetchAvailableLlmModels } from '@/app/admin/llm/actions';
 
 interface LoginFormValues {
   email: string;

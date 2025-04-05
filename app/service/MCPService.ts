@@ -1,6 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
-import { MCPServer, MCPTool } from '@/app/adapter/interface';
+import { MCPServer, MCPTool } from '@/types/llm';
 import { mcpServers } from '@/app/db/schema';
 import { db } from '@/app/db';
 import { eq } from 'drizzle-orm'

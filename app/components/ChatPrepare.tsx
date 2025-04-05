@@ -4,7 +4,7 @@ import useMcpServerStore from '@/app/store/mcp';
 import { getMcpServersAndAvailableTools } from '@/app/chat/actions/chat';
 import App from "@/app/components/App";
 import useModelListStore from '@/app/store/modelList';
-import { fetchAvailableLlmModels, fetchAllProviders } from '@/app/adapter/actions';
+import { fetchAvailableLlmModels, fetchAllProviders } from '@/app/admin/llm/actions';
 
 const AppPrepare = () => {
   const { setHasUseMcp, setMcpServers, setAllTools } = useMcpServerStore();

@@ -1,5 +1,5 @@
 'use client';
-import { MCPTool } from '@/app/adapter/interface';
+import { MCPTool } from '@/types/llm';
 import { Tool, ToolUnion, ToolUseBlock } from '@anthropic-ai/sdk/resources'
 import { ChatCompletionTool, ChatCompletionMessageToolCall } from 'openai/resources';
 import { FunctionCall, FunctionDeclaration, SchemaType, FunctionDeclarationSchema, Tool as geminiTool } from '@google/generative-ai'

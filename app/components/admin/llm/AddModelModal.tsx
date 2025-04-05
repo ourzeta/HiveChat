@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Form, Input, InputNumber, Switch, message } from 'antd';
 import useModelListStore from '@/app/store/modelList';
-import { addCustomModelInServer } from '@/app/adapter/actions';
+import { addCustomModelInServer } from '@/app/admin/llm/actions';
 import { useTranslations } from 'next-intl';
 
 type CustomModelModalProps = {

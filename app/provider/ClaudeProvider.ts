@@ -1,10 +1,10 @@
 import { fetchEventSource, EventStreamContentType, EventSourceMessage } from '@microsoft/fetch-event-source';
-import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse } from '@/app/adapter/interface';
+import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse } from '@/types/llm';
 import { prettyObject } from '@/app/utils';
 import { callMCPTool } from '@/app/utils/mcpToolsServer';
-import { InvalidAPIKeyError, TimeoutError } from '@/app/adapter/errorTypes';
+import { InvalidAPIKeyError, TimeoutError } from '@/types/errorTypes';
 import { mcpToolsToAnthropicTools, anthropicToolUseToMcpTool } from '@/app/utils/mcpToolsClient';
-import { syncMcpTools } from '../actions';
+import { syncMcpTools } from '@/app/admin/llm/actions';
 import {
   MessageCreateParamsNonStreaming,
   MessageParam,
@@ -181,6 +181,7 @@ export default class ClaudeApi implements LLMApi {
                   headers: {
                     'Content-Type': 'application/json',
                     'X-Provider': 'claude',
+                    'X-Model': options.config.model,
                     'X-Chat-Id': options.chatId!,
                   },
                   body: JSON.stringify({
@@ -315,6 +316,7 @@ export default class ClaudeApi implements LLMApi {
         headers: {
           'Content-Type': 'application/json',
           'X-Provider': 'claude',
+          'X-Model': options.config.model,
           'X-Chat-Id': options.chatId!,
         },
         body: JSON.stringify({
@@ -398,6 +400,7 @@ export default class ClaudeApi implements LLMApi {
       'Content-Type': 'application/json',
       'x-api-key': `${apikey}`,
       'X-Provider': 'claude',
+      'X-Model': modelId,
       'X-Endpoint': apiUrl
     };
     const controller = new AbortController();

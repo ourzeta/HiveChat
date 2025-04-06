@@ -46,6 +46,11 @@ export default async function proxyOpenAiStream(response: Response,
 
           try {
             const parsedData = JSON.parse(cleanedLine);
+            // Openrouter 会放在 error 信息中
+            if (parsedData.error) {
+              completeResponse = ["```json", JSON.stringify(parsedData, null, "  "), "```"].join("\n");
+              continue;
+            }
             const usage = parsedData.usage || parsedData.choices[0].usage; // 兼容 Moonshot
             if (usage) {
               promptTokens = usage.prompt_tokens;

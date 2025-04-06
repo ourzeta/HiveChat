@@ -229,7 +229,7 @@ docker compose up -d
 ### 方法 3：在 Vercel 上部署
 
 >注意：
->旧版本升级到 2025 年 2 月 22 日更新的版本，请手动登入到 Vercel 数据库管理页面，将 `models` 表删除，然后重新部署。因为涉及到表结构的调整，脚本执行无法自动跳过，会导致部署卡住，全新部署不存在此问题。
+>旧版本升级到 2025 年 4 月 5 日 之后更新的版本，如果遇到升级卡死，请手动登入到 Vercel 数据库管理页面，将 `group` 表下 `daily_token_limit`字段修改为 `monthly_token_limit`，然后重新部署。因为涉及到表结构的调整，脚本执行无法自动确认或跳过，会导致部署卡住，全新部署不存在此问题，[详情见这里](https://github.com/HiveNexus/HiveChat/issues/66)。
 
 点击下面的按钮，即可开始部署。
 
@@ -289,3 +289,8 @@ DINGDING_CLIENT_SECRET="3vk9-VFCExNckqNUk_CL2F-HEgz7qGN-BimH0lZ1gUx6hWO7g_an2lnk
 * [企业微信登录配置说明](https://k2swpw8zgf.feishu.cn/wiki/WBH5w6mcuiYui0kNhmecdxtqnac)
 * [钉钉登录配置说明](https://k2swpw8zgf.feishu.cn/wiki/PcLVwBMcsiCm8Ikcp3pc7rVXn3f)
 * [飞书登录配置说明](https://k2swpw8zgf.feishu.cn/wiki/Fr80wA8HHi7ZN7kxb6xcU1i7nae)
+
+### 交流群
+<img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/wechat.png" width='360'>
+
+二维码如果过期，可加 wuhaoworld。

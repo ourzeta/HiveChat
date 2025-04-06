@@ -174,7 +174,6 @@ const useChat = (chatId: string) => {
         setMessageList((m) => ([...m, respMessage]));
         setResponseStatus("done");
         setResponseMessage({ content: '', reasoning_content: '' });
-        addMessageInServer(respMessage);
       }
     }
     chatBot?.chat(options);

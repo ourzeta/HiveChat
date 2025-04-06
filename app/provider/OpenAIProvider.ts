@@ -139,13 +139,22 @@ export default class ChatGPTApi implements LLMApi {
     let toolsParameter = {};
 
     const processOnMessage = async (event: EventSourceMessage) => {
-      if (event.data === "[DONE]") {
+      const text = event.data;
+      if (text === "[DONE]" || text === "") {
         return;
       }
-      const text = event.data;
       try {
         const json = JSON.parse(text);
+        if (json.error) {
+          const prettyResJson = prettyObject(json);
+          options.onError?.(new Error(prettyResJson));
+          this.finishReason = 'error';
+          return;
+        }
         if (json?.metadata && json?.metadata.isDone) {
+          if (this.finishReason === 'error') {
+            return;
+          }
           if (this.finishReason === 'tool_calls') {
             // 需要循环调用 tools 再把获取的结果给到大模型
             const toolCalls = Object.values(final_tool_calls).map(this.cleanToolCallArgs);

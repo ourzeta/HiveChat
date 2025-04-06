@@ -36,7 +36,7 @@ export const isUserWithinQuota = async (userId: string, providerId: string, mode
             with: {
               model: {
                 columns: {
-                  id: true,
+                  name: true,
                   providerId: true,
                 }
               }
@@ -50,12 +50,12 @@ export const isUserWithinQuota = async (userId: string, providerId: string, mode
       modelType: 'all' | 'specific',
       tokenLimitType: 'unlimited' | 'limited',
       monthlyTokenLimit: number | null,
-      models?: { model: { id: number, providerId: string } }[]
+      models?: { model: { name: string, providerId: string } }[]
     } | null,
     usageUpdatedAt: Date,
     currentMonthTotalTokens: number
   } | null;
-  
+
   let tokenPassFlag = false;
   let modelPassFlag = false;
 
@@ -86,7 +86,7 @@ export const isUserWithinQuota = async (userId: string, providerId: string, mode
       const hasMatchingModel = result.group.models?.some(
         (groupModel) =>
           groupModel.model.providerId === providerId &&
-          groupModel.model.id.toString() === modelId
+          groupModel.model.name === modelId
       );
       modelPassFlag = hasMatchingModel || false;
     }

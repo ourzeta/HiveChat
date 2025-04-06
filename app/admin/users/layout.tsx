@@ -39,7 +39,7 @@ const UserListPage = ({
     }
   }, [pathname]);
   return (
-    <div className='flex flex-col w-full'>
+    <div className='flex flex-col w-full items-center'>
       <div className='flex flex-row w-full items-center h-10 px-1'>
         {isSidebarCollapsed &&
           <Button

@@ -49,7 +49,11 @@ const MarkdownRender = (props: {
             </code>
           );
         },
-        a: (aProps) => {
+        a: (aProps: React.AnchorHTMLAttributes<HTMLAnchorElement> & { 'data-footnote-ref'?: string }) => {
+          const isFootnote = aProps['data-footnote-ref'] !== undefined;
+          if (isFootnote) {
+            return <span style={{ backgroundColor: '#d0e1fd', fontFamily:'', fontSize:'9px', marginRight: '3px', borderRadius: '11px', padding:'1px 4px' }} {...aProps}>{aProps.children}</span>;
+          }
           const href = aProps.href || "";
           if (/\.(aac|mp3|opus|wav)$/.test(href)) {
             return (
@@ -65,7 +69,7 @@ const MarkdownRender = (props: {
               </video>
             );
           }
-          const isInternal = /^\/#/i.test(href);
+          const isInternal = /^\/(?!\/)|^\.\/|^#/.test(href);
           const target = isInternal ? "_self" : aProps.target ?? "_blank";
           return <a {...aProps} target={target} />;
         },

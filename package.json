@@ -14,6 +14,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@agentic/tavily": "^7.6.3",
     "@ant-design/icons": "^5.5.1",
     "@ant-design/nextjs-registry": "^1.0.1",
     "@anthropic-ai/sdk": "^0.39.0",

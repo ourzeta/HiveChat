@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import useChatListStore from '@/app/store/chatList';
 import { Button, message, Popconfirm, Modal, Input } from 'antd';
 import { EditOutlined, DeleteOutlined, } from '@ant-design/icons';
-import { ChatType } from '@/app/db/schema';
+import { ChatType } from '@/types/llm';
 import InPageCollapsed from '@/app/components/InPageCollapsed';
 import { getChatListInServer, deleteChatInServer } from '@/app/chat/actions/chat';
 import Link from 'next/link';

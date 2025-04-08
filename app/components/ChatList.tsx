@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from 'next/link';
 import clsx from 'clsx';
 import { Modal, Input, Skeleton } from 'antd';
-import { ChatType } from '@/app/db/schema';
+import { ChatType } from '@/types/llm';
 import { EditOutlined, DeleteOutlined, StarOutlined, StarFilled, PlusOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { usePathname, useRouter } from 'next/navigation';

@@ -1,8 +1,11 @@
 'use server';
 import { db } from '@/app/db';
 import { auth } from "@/auth";
-import { eq, and, desc, asc } from 'drizzle-orm'
-import { chats, ChatType, messages, appSettings, mcpServers, mcpTools } from '@/app/db/schema';
+import { eq, and, desc, asc } from 'drizzle-orm';
+import { ChatType, MCPToolResponse } from '@/types/llm';
+import WebSearchService from '@/app/services/WebSearchService';
+import { chats, messages, appSettings, mcpServers, mcpTools, searchEngineConfig } from '@/app/db/schema';
+import { WebSearchResponse } from '@/types/search';
 
 export const addChatInServer = async (
   chatInfo: {
@@ -226,18 +229,6 @@ export const fetchAppSettings = async (key: string) => {
   return result?.value;
 }
 
-// export const getActiveMcpServers = async () => {
-//   try {
-//     const result = await db.query.mcpServers.findMany({
-//       where: eq(mcpServers.isActive, true),
-//       orderBy: [mcpServers.createdAt],
-//     });
-//     return result;
-//   } catch (error) {
-//     return [];
-//   }
-// }
-
 export const getMcpServersAndAvailableTools = async () => {
   try {
     const tools = await db
@@ -268,5 +259,71 @@ export const getMcpServersAndAvailableTools = async () => {
       tools: [],
       mcpServers: []
     };
+  }
+}
+
+export const syncMcpTools = async (messageId: number, mcpToolsResponse: MCPToolResponse[]) => {
+  try {
+    await db.update(messages)
+      .set({
+        mcpTools: mcpToolsResponse,
+        updatedAt: new Date()
+      })
+      .where(eq(messages.id, messageId));
+
+    return {
+      status: 'success',
+      message: '工具信息已保存'
+    };
+  } catch (error) {
+    console.error('同步 MCP 工具响应失败:', error);
+    return {
+      status: 'fail',
+      message: '同步工具失败'
+    };
+  }
+}
+
+export const getSearchResult = async (keyword: string): Promise<{
+  status: string;
+  message: string;
+  data: WebSearchResponse | null;
+}> => {
+  const session = await auth();
+  if (!session?.user) {
+    throw new Error('not allowed');
+  }
+
+  const searchConfig = await db.query.searchEngineConfig.findFirst({
+    where: eq(searchEngineConfig.isActive, true)
+  });
+  if (searchConfig) {
+    console.log(searchConfig);
+    try {
+      const webSearch = await WebSearchService.search({
+        id: searchConfig.id,
+        name: searchConfig.name,
+        apiKey: searchConfig.apiKey as string
+      }, keyword);
+      console.log('-------------webSearch--in Server------------')
+      console.log(webSearch)
+      return {
+        status: 'success',
+        message: 'success',
+        data: webSearch
+      }
+    } catch (error) {
+      return {
+        status: 'error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        data: null,
+      }
+    }
+  } else {
+    return {
+      status: 'error',
+      message: '管理员未配置搜索',
+      data: null
+    }
   }
 }

@@ -39,6 +39,9 @@ export default async function proxyOpenAiStream(response: Response,
         bufferedData = lines.pop() || ''; // 保留最后一行可能是不完整JSON
 
         for (const line of lines) {
+          if (!line.startsWith('data:')) {
+            continue;
+          }
           const cleanedLine = line.replace(/^data: /, "").trim();
           if (cleanedLine === "" || cleanedLine === "[DONE]") {
             continue;

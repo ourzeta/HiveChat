@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { MCPToolResponse } from '@/types/llm';
 import { eq, and, asc } from 'drizzle-orm';
 import { messages } from '@/app/db/schema';
+import { WebSearchResponse } from '@/types/search';
 
 export const clearMessageInServer = async (chatId: string) => {
   const session = await auth();
@@ -118,4 +119,38 @@ export const addMessageInServer = async (message: {
     })
     .returning();
   return result.id;
+}
+
+export const updateMessageWebSearchInServer = async (messageId: number, webSearch: WebSearchResponse) => {
+  const session = await auth();
+  if (!session?.user.id) {
+    return {
+      status: 'fail',
+      message: 'please login first.'
+    }
+  }
+
+  try {
+    await db.update(messages)
+      .set({
+        webSearch: webSearch,
+        updatedAt: new Date()
+      })
+      .where(
+        and(
+          eq(messages.id, messageId),
+          eq(messages.userId, session.user.id)
+        ));
+
+    return {
+      status: 'success',
+      message: '搜索信息已保存'
+    };
+  } catch (error) {
+    console.error('同步搜索响应失败:', error);
+    return {
+      status: 'fail',
+      message: '同步搜索失败'
+    };
+  }
 }

@@ -1,7 +1,7 @@
 'use server';
 import { db } from '@/app/db';
 import { eq, and, asc } from 'drizzle-orm';
-import { LLMModel, MCPToolResponse } from '@/types/llm';
+import { LLMModel } from '@/types/llm';
 import { llmSettingsTable, llmModels, groupModels, groups, users, messages } from '@/app/db/schema';
 import { llmModelType } from '@/app/db/schema';
 import { getLlmConfigByProvider } from '@/app/utils/llms';
@@ -370,27 +370,5 @@ export const getRemoteModelsByProvider = async (providerId: string): Promise<{
     return body.data;
   } catch {
     return [];
-  }
-}
-
-export const syncMcpTools = async (messageId: number, mcpToolsResponse: MCPToolResponse[]) => {
-  try {
-    await db.update(messages)
-      .set({
-        mcpTools: mcpToolsResponse,
-        updatedAt: new Date()
-      })
-      .where(eq(messages.id, messageId));
-
-    return {
-      status: 'success',
-      message: '工具信息已保存'
-    };
-  } catch (error) {
-    console.error('同步 MCP 工具响应失败:', error);
-    return {
-      status: 'fail',
-      message: '同步工具失败'
-    };
   }
 }

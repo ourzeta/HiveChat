@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Image from "next/image";
 import Link from 'next/link';
 import { Popconfirm, Button } from 'antd';
-import { SettingOutlined, LogoutOutlined, RollbackOutlined, UserOutlined } from '@ant-design/icons';
+import { SettingOutlined, LogoutOutlined, RollbackOutlined, GlobalOutlined, UserOutlined } from '@ant-design/icons';
 import clsx from 'clsx';
 import { usePathname } from 'next/navigation';
 import logo from "@/app/images/logo.png";
@@ -74,6 +74,11 @@ export default function RootLayout({
         <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/users') })}>
           <Link className='w-full flex' href={"/admin/users/list"}>
             <UserOutlined style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>{t('users')}</span>
+          </Link>
+        </div>
+        <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/search') })}>
+          <Link className='w-full flex items-center' href={"/admin/search"}>
+            <GlobalOutlined style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>搜索设置</span>
           </Link>
         </div>
         <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/mcp') })}>

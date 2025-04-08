@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button, Input, Tooltip, Modal, Popover, Skeleton, message, Image as AntdImage } from "antd";
-import { PictureOutlined, ClearOutlined, FieldTimeOutlined, ArrowUpOutlined } from '@ant-design/icons';
+import { PictureOutlined, ClearOutlined, FieldTimeOutlined, ArrowUpOutlined, GlobalOutlined } from '@ant-design/icons';
 import { Square } from '@icon-park/react';
 import Eraser from '@/app/images/eraser.svg'
 import CloseIcon from '@/app/images/close.svg'
@@ -21,7 +21,8 @@ import useMcpServerStore from '@/app/store/mcp';
 import { fileToBase64 } from '@/app/utils';
 import { throttle } from 'lodash';
 import { getMessagesInServer } from '@/app/chat/actions/message';
-import { Message } from '@/app/db/schema';
+import { Message } from '@/types/llm';
+import useChatStore from '@/app/store/chat';
 import { useTranslations } from 'next-intl';
 
 export const MessageList = (props: { chat_id: string }) => {
@@ -35,6 +36,7 @@ export const MessageList = (props: { chat_id: string }) => {
     input,
     chat,
     messageList,
+    searchStatus,
     responseStatus,
     responseMessage,
     historyType,
@@ -55,6 +57,7 @@ export const MessageList = (props: { chat_id: string }) => {
   } = useChat(props.chat_id);
 
   const { hasUseMcp, hasMcpSelected, clearAllSelect } = useMcpServerStore();
+  const { webSearchEnabled, setWebSearchEnabled } = useChatStore();
   const { uploadedImages, maxImages, handleImageUpload, removeImage, setUploadedImages } = useImageUpload();
 
   const isFromHome = useRouteState();
@@ -74,7 +77,7 @@ export const MessageList = (props: { chat_id: string }) => {
             role: 'user' as const,
             content: question
           }];
-          await sendMessage(messages, selectedTools);
+          await sendMessage(messages, undefined, undefined, selectedTools);
           shouldSetNewTitleRef.current(messages);
           router.replace(`/chat/${props.chat_id}`);
         }
@@ -139,8 +142,8 @@ export const MessageList = (props: { chat_id: string }) => {
   }, [throttledHandleScroll]);
 
   useEffect(() => {
-    // clearAllSelect();
-  }, [props.chat_id, clearAllSelect]);
+    setWebSearchEnabled(false)
+  }, [props.chat_id, setWebSearchEnabled]);
 
   useEffect(() => {
     if (!currentModel.supportTool) {
@@ -186,6 +189,7 @@ export const MessageList = (props: { chat_id: string }) => {
           })
         }
         <ResponsingMessage
+          searchStatus={searchStatus}
           responseStatus={responseStatus}
           responseMessage={responseMessage}
           currentProvider={currentModel.provider.id}
@@ -228,20 +232,46 @@ export const MessageList = (props: { chat_id: string }) => {
       <div className="h-32 flex flex-col bg-white border-t  justify-center items-center pt-0 p-4">
         <div className='flex flex-row justify-between h-10 max-w-3xl w-full relative p-2'>
           <div className='flex flex-row'>
-            {currentModel.supportVision && <Tooltip title={t('image')}>
+            {currentModel.supportVision && <Tooltip title={t('image')} placement='bottom' arrow={false}>
               <Button type="text" size='small' onClick={() => handleImageUpload()}>
                 <PictureOutlined style={{ color: 'gray' }} />
                 <span className='text-xs -ml-1 text-gray-500'>{t('image')}</span>
               </Button>
             </Tooltip>}
 
-            {!currentModel.supportVision && <Tooltip title={t('unsupportImage')}>
+            {!currentModel.supportVision && <Tooltip title={t('unsupportImage')} placement='bottom' arrow={false}>
               <Button type="text" size='small' disabled>
                 <PictureOutlined style={{ color: '#ddd' }} />
                 <span className='text-xs -ml-1 text-gray-300'>{t('image')}</span>
               </Button>
             </Tooltip>}
-
+            {
+              webSearchEnabled ? <Button
+                type="text"
+                size='small'
+                className='mx-1'
+                onClick={() => {
+                  setWebSearchEnabled(!webSearchEnabled)
+                }}
+                color='primary'
+                variant='filled'
+              >
+                <GlobalOutlined style={{ width: '12px', height: '12px' }} />
+                <span className='text-xs -ml-1'>联网搜索</span>
+              </Button>
+                :
+                <Button
+                  type="text"
+                  size='small'
+                  className='mx-1'
+                  onClick={() => {
+                    setWebSearchEnabled(!webSearchEnabled)
+                  }}
+                >
+                  <GlobalOutlined style={{ color: 'gray', width: '12px', height: '12px' }} />
+                  <span className='text-xs -ml-1 text-gray-500'>联网搜索</span>
+                </Button>
+            }
             {hasUseMcp && currentModel.supportTool &&
               <Popover
                 content={<McpServerSelect chat_id={props.chat_id} />}
@@ -273,7 +303,7 @@ export const MessageList = (props: { chat_id: string }) => {
               onOpenChange={handleHistorySettingOpenChange}
             >
               <Tooltip title={t('historyMessageCount')} placement='bottom' arrow={false}>
-                <Button className='ml-2' type="text" size='small'><FieldTimeOutlined style={{ color: 'gray' }} />
+                <Button className='mx-1' type="text" size='small'><FieldTimeOutlined style={{ color: 'gray' }} />
                   <span className='text-xs -ml-1 text-gray-500'>
                     {historyType === 'all' && <>{t('historyMessageCountAllShot')}</>}
                     {historyType === 'none' && <>{t('historyMessageCountNone')}</>}

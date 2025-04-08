@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Alert } from 'antd';
 import useModelListStore from '@/app/store/modelList';
 import ChatHeader from '@/app/components/ChatHeader';
-import { MessageContent } from '@/types/llm';
+import { MessageContent, ChatType } from '@/types/llm';
 import AdaptiveTextarea from '@/app/components/AdaptiveTextarea';
 import { useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
@@ -13,7 +13,6 @@ import { useLoginModal } from '@/app/contexts/loginModalContext';
 import { addChatInServer } from '@/app/chat/actions/chat';
 import { addMessageInServer } from '@/app/chat/actions/message';
 import { fetchAppSettings } from '@/app/chat/actions/chat';
-import { ChatType } from '../db/schema';
 
 import { localDb } from '@/app/db/localDb';
 

@@ -4,7 +4,7 @@ import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseConten
 import { prettyObject } from '@/app/utils';
 import { InvalidAPIKeyError, OverQuotaError, TimeoutError } from '@/types/errorTypes';
 import { FunctionCallPart, FunctionResponsePart } from '@google/generative-ai';
-import { syncMcpTools } from '@/app/admin/llm/actions';
+import { syncMcpTools } from '@/app/chat/actions/chat';
 import { callMCPTool } from '@/app/utils/mcpToolsServer';
 import { mcpToolsToGeminiTools, geminiFunctionCallToMcpTool } from '@/app/utils/mcpToolsClient';
 

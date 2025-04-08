@@ -1,6 +1,6 @@
 'use server';
 import { MCPTool } from '@/types/llm';
-import mcpService from '@/app/service/MCPService';
+import mcpService from '@/app/services/MCPService';
 
 export async function getToolList(serverNames: string[]): Promise<MCPTool[]> {
   if (serverNames.length > 0) {

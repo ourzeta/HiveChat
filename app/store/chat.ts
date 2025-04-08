@@ -1,19 +1,22 @@
 import { create } from 'zustand';
-import { ChatType } from '@/app/db/schema';
+import { ChatType } from '@/types/llm';
 import { updateChatInServer } from '@/app/chat/actions/chat';
 
 interface IChatStore {
   chat: ChatType | null;
+  webSearchEnabled: boolean;
   historyType: 'all' | 'none' | 'count';
   historyCount: number;
   setHistoryType: (chatId: string, newType: 'all' | 'none' | 'count') => void;
   setHistoryCount: (chatId: string, newCount: number) => void;
   setChat: (chat: ChatType) => void;
+  setWebSearchEnabled: (flag: boolean) => void;
   initializeChat: (chatInfo: ChatType) => void;
 }
 
 const useChatStore = create<IChatStore>((set) => ({
   chat: null,
+  webSearchEnabled: false,
   historyType: 'count',
   historyCount: 5,
   setHistoryType: (chatId: string, newType: 'all' | 'none' | 'count') => {
@@ -31,6 +34,10 @@ const useChatStore = create<IChatStore>((set) => ({
 
   setChat: (chat: ChatType) => {
     set({ chat: chat });
+  },
+
+  setWebSearchEnabled: (flag: boolean) => {
+    set({ webSearchEnabled: flag });
   },
 
   initializeChat: async (chatInfo: ChatType) => {

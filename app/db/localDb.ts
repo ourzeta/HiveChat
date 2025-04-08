@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { Message } from './schema';
+import { Message } from '@/types/llm';
 
 
 export class ChatDexie extends Dexie {

@@ -4,12 +4,13 @@ import { Avatar } from "antd";
 import { ResponseContent } from '@/types/llm';
 import DotsLoading from '@/app/components/loading/DotsLoading';
 import BallsLoading from '@/app/components/loading/BallsLoading';
-import { CheckCircleOutlined, RedoOutlined, DownOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, RedoOutlined, DownOutlined, CloseCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import ThinkingIcon from '@/app/images/thinking.svg';
 import useModelListStore from '@/app/store/modelList';
 import { useTranslations } from 'next-intl';
 
 const ResponsingMessage = (props: {
+  searchStatus: "none" | "searching" | "error" | "done",
   responseStatus: string,
   responseMessage: ResponseContent,
   currentProvider: string,
@@ -41,6 +42,18 @@ const ResponsingMessage = (props: {
             {providerAvatar}
             <div className='flex flex-col w-0 grow'>
               <div className='px-3 py-2 ml-2  bg-gray-100  text-gray-600 w-full grow markdown-body answer-content rounded-xl'>
+                {props.searchStatus === "searching" && <div className='flex text-xs flex-row items-center  text-gray-800 bg-gray-100 rounded-md p-2 mb-4'>
+                  <SearchOutlined style={{ marginLeft: '4px' }} /> <span className='ml-2'>正在联网搜索...</span>
+                </div>
+                }
+                {props.searchStatus === "error" && <div className='flex text-xs flex-row items-center  text-gray-800 bg-gray-100 rounded-md p-2 mb-4'>
+                  <SearchOutlined style={{ marginLeft: '4px' }} /> <span className='ml-2'>搜索出错，请联系管理员检查搜索引擎配置</span>
+                </div>
+                }
+                {props.searchStatus === "done" && <div className='flex text-xs flex-row items-center  text-gray-800 bg-gray-100 rounded-md p-2 mb-4'>
+                  <SearchOutlined style={{ marginLeft: '4px' }} /> <span className='ml-2'>搜索完成</span>
+                </div>
+                }
                 {props.responseMessage.reasoning_content &&
                   <div className='text-sm mb-4'>
                     <div className='flex text-xs flex-row items-center text-gray-800 bg-gray-100 rounded-md p-2'>

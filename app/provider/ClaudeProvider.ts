@@ -4,7 +4,7 @@ import { prettyObject } from '@/app/utils';
 import { callMCPTool } from '@/app/utils/mcpToolsServer';
 import { InvalidAPIKeyError, TimeoutError } from '@/types/errorTypes';
 import { mcpToolsToAnthropicTools, anthropicToolUseToMcpTool } from '@/app/utils/mcpToolsClient';
-import { syncMcpTools } from '@/app/admin/llm/actions';
+import { syncMcpTools } from '@/app/chat/actions/chat';
 import {
   MessageCreateParamsNonStreaming,
   MessageParam,

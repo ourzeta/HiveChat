@@ -1,28 +1,30 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { Message } from '@/app/db/schema';
-import { ChatOptions, LLMApi, RequestMessage, MessageContent, MCPTool } from '@/types/llm';
+import { Message, ResponseContent, ChatOptions, LLMApi, RequestMessage, MessageContent, MCPTool } from '@/types/llm';
 import useChatStore from '@/app/store/chat';
 import useChatListStore from '@/app/store/chatList';
 import useMcpServerStore from '@/app/store/mcp';
 import { generateTitle, getLLMInstance } from '@/app/utils';
 import useModelListStore from '@/app/store/modelList';
-import { ResponseContent } from '@/types/llm';
 import { getChatInfoInServer } from '@/app/chat/actions/chat';
-import { addMessageInServer, getMessagesInServer, deleteMessageInServer, clearMessageInServer } from '@/app/chat/actions/message';
+import { addMessageInServer, getMessagesInServer, deleteMessageInServer, clearMessageInServer, updateMessageWebSearchInServer } from '@/app/chat/actions/message';
 import useGlobalConfigStore from '@/app/store/globalConfig';
 import { localDb } from '@/app/db/localDb';
+import { getSearchResult } from '@/app/chat/actions/chat';
+import { searchResultType, WebSearchResult, WebSearchResponse } from '@/types/search';
+import { REFERENCE_PROMPT } from '@/app/config/prompts';
 
 const useChat = (chatId: string) => {
-  const { currentModel, setCurrentModel, setCurrentModelExact } = useModelListStore();
+  const { currentModel, setCurrentModelExact } = useModelListStore();
   const [messageList, setMessageList] = useState<Message[]>([]);
   const [isPending, setIsPending] = useState(false);
   const [responseStatus, setResponseStatus] = useState<"done" | "pending">("done");
+  const [searchStatus, setSearchStatus] = useState<searchResultType>("none");
   const [chatBot, setChatBot] = useState<LLMApi | null>(null);
   const [responseMessage, setResponseMessage] = useState<ResponseContent>({ content: '', reasoning_content: '' });
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [input, setInput] = useState('');
   const [userSendCount, setUserSendCount] = useState(0);
-  const { chat, initializeChat, historyType, historyCount } = useChatStore();
+  const { chat, initializeChat, webSearchEnabled, historyType, historyCount } = useChatStore();
   const { setNewTitle } = useChatListStore();
   const { chatNamingModel } = useGlobalConfigStore();
   const { selectedTools } = useMcpServerStore();
@@ -123,7 +125,12 @@ const useChat = (chatId: string) => {
     setNewTitle,
   ]);
 
-  const sendMessage = useCallback(async (messages: RequestMessage[], mcpTools?: MCPTool[]) => {
+  const sendMessage = useCallback(async (
+    messages: RequestMessage[],
+    searchResultStatus?: searchResultType,
+    searchResponse?: WebSearchResponse,
+    mcpTools?: MCPTool[]
+  ) => {
     let lastUpdate = Date.now();
     setResponseStatus("pending");
     const options: ChatOptions = {
@@ -144,6 +151,7 @@ const useChat = (chatId: string) => {
           chatId: chatId,
           content: responseContent.content,
           reasoninContent: responseContent.reasoning_content,
+          searchStatus: searchResultStatus,
           inputTokens: responseContent.inputTokens,
           outputTokens: responseContent.outputTokens,
           totalTokens: responseContent.totalTokens,
@@ -156,6 +164,10 @@ const useChat = (chatId: string) => {
         setMessageList(prevList => [...prevList, respMessage]);
         if (!shouldContinue) {
           setResponseStatus("done");
+        }
+        // 将 searchResponse 同步到数据库的 message 表下， id= responseContent.id 的记录
+        if (searchResponse && responseContent.id) {
+          await updateMessageWebSearchInServer(responseContent.id, searchResponse);
         }
         setResponseMessage({ content: '', reasoning_content: '', mcpTools: [] });
       },
@@ -280,6 +292,7 @@ const useChat = (chatId: string) => {
     setResponseStatus("pending");
     setIsUserScrolling(false);
 
+    let realSendMessage = message;
     const currentMessage = {
       role: "user",
       chatId: chatId,
@@ -291,20 +304,45 @@ const useChat = (chatId: string) => {
     };
 
     setInput('');
+    setMessageList((m) => ([...m, currentMessage]));
+    addMessageInServer(currentMessage);
+    setUserSendCount(userSendCount + 1);
+    // Search web
+    // 是否开启搜索
+    let _setSearchStatus: searchResultType = 'none';
+    let _searchResponse: WebSearchResponse | undefined;
+    if (webSearchEnabled) {
+      setSearchStatus("searching");
+      console.log('webSearchEnabled', '开启了搜索')
+      const textContent = typeof message === 'string' ? message : '';
+      if (textContent) {
+        const searchResult = await getSearchResult(textContent);
+        if (searchResult.status === 'success') {
+          console.log(searchResult);
+          _searchResponse = searchResult.data || undefined;
+          const referenceContent = `\`\`\`json\n${JSON.stringify(searchResult, null, 2)}\n\`\`\``;
+          realSendMessage = REFERENCE_PROMPT.replace('{question}', textContent).replace('{references}', referenceContent);
+          setSearchStatus("done");
+          _setSearchStatus = 'done'
+        } else {
+          setSearchStatus("error");
+          _setSearchStatus = 'error'
+        }
+      }
+    }
+
     const messages = prepareMessage({
       role: "user",
-      content: message,
+      content: realSendMessage,
     })
-    setUserSendCount(userSendCount + 1);
-    sendMessage(messages, selectedTools);
-    addMessageInServer(currentMessage);
-    setMessageList((m) => ([...m, currentMessage]));
+    sendMessage(messages, _setSearchStatus, _searchResponse, selectedTools);
   }, [
     chatId,
     responseStatus,
     currentModel,
     userSendCount,
     selectedTools,
+    webSearchEnabled,
     prepareMessage,
     sendMessage,
   ]);
@@ -364,6 +402,7 @@ const useChat = (chatId: string) => {
     input,
     chat,
     messageList,
+    searchStatus,
     responseStatus,
     responseMessage,
     historyType,

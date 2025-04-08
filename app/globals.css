@@ -194,3 +194,47 @@ ol {
 .model-select-dropdown ::-webkit-scrollbar-thumb:hover {
   background: #888;
 }
+
+.markdown-body .footnotes {
+  background-color: #f3f4f6;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border-top: none !important;
+}
+
+.footnotes h2 {
+  margin-top: 0.8rem !important;
+}
+
+.data-footnote-backref {
+  display: none; 
+}
+
+.markdown-body li>p {
+  margin-top: 0.2rem !important;
+  margin-bottom: 0.2rem !important;
+}
+
+.footnotes > h2:first-child,
+.footnotes > h3:first-child {
+  display: none;
+}
+
+.footnotes::before {
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid #dedede;
+  content: '引用内容';
+  display: block;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-top: 0.5em;
+  margin-bottom: 1em;
+}
+
+.markdown-body [data-footnote-ref]::before {
+  content: "" !important;
+}
+
+.markdown-body [data-footnote-ref]::after {
+  content: ""  !important;
+}

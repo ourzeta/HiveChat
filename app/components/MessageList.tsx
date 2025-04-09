@@ -20,8 +20,6 @@ import useRouteState from '../hooks/chat/useRouteState';
 import useMcpServerStore from '@/app/store/mcp';
 import { fileToBase64 } from '@/app/utils';
 import { throttle } from 'lodash';
-import { getMessagesInServer } from '@/app/chat/actions/message';
-import { Message } from '@/types/llm';
 import useChatStore from '@/app/store/chat';
 import { useTranslations } from 'next-intl';
 
@@ -59,32 +57,7 @@ export const MessageList = (props: { chat_id: string }) => {
   const { hasUseMcp, hasMcpSelected, clearAllSelect } = useMcpServerStore();
   const { webSearchEnabled, setWebSearchEnabled } = useChatStore();
   const { uploadedImages, maxImages, handleImageUpload, removeImage, setUploadedImages } = useImageUpload();
-
-  const isFromHome = useRouteState();
   const router = useRouter();
-  const shouldSetNewTitleRef = useRef(shouldSetNewTitle);
-  useEffect(() => {
-    const check = async () => {
-      if (isFromHome) {
-        let existMessages: Message[] = [];
-        const result = await getMessagesInServer(props.chat_id);
-        if (result.status === 'success') {
-          existMessages = result.data as Message[]
-        }
-        if (existMessages.length === 1 && existMessages[0]['role'] === 'user') {
-          const question = existMessages[0]['content'];
-          const messages = [{
-            role: 'user' as const,
-            content: question
-          }];
-          await sendMessage(messages, undefined, undefined, selectedTools);
-          shouldSetNewTitleRef.current(messages);
-          router.replace(`/chat/${props.chat_id}`);
-        }
-      }
-    }
-    check();
-  }, [isFromHome, props.chat_id, selectedTools, router, sendMessage]);
 
   const handleHistorySettingOpenChange = (open: boolean) => {
     SetHistorySettingOpen(open);

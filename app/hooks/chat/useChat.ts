@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Message, ResponseContent, ChatOptions, LLMApi, RequestMessage, MessageContent, MCPTool } from '@/types/llm';
 import useChatStore from '@/app/store/chat';
 import useChatListStore from '@/app/store/chatList';
@@ -10,8 +10,10 @@ import { addMessageInServer, getMessagesInServer, deleteMessageInServer, clearMe
 import useGlobalConfigStore from '@/app/store/globalConfig';
 import { localDb } from '@/app/db/localDb';
 import { getSearchResult } from '@/app/chat/actions/chat';
-import { searchResultType, WebSearchResult, WebSearchResponse } from '@/types/search';
+import { searchResultType, WebSearchResponse } from '@/types/search';
 import { REFERENCE_PROMPT } from '@/app/config/prompts';
+import useRouteState from '@/app/hooks/chat/useRouteState';
+import { useRouter } from 'next/navigation'
 
 const useChat = (chatId: string) => {
   const { currentModel, setCurrentModelExact } = useModelListStore();
@@ -28,6 +30,8 @@ const useChat = (chatId: string) => {
   const { setNewTitle } = useChatListStore();
   const { chatNamingModel } = useGlobalConfigStore();
   const { selectedTools } = useMcpServerStore();
+  const isFromHome = useRouteState();
+  const router = useRouter();
 
   useEffect(() => {
     const llmApi = getLLMInstance(currentModel.provider.id);
@@ -42,59 +46,6 @@ const useChat = (chatId: string) => {
     };
   }, [currentModel]);
 
-  useEffect(() => {
-    async function fetchMessages() {
-      try {
-        let messageList: Message[] = [];
-        const result = await getMessagesInServer(chatId);
-        if (result.status === 'success') {
-          messageList = result.data as Message[]
-        }
-        setMessageList(messageList);
-        let tmpUserSendCount = 0;
-        messageList.forEach((item) => {
-          if (item.role === "user") {
-            tmpUserSendCount = tmpUserSendCount + 1;
-          }
-        });
-        setUserSendCount(tmpUserSendCount);
-      } catch (error) {
-        console.error('Error fetching items from database:', error);
-      }
-    }
-    async function fetchLocalMessages() {
-      const localMessage = await localDb.messages.where({ 'chatId': chatId }).toArray();
-      setMessageList(localMessage);
-      setUserSendCount(1);
-      await localDb.messages.clear();
-    }
-
-    async function fetchChatInfo() {
-      const { status, data } = await getChatInfoInServer(chatId);
-      if (status === 'success') {
-        initializeChat(data!);
-        if (data?.defaultProvider && data?.defaultModel) {
-          setCurrentModelExact(data.defaultProvider, data.defaultModel);
-        }
-      }
-    }
-    if (localStorage.getItem('f') === 'home') {
-      initializeChat({
-        id: chatId,
-        createdAt: new Date(),
-      });
-      fetchLocalMessages();
-      localStorage.removeItem('f');
-    } else {
-      setIsPending(true);
-      Promise.all([
-        fetchMessages(),
-        fetchChatInfo()
-      ]).finally(() => {
-        setIsPending(false);
-      });
-    }
-  }, [chatId, initializeChat, setCurrentModelExact]);
 
   const handleInputChange = (e: any) => {
     setInput(e.target.value);
@@ -397,6 +348,85 @@ const useChat = (chatId: string) => {
       shouldSetNewTitle(messages)
     }
   }
+
+  useEffect(() => {
+    async function fetchMessages() {
+      try {
+        let messageList: Message[] = [];
+        const result = await getMessagesInServer(chatId);
+        if (result.status === 'success') {
+          messageList = result.data as Message[]
+        }
+        setMessageList(messageList);
+        let tmpUserSendCount = 0;
+        messageList.forEach((item) => {
+          if (item.role === "user") {
+            tmpUserSendCount = tmpUserSendCount + 1;
+          }
+        });
+        setUserSendCount(tmpUserSendCount);
+      } catch (error) {
+        console.error('Error fetching items from database:', error);
+      }
+    }
+    async function fetchLocalMessages() {
+      const localMessage = await localDb.messages.where({ 'chatId': chatId }).toArray();
+      setMessageList(localMessage);
+      setUserSendCount(1);
+      await localDb.messages.clear();
+    }
+
+    async function fetchChatInfo() {
+      const { status, data } = await getChatInfoInServer(chatId);
+      if (status === 'success') {
+        initializeChat(data!);
+        if (data?.defaultProvider && data?.defaultModel) {
+          setCurrentModelExact(data.defaultProvider, data.defaultModel);
+        }
+      }
+    }
+    if (localStorage.getItem('f') === 'home') {
+      initializeChat({
+        id: chatId,
+        createdAt: new Date(),
+      });
+      fetchLocalMessages();
+      localStorage.removeItem('f');
+    } else {
+      setIsPending(true);
+      Promise.all([
+        fetchMessages(),
+        fetchChatInfo()
+      ]).finally(() => {
+        setIsPending(false);
+      });
+    }
+  }, [chatId, initializeChat, setCurrentModelExact]);
+
+  const shouldSetNewTitleRef = useRef(shouldSetNewTitle);
+
+  useEffect(() => {
+    const check = async () => {
+      if (isFromHome) {
+        let existMessages: Message[] = [];
+        const result = await getMessagesInServer(chatId);
+        if (result.status === 'success') {
+          existMessages = result.data as Message[]
+        }
+        if (existMessages.length === 1 && existMessages[0]['role'] === 'user') {
+          const question = existMessages[0]['content'];
+          const messages = [{
+            role: 'user' as const,
+            content: question
+          }];
+          await sendMessage(messages, undefined, undefined, selectedTools);
+          shouldSetNewTitleRef.current(messages);
+          router.replace(`/chat/${chatId}`);
+        }
+      }
+    }
+    check();
+  }, [isFromHome, chatId, selectedTools, router, sendMessage]);
 
   return {
     input,

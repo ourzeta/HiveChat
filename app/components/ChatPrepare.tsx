@@ -1,14 +1,14 @@
 'use client';
 import React, { useEffect } from 'react'
 import useMcpServerStore from '@/app/store/mcp';
-import { getMcpServersAndAvailableTools } from '@/app/chat/actions/chat';
-import App from "@/app/components/App";
+import useGlobalConfigStore from '@/app/store/globalConfig';
+import { fetchSettingsByKeys, getMcpServersAndAvailableTools } from '@/app/chat/actions/chat';
 import useModelListStore from '@/app/store/modelList';
 import { fetchAvailableLlmModels, fetchAllProviders } from '@/app/admin/llm/actions';
 
 const AppPrepare = () => {
   const { setHasUseMcp, setMcpServers, setAllTools } = useMcpServerStore();
-
+  const { setChatNamingModel, setSearchEnable } = useGlobalConfigStore();
   useEffect(() => {
     const initializeMcpInfo = async () => {
       const { mcpServers, tools } = await getMcpServersAndAvailableTools();
@@ -56,6 +56,21 @@ const AppPrepare = () => {
 
     initializeModelList();
   }, [initModelList, setCurrentModel, setIsPending, initAllProviderList]);
+  
+  useEffect(() => {
+    const initializeAppSettings = async () => {
+      const results = await fetchSettingsByKeys(['chatNamingModel', 'searchEnable']);
+      if (results.chatNamingModel) {
+        setChatNamingModel(results.chatNamingModel)
+      } else {
+        setChatNamingModel('current')
+      }
+      if (results.searchEnable) {
+        setSearchEnable(results.searchEnable === 'true')
+      }
+    }
+    initializeAppSettings();
+  }, [setChatNamingModel, setSearchEnable]);
   return (
     <></>
   )

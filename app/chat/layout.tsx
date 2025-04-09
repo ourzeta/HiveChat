@@ -1,6 +1,6 @@
 'use client';
 import App from "@/app/components/App";
-import AppPrepare from "@/app/components/ChatPrepare";
+import ChatPrepare from "@/app/components/ChatPrepare";
 
 export default function ChatLayout({
   children,
@@ -10,7 +10,7 @@ export default function ChatLayout({
 
   return (
     <div className="flex flex-col h-dvh">
-      <AppPrepare />
+      <ChatPrepare />
       <App>{children}</App>
     </div>
   )

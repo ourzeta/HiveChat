@@ -1,7 +1,7 @@
 'use server';
 import { db } from '@/app/db';
 import { auth } from "@/auth";
-import { eq, and, desc, asc } from 'drizzle-orm';
+import { eq, and, desc, asc, inArray } from 'drizzle-orm';
 import { ChatType, MCPToolResponse } from '@/types/llm';
 import WebSearchService from '@/app/services/WebSearchService';
 import { chats, messages, appSettings, mcpServers, mcpTools, searchEngineConfig } from '@/app/db/schema';
@@ -12,6 +12,7 @@ export const addChatInServer = async (
     title: string;
     defaultModel?: string;
     defaultProvider?: string;
+    searchEnabled?: boolean;
     historyType?: 'all' | 'none' | 'count';
     historyCount?: number;
     isStar?: boolean;
@@ -227,6 +228,26 @@ export const fetchAppSettings = async (key: string) => {
       where: eq(appSettings.key, key)
     });
   return result?.value;
+}
+
+export const fetchSettingsByKeys = async (keys: Array<string>) => {
+  const results = await db.query.appSettings
+    .findMany({
+      where: (appSettings) => inArray(appSettings.key, keys)
+    });
+
+  // Initialize the result object with all requested keys set to null
+  const settingsObject = keys.reduce((acc, key) => {
+    acc[key] = null;
+    return acc;
+  }, {} as Record<string, string | null>);
+
+  // Update the values for keys that exist in the database
+  results.forEach(setting => {
+    settingsObject[setting.key] = setting.value;
+  });
+
+  return settingsObject;
 }
 
 export const getMcpServersAndAvailableTools = async () => {

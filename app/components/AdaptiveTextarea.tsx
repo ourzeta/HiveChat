@@ -7,15 +7,21 @@ import McpIcon from "@/app/images/mcp.svg";
 import CloseIcon from '@/app/images/close.svg';
 import McpServerSelect from '@/app/components/McpServerSelect';
 import { fileToBase64 } from '@/app/utils';
-import { ArrowUpOutlined } from '@ant-design/icons';
+import { ArrowUpOutlined, GlobalOutlined } from '@ant-design/icons';
 import { LLMModel } from '@/types/llm';
 import useMcpServerStore from '@/app/store/mcp';
+import useGlobalConfigStore from '@/app/store/globalConfig';
 import clsx from 'clsx';
 import { useTranslations } from 'next-intl';
+import SearchButton from './SearchButton';
 
 const AdaptiveTextarea = (props: {
   model: LLMModel
-  submit: (message: string, attachments?: Array<{ mimeType: string; data: string }>) => void
+  submit: (
+    message: string,
+    attachments?: Array<{ mimeType: string; data: string }>,
+    searchEnabled?: boolean,
+  )=> void
 }) => {
   const t = useTranslations('Chat');
   const [text, setText] = useState('');
@@ -24,16 +30,15 @@ const AdaptiveTextarea = (props: {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const testSpanRef = useRef<HTMLSpanElement | null>(null);
-  const [isOverflow, setIsOverflow] = useState(false);
   const [mcpServerSelectOpen, SetMcpServerSelectOpen] = useState(false);
+  const { searchEnable } = useGlobalConfigStore();
+  const [localSearchEnable, setLocalSearchEnable] = useState(false);
   const { hasUseMcp, hasMcpSelected } = useMcpServerStore();
   const { uploadedImages, maxImages, handleImageUpload, removeImage } = useImageUpload();
   // 创建测试 span
   useEffect(() => {
     // 创建用于测量文本宽度的 span 元素
     const span = document.createElement('span');
-    // span.style.visibility = 'hidden';
-    // span.style.position = 'absolute';
     const holder = document.getElementById('test-span-holder');
     if (holder) {
       holder.appendChild(span);
@@ -52,7 +57,6 @@ const AdaptiveTextarea = (props: {
   const checkOverflow = () => {
     if (textareaRef.current && containerRef.current && testSpanRef.current) {
       const textarea = textareaRef.current;
-      const container = containerRef.current;
       const testSpan = testSpanRef.current;
 
       // 更新测试 span 的样式和内容
@@ -62,9 +66,8 @@ const AdaptiveTextarea = (props: {
       const testHeightDiv = document.getElementById('test-span-holder')
       const testHeight = testHeightDiv?.scrollHeight || 16;
       // 处理 rows
-      const padding = 12;
       const lineHeight = 24;
-      const minRows = 1;     // 最小行数
+      const minRows = 2;     // 最小行数
       const maxRows = 4;     // 最大行数
       // const contentHeight = testHeight - padding * 2;
       const contentHeight = testHeight;
@@ -76,15 +79,6 @@ const AdaptiveTextarea = (props: {
       // 限制行数在 minRows 和 maxRows 之间
       const rows = Math.min(Math.max(totalRows, minRows), maxRows);
       textarea.rows = rows;
-
-      // 计算文本实际宽度是否超过容器可用宽度
-      const textWidth = testSpan.offsetWidth;
-      const availableWidth = container.offsetWidth - 120; // 减去按钮宽度和间距
-      if (totalRows > 1) {
-        setIsOverflow(true);
-      } else {
-        setIsOverflow(textWidth > availableWidth);
-      }
     }
   };
 
@@ -113,7 +107,7 @@ const AdaptiveTextarea = (props: {
         ref={containerRef}
         className={clsx({ 'bg-gray-100': pending }, 'flex border-gray-300  border rounded-3xl p-2 flex-col justify-end')}
       >
-        {uploadedImages.length > 0 && <div className="h-20 flex flex-col justify-center items-center">
+        {uploadedImages.length > 0 && <div className="flex flex-col justify-center items-center">
           <div className='flex flex-row h-16 max-w-3xl pl-2 w-full'>
             {uploadedImages.map((image, index) => (
               <div key={index} className="relative group mr-4 h-16 w-16">
@@ -136,15 +130,15 @@ const AdaptiveTextarea = (props: {
             ))}
           </div>
         </div>}
-        <div className={`flex ${isOverflow ? 'flex-col justify-end' : 'flex-row items-center'}`}>
+        <div className='flex flex-col justify-end'>
           <textarea
             ref={textareaRef}
             autoFocus={true}
             value={text}
-            rows={1}
+            rows={2}
             onChange={(e) => setText(e.target.value)}
             placeholder={t('inputPlaceholder')}
-            className={clsx({ 'bg-gray-100': pending }, "flex-1 p-2  leading-6 h-10 py-2 px-3 rounded-md outline-none resize-none")}
+            className={clsx({ 'bg-gray-100': pending }, "flex-1 p-2  leading-6 h-10 py-2 rounded-md outline-none resize-none")}
             disabled={pending}
             style={{
               scrollbarWidth: 'thin',
@@ -212,89 +206,96 @@ const AdaptiveTextarea = (props: {
                       mimeType: img.file.type,
                       data: await fileToBase64(img.file!)
                     }
-                  })))
+                  })), localSearchEnable);
               }
             }}
           />
-          <div className={clsx({ 'w-full justify-end': isOverflow }, 'flex flex-row items-center')}>
-            {hasUseMcp &&
-              <Popover
-                content={<McpServerSelect />}
-                trigger="click"
-                open={mcpServerSelectOpen}
-                onOpenChange={(open) => { SetMcpServerSelectOpen(open) }}
-              >
-                {
-                  props.model?.supportTool ?
-                    <Tooltip title="MCP 服务器" placement='bottom' arrow={false} >
-                      {hasMcpSelected ?
-                        <Button type="text"
-                          color="primary"
-                          variant="filled"
-                          style={{ marginRight: '4px' }}
-                          icon={<McpIcon style={{ verticalAlign: 'middle', width: '20px', height: '20px' }} />}
-                        />
-                        :
-                        <Button type="text"
-                          style={{ marginRight: '4px' }}
-                          icon={<McpIcon style={{ verticalAlign: 'middle', width: '20px', height: '20px' }} />}
-                        />
-                      }
-                    </Tooltip>
-                    :
-                    <Tooltip title="当前模型不支持 MCP 工具"><Button type="text"
-                      disabled
-                      style={{ marginRight: '4px' }}
-                      icon={<McpIcon style={{ verticalAlign: 'middle', width: '20px', height: '20px' }} />}
-                    />
-                    </Tooltip>
-                }
+          <div className='flex flex-row items-center w-full justify-between'>
+            <SearchButton
+              searchEnable={searchEnable}
+              localSearchEnable={localSearchEnable}
+              onToggle={() => setLocalSearchEnable(!localSearchEnable)}
+            />
+            <div className='pr-2'>
+              {hasUseMcp &&
+                <Popover
+                  content={<McpServerSelect />}
+                  trigger="click"
+                  open={mcpServerSelectOpen}
+                  onOpenChange={(open) => { SetMcpServerSelectOpen(open) }}
+                >
+                  {
+                    props.model?.supportTool ?
+                      <Tooltip title="MCP 服务器" placement='bottom' arrow={false} >
+                        {hasMcpSelected ?
+                          <Button type="text"
+                            color="primary"
+                            variant="filled"
+                            style={{ marginRight: '4px' }}
+                            icon={<McpIcon style={{ verticalAlign: 'middle', width: '20px', height: '20px' }} />}
+                          />
+                          :
+                          <Button type="text"
+                            style={{ marginRight: '4px' }}
+                            icon={<McpIcon style={{ verticalAlign: 'middle', width: '20px', height: '20px' }} />}
+                          />
+                        }
+                      </Tooltip>
+                      :
+                      <Tooltip title="当前模型不支持 MCP 工具"><Button type="text"
+                        disabled
+                        style={{ marginRight: '4px' }}
+                        icon={<McpIcon style={{ verticalAlign: 'middle', width: '20px', height: '20px' }} />}
+                      />
+                      </Tooltip>
+                  }
 
-              </Popover>
-            }
+                </Popover>
+              }
 
-            {
-              props.model?.supportVision ?
-                <Button
-                  onClick={() => handleImageUpload()}
-                  type='text'
-                  className='mr-2'
-                  icon={<ImageIcon style={{ verticalAlign: 'middle' }} width={28} height={28} />}
-                />
-                :
-                <Tooltip title={t('notSupportVision')}>
+              {
+                props.model?.supportVision ?
                   <Button
+                    onClick={() => handleImageUpload()}
                     type='text'
-                    disabled={true}
                     className='mr-2'
                     icon={<ImageIcon style={{ verticalAlign: 'middle' }} width={28} height={28} />}
                   />
-                </Tooltip>
-            }
+                  :
+                  <Tooltip title={t('notSupportVision')}>
+                    <Button
+                      type='text'
+                      disabled={true}
+                      className='mr-2'
+                      icon={<ImageIcon style={{ verticalAlign: 'middle' }} width={28} height={28} />}
+                    />
+                  </Tooltip>
+              }
 
-            {(pending || submitBtnDisable) ?
-              <Button
-                type="primary"
-                style={{ backgroundColor: '#6ba7fc', color: '#fff', border: 'none' }}
-                disabled
-                shape="circle"
-                icon={<ArrowUpOutlined color='#fff' />} />
-              :
-              <Button
-                type="primary"
-                shape="circle"
-                onClick={async () => {
-                  setPending(true);
-                  props.submit(text, await Promise.all(uploadedImages
-                    .filter(img => img.file)
-                    .map(async (img) => {
-                      return {
-                        mimeType: img.file.type,
-                        data: await fileToBase64(img.file!)
-                      }
-                    })))
-                }}
-                icon={<ArrowUpOutlined />} />}
+              {(pending || submitBtnDisable) ?
+                <Button
+                  type="primary"
+                  style={{ backgroundColor: '#6ba7fc', color: '#fff', border: 'none' }}
+                  disabled
+                  shape="circle"
+                  icon={<ArrowUpOutlined color='#fff' />} />
+                :
+                <Button
+                  type="primary"
+                  shape="circle"
+                  onClick={async () => {
+                    setPending(true);
+                    props.submit(text, await Promise.all(uploadedImages
+                      .filter(img => img.file)
+                      .map(async (img) => {
+                        return {
+                          mimeType: img.file.type,
+                          data: await fileToBase64(img.file!)
+                        }
+                      })), localSearchEnable)
+                  }}
+                  icon={<ArrowUpOutlined />} />}
+            </div>
           </div>
         </div>
       </div>

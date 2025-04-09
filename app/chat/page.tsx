@@ -93,7 +93,11 @@ const Home = () => {
     setGreetingText(t(getGreeting()));
   }, [t]);
 
-  const newChat = async (text: string, attachments?: Array<{ mimeType: string; data: string }>) => {
+  const newChat = async (
+    text: string,
+    attachments?: Array<{ mimeType: string; data: string }>,
+    searchEnabled?: boolean,
+  ) => {
     let content: MessageContent;
     if (attachments && attachments?.length > 0) {
       const attachmentsMessages = attachments.map((attachment) => {
@@ -117,6 +121,7 @@ const Home = () => {
     const result = await addChatInServer({
       title: t('defaultChatName'),
       defaultModel: currentModel.id,
+      searchEnabled: searchEnabled,
       defaultProvider: currentModel.provider.id,
     });
     if (result.status === 'success') {
@@ -124,6 +129,7 @@ const Home = () => {
         id: result.data?.id,
         title: t('defaultChatName'),
         defaultModel: 'gpt',
+        searchEnabled: searchEnabled,
         createdAt: new Date(),
       };
       setChatList([initInfo as ChatType, ...chatList]);
@@ -133,6 +139,7 @@ const Home = () => {
         role: 'user',
         type: 'text' as const,
         model: currentModel.id,
+        searchEnabled: searchEnabled,
         providerId: currentModel.provider.id,
         createdAt: new Date(),
       };

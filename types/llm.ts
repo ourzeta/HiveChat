@@ -41,17 +41,18 @@ export type Message = {
     }
   >;
   reasoninContent?: string;
-  searchStatus?: "none" | "searching" | "error" | "done",
+  searchEnabled?: boolean;
+  searchStatus?: "none" | "searching" | "error" | "done";
   mcpTools?: MCPToolResponse[];
   webSearch?: WebSearchResponse;
   providerId: string;
   model: string;
   type: 'text' | 'image' | 'error' | 'break';
-  inputTokens?: number,
-  outputTokens?: number,
-  totalTokens?: number,
-  errorType?: string,
-  errorMessage?: string,
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+  errorType?: string;
+  errorMessage?: string;
   createdAt: Date;
 }
 
@@ -59,9 +60,9 @@ export type ResponseContent = {
   id?: number;
   content: string;
   reasoning_content?: string;
-  inputTokens?: number,
-  outputTokens?: number,
-  totalTokens?: number,
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
   mcpTools?: MCPToolResponse[];
 }
 

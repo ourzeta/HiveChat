@@ -72,6 +72,7 @@ export const getChatInfoInServer = async (chatId: string): Promise<{ status: str
         title: data.title ?? undefined,
         defaultModel: data.defaultModel ?? undefined,
         defaultProvider: data.defaultProvider ?? undefined,
+        searchEnabled: data.searchEnabled ?? undefined,
         historyType: data.historyType ?? undefined,
         historyCount: data.historyCount ?? undefined,
         isStar: data.isStar ?? undefined,

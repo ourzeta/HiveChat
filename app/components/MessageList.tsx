@@ -16,7 +16,6 @@ import MessageItem from '@/app/components/MessageItem';
 import MarkdownRender from '@/app/components/Markdown';
 import useChat from '@/app/hooks/chat/useChat';
 import useImageUpload from '@/app/hooks/chat/useImageUpload';
-import useRouteState from '../hooks/chat/useRouteState';
 import useMcpServerStore from '@/app/store/mcp';
 import { fileToBase64 } from '@/app/utils';
 import { throttle } from 'lodash';
@@ -25,7 +24,6 @@ import { useTranslations } from 'next-intl';
 
 export const MessageList = (props: { chat_id: string }) => {
   const t = useTranslations('Chat');
-  const { selectedTools } = useMcpServerStore();
   const [modal, contextHolder] = Modal.useModal();
   const messageListRef = useRef<HTMLDivElement>(null);
   const [historySettingOpen, SetHistorySettingOpen] = useState(false);
@@ -51,7 +49,6 @@ export const MessageList = (props: { chat_id: string }) => {
     retryMessage,
     stopChat,
     setIsUserScrolling,
-    shouldSetNewTitle,
   } = useChat(props.chat_id);
 
   const { hasUseMcp, hasMcpSelected, clearAllSelect } = useMcpServerStore();

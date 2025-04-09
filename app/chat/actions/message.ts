@@ -82,6 +82,7 @@ export const addMessageInServer = async (message: {
     }
   >,
   reasoninContent?: string,
+  searchEnabled?:boolean,
   mcpTools?: MCPToolResponse[],
   providerId: string,
   model: string,
@@ -107,6 +108,7 @@ export const addMessageInServer = async (message: {
       role: message.role,
       content: message.content,
       reasoninContent: message.reasoninContent,
+      searchEnabled: message.searchEnabled,
       mcpTools: message.mcpTools,
       model: message.model,
       providerId: message.providerId,

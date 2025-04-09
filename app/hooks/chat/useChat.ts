@@ -26,7 +26,7 @@ const useChat = (chatId: string) => {
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [input, setInput] = useState('');
   const [userSendCount, setUserSendCount] = useState(0);
-  const { chat, initializeChat, webSearchEnabled, historyType, historyCount } = useChatStore();
+  const { chat, initializeChat, setWebSearchEnabled, webSearchEnabled, historyType, historyCount } = useChatStore();
   const { setNewTitle } = useChatListStore();
   const { chatNamingModel } = useGlobalConfigStore();
   const { selectedTools } = useMcpServerStore();
@@ -236,6 +236,38 @@ const useChat = (chatId: string) => {
     messageList
   ]);
 
+  const handleWebSearch = useCallback(async (message: MessageContent) => {
+    let realSendMessage = message;
+    let searchStatus: searchResultType = 'none';
+    let searchResponse: WebSearchResponse | undefined;
+
+    setSearchStatus("searching");
+    const textContent = typeof message === 'string' ? message : '';
+    if (textContent) {
+      const searchResult = await getSearchResult(textContent);
+      if (searchResult.status === 'success') {
+        console.log(searchResult);
+        searchResponse = searchResult.data || undefined;
+        const referenceContent = `\`\`\`json\n${JSON.stringify(searchResult, null, 2)}\n\`\`\``;
+        realSendMessage = REFERENCE_PROMPT.replace('{question}', textContent).replace('{references}', referenceContent);
+        setSearchStatus("done");
+        searchStatus = 'done'
+      } else {
+        setSearchStatus("error");
+        searchStatus = 'error'
+      }
+    }
+    // }
+
+    return {
+      realSendMessage,
+      searchStatus,
+      searchResponse
+    };
+  }, [
+    // webSearchEnabled
+  ]);
+
   const handleSubmit = useCallback(async (message: MessageContent) => {
     if (responseStatus === 'pending') {
       return;
@@ -243,7 +275,6 @@ const useChat = (chatId: string) => {
     setResponseStatus("pending");
     setIsUserScrolling(false);
 
-    let realSendMessage = message;
     const currentMessage = {
       role: "user",
       chatId: chatId,
@@ -258,35 +289,24 @@ const useChat = (chatId: string) => {
     setMessageList((m) => ([...m, currentMessage]));
     addMessageInServer(currentMessage);
     setUserSendCount(userSendCount + 1);
-    // Search web
-    // 是否开启搜索
-    let _setSearchStatus: searchResultType = 'none';
-    let _searchResponse: WebSearchResponse | undefined;
+
+    let realSendMessage = message;
+    let searchStatus: searchResultType = 'none';
+    let searchResponse: WebSearchResponse | undefined = undefined;
+    console.log('----------handleSubmit----------')
+    console.log(webSearchEnabled)
     if (webSearchEnabled) {
-      setSearchStatus("searching");
-      console.log('webSearchEnabled', '开启了搜索')
-      const textContent = typeof message === 'string' ? message : '';
-      if (textContent) {
-        const searchResult = await getSearchResult(textContent);
-        if (searchResult.status === 'success') {
-          console.log(searchResult);
-          _searchResponse = searchResult.data || undefined;
-          const referenceContent = `\`\`\`json\n${JSON.stringify(searchResult, null, 2)}\n\`\`\``;
-          realSendMessage = REFERENCE_PROMPT.replace('{question}', textContent).replace('{references}', referenceContent);
-          setSearchStatus("done");
-          _setSearchStatus = 'done'
-        } else {
-          setSearchStatus("error");
-          _setSearchStatus = 'error'
-        }
-      }
+      const result = await handleWebSearch(message);
+      realSendMessage = result.realSendMessage;
+      searchStatus = result.searchStatus;
+      searchResponse = result.searchResponse;
     }
 
     const messages = prepareMessage({
       role: "user",
       content: realSendMessage,
     })
-    sendMessage(messages, _setSearchStatus, _searchResponse, selectedTools);
+    sendMessage(messages, searchStatus, searchResponse, selectedTools);
   }, [
     chatId,
     responseStatus,
@@ -296,6 +316,7 @@ const useChat = (chatId: string) => {
     webSearchEnabled,
     prepareMessage,
     sendMessage,
+    handleWebSearch,
   ]);
 
   const prepareMessageFromIndex = (index: number): RequestMessage[] => {
@@ -372,6 +393,9 @@ const useChat = (chatId: string) => {
 
     const fetchLocalMessages = async () => {
       const localMessage = await localDb.messages.where({ 'chatId': chatId }).toArray();
+      if(localMessage[0].searchEnabled){
+        setWebSearchEnabled(localMessage[0].searchEnabled);
+      }
       setMessageList(localMessage);
       setUserSendCount(1);
       await localDb.messages.clear();
@@ -390,11 +414,7 @@ const useChat = (chatId: string) => {
     const initializeChatData = async () => {
       try {
         if (localStorage.getItem('f') === 'home') {
-          initializeChat({
-            id: chatId,
-            createdAt: new Date(),
-          });
-          await fetchLocalMessages();
+          fetchLocalMessages();
           localStorage.removeItem('f');
         } else {
           setIsPending(true);
@@ -416,28 +436,38 @@ const useChat = (chatId: string) => {
     };
 
     initializeChatData();
-  }, [chatId, initializeChat, setCurrentModelExact]);
+  }, [chatId, setWebSearchEnabled, initializeChat, setCurrentModelExact]);
 
   const shouldSetNewTitleRef = useRef(shouldSetNewTitle);
 
   useEffect(() => {
     const handleHomeEntry = async () => {
       if (!isFromHome) return;
-      
+
       try {
         let existMessages: Message[] = [];
         const result = await getMessagesInServer(chatId);
         if (result.status === 'success') {
           existMessages = result.data as Message[];
         }
-        
         if (existMessages.length === 1 && existMessages[0]['role'] === 'user') {
+          const _searchEnabled = existMessages[0].searchEnabled || false
           const question = existMessages[0]['content'];
+          let realSendMessage = question;
+          let searchStatus: searchResultType = 'none';
+          let searchResponse: WebSearchResponse | undefined = undefined;
+          if (_searchEnabled) {
+            setResponseStatus('pending');
+            const result = await handleWebSearch(question);
+            realSendMessage = result.realSendMessage;
+            searchStatus = result.searchStatus;
+            searchResponse = result.searchResponse;
+          }
           const messages = [{
             role: 'user' as const,
-            content: question
+            content: realSendMessage
           }];
-          await sendMessage(messages, undefined, undefined, selectedTools);
+          await sendMessage(messages, searchStatus, searchResponse, selectedTools);
           shouldSetNewTitleRef.current(messages);
           router.replace(`/chat/${chatId}`);
         }
@@ -447,7 +477,7 @@ const useChat = (chatId: string) => {
     };
 
     handleHomeEntry();
-  }, [isFromHome, chatId, selectedTools, router, sendMessage]);
+  }, [isFromHome, chatId, selectedTools, router, sendMessage, handleWebSearch]);
 
   return {
     input,

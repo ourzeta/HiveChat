@@ -13,6 +13,7 @@ export type ChatType = {
   title?: string;
   defaultModel?: string;
   defaultProvider?: string,
+  searchEnabled?: boolean,
   historyType?: 'all' | 'none' | 'count';
   historyCount?: number;
   isStar?: boolean;

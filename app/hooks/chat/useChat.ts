@@ -350,7 +350,7 @@ const useChat = (chatId: string) => {
   }
 
   useEffect(() => {
-    async function fetchMessages() {
+    const fetchMessages = async () => {
       try {
         let messageList: Message[] = [];
         const result = await getMessagesInServer(chatId);
@@ -368,15 +368,16 @@ const useChat = (chatId: string) => {
       } catch (error) {
         console.error('Error fetching items from database:', error);
       }
-    }
-    async function fetchLocalMessages() {
+    };
+
+    const fetchLocalMessages = async () => {
       const localMessage = await localDb.messages.where({ 'chatId': chatId }).toArray();
       setMessageList(localMessage);
       setUserSendCount(1);
       await localDb.messages.clear();
-    }
+    };
 
-    async function fetchChatInfo() {
+    const fetchChatInfo = async () => {
       const { status, data } = await getChatInfoInServer(chatId);
       if (status === 'success') {
         initializeChat(data!);
@@ -384,35 +385,52 @@ const useChat = (chatId: string) => {
           setCurrentModelExact(data.defaultProvider, data.defaultModel);
         }
       }
-    }
-    if (localStorage.getItem('f') === 'home') {
-      initializeChat({
-        id: chatId,
-        createdAt: new Date(),
-      });
-      fetchLocalMessages();
-      localStorage.removeItem('f');
-    } else {
-      setIsPending(true);
-      Promise.all([
-        fetchMessages(),
-        fetchChatInfo()
-      ]).finally(() => {
+    };
+
+    const initializeChatData = async () => {
+      try {
+        if (localStorage.getItem('f') === 'home') {
+          initializeChat({
+            id: chatId,
+            createdAt: new Date(),
+          });
+          await fetchLocalMessages();
+          localStorage.removeItem('f');
+        } else {
+          setIsPending(true);
+          try {
+            await Promise.all([
+              fetchMessages(),
+              fetchChatInfo()
+            ]);
+          } catch (error) {
+            console.error('Error initializing chat data:', error);
+          } finally {
+            setIsPending(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error in chat initialization:', error);
         setIsPending(false);
-      });
-    }
+      }
+    };
+
+    initializeChatData();
   }, [chatId, initializeChat, setCurrentModelExact]);
 
   const shouldSetNewTitleRef = useRef(shouldSetNewTitle);
 
   useEffect(() => {
-    const check = async () => {
-      if (isFromHome) {
+    const handleHomeEntry = async () => {
+      if (!isFromHome) return;
+      
+      try {
         let existMessages: Message[] = [];
         const result = await getMessagesInServer(chatId);
         if (result.status === 'success') {
-          existMessages = result.data as Message[]
+          existMessages = result.data as Message[];
         }
+        
         if (existMessages.length === 1 && existMessages[0]['role'] === 'user') {
           const question = existMessages[0]['content'];
           const messages = [{
@@ -423,9 +441,12 @@ const useChat = (chatId: string) => {
           shouldSetNewTitleRef.current(messages);
           router.replace(`/chat/${chatId}`);
         }
+      } catch (error) {
+        console.error('Error handling home entry:', error);
       }
-    }
-    check();
+    };
+
+    handleHomeEntry();
   }, [isFromHome, chatId, selectedTools, router, sendMessage]);
 
   return {

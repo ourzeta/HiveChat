@@ -472,7 +472,10 @@ const useChat = (chatId: string) => {
             content: realSendMessage
           }];
           await sendMessage(messages, searchStatus, searchResponse, selectedTools);
-          shouldSetNewTitleRef.current(messages);
+          shouldSetNewTitleRef.current([{
+            role: 'user' as const,
+            content: question
+          }]);
           router.replace(`/chat/${chatId}`);
         }
       } catch (error) {

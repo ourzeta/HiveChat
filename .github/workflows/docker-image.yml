@@ -50,6 +50,7 @@ jobs:
           images: hivenexus/hivechat
           tags: |
             type=raw,value=${{ github.event.inputs.version || 'latest' }}
+            type=raw,value=latest
       
       - name: Build and push
         uses: docker/build-push-action@v4

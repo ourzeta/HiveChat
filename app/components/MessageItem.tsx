@@ -18,7 +18,6 @@ const MessageItem = memo((props: {
 ) => {
   const t = useTranslations('Chat');
   const { allProviderListByKey } = useModelListStore();
-  const [messageApi, contextHolderMessage] = message.useMessage();
   const [images, setImages] = useState<string[]>([]);
   const [plainText, setPlainText] = useState('');
   const [isOpen, setIsOpen] = useState(true);
@@ -166,7 +165,6 @@ const MessageItem = memo((props: {
     return <div className="flex container mx-auto pl-4 pr-2 max-w-screen-md w-full flex-col justify-center items-center" >
       <div className='items-start flex max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row-reverse'>
         <div className='flex ml-10 flex-col items-end group'>
-          {contextHolderMessage}
           <div className='flex flex-row gap-2 mb-2'>
             {images.length > 0 &&
               images.map((image, index) => {
@@ -224,7 +222,7 @@ const MessageItem = memo((props: {
               </Button>
             </Tooltip>
             <CopyToClipboard text={plainText} onCopy={() => {
-              messageApi.success(t('copySuccess'));
+              message.success(t('copySuccess'));
             }}>
               <Tooltip title={t('copy')}>
                 <Button type="text" size='small'>
@@ -241,7 +239,6 @@ const MessageItem = memo((props: {
     return (
       <div className="flex container mx-auto px-4 max-w-screen-md w-full flex-col justify-center items-center" >
         <div className='items-start flex max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
-          {contextHolderMessage}
           {ProviderAvatar}
           <div className='flex flex-col w-0 grow group'>
             <div className='px-3 py-2 ml-2  bg-gray-100  text-gray-600 w-full grow markdown-body answer-content rounded-xl'>
@@ -317,7 +314,7 @@ const MessageItem = memo((props: {
             </div>
             <div className='invisible flex flex-row items-center pl-1 group-hover:visible'>
               <CopyToClipboard text={plainText} onCopy={() => {
-                messageApi.success(t('copySuccess'));
+                message.success(t('copySuccess'));
               }}>
                 <Tooltip title={t('copy')}>
                   <Button type="text" size='small'>

@@ -320,15 +320,12 @@ export const getSearchResult = async (keyword: string): Promise<{
     where: eq(searchEngineConfig.isActive, true)
   });
   if (searchConfig) {
-    console.log(searchConfig);
     try {
       const webSearch = await WebSearchService.search({
         id: searchConfig.id,
         name: searchConfig.name,
         apiKey: searchConfig.apiKey as string
-      }, keyword);
-      console.log('-------------webSearch--in Server------------')
-      console.log(webSearch)
+      }, keyword, searchConfig.maxResults);
       return {
         status: 'success',
         message: 'success',

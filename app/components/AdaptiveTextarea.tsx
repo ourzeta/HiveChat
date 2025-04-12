@@ -7,7 +7,7 @@ import McpIcon from "@/app/images/mcp.svg";
 import CloseIcon from '@/app/images/close.svg';
 import McpServerSelect from '@/app/components/McpServerSelect';
 import { fileToBase64 } from '@/app/utils';
-import { ArrowUpOutlined, GlobalOutlined } from '@ant-design/icons';
+import { ArrowUpOutlined } from '@ant-design/icons';
 import { LLMModel } from '@/types/llm';
 import useMcpServerStore from '@/app/store/mcp';
 import useGlobalConfigStore from '@/app/store/globalConfig';
@@ -21,7 +21,7 @@ const AdaptiveTextarea = (props: {
     message: string,
     attachments?: Array<{ mimeType: string; data: string }>,
     searchEnabled?: boolean,
-  )=> void
+  ) => void
 }) => {
   const t = useTranslations('Chat');
   const [text, setText] = useState('');
@@ -31,7 +31,7 @@ const AdaptiveTextarea = (props: {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const testSpanRef = useRef<HTMLSpanElement | null>(null);
   const [mcpServerSelectOpen, SetMcpServerSelectOpen] = useState(false);
-  const { searchEnable } = useGlobalConfigStore();
+  const { searchEnable: remoteSearchEnable } = useGlobalConfigStore();
   const [localSearchEnable, setLocalSearchEnable] = useState(false);
   const { hasUseMcp, hasMcpSelected } = useMcpServerStore();
   const { uploadedImages, maxImages, handleImageUpload, removeImage } = useImageUpload();
@@ -212,7 +212,7 @@ const AdaptiveTextarea = (props: {
           />
           <div className='flex flex-row items-center w-full justify-between'>
             <SearchButton
-              searchEnable={searchEnable}
+              searchEnable={remoteSearchEnable}
               localSearchEnable={localSearchEnable}
               onToggle={() => setLocalSearchEnable(!localSearchEnable)}
             />

@@ -1,7 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Button, Slider, Input, Select, Switch, message, Spin } from 'antd';
+import { Slider, Select, Switch, message, Spin } from 'antd';
 import { fetchAppSettings, setAppSettings } from "@/app/admin/system/actions";
 import { getDefaultSearchEngineConfig, updateSearchEngineConfig, setSearchEngineConfig } from "./actions";
 import TavilySettings from './components/TavilySettings';
@@ -51,6 +50,15 @@ const SearchPage = () => {
     try {
       const result = await setAppSettings('searchEnable', checked ? 'true' : 'false');
       if (result?.status === 'success') {
+        if (checked) {
+          const configResult = await getDefaultSearchEngineConfig();
+          if (configResult) {
+            setCurrentSearchEngineConfig(configResult);
+            setSelectedEngine(configResult.id);
+          } else {
+            setSearchEngineConfig('tavily');
+          }
+        }
         setSearchEnable(checked);
       } else {
         throw new Error('保存失败');
@@ -90,6 +98,7 @@ const SearchPage = () => {
 
     if (e.type === 'blur') {
       await handleConfigUpdate({ apiKey: value });
+      message.success('保存成功');
     }
   };
 
@@ -176,13 +185,13 @@ const SearchPage = () => {
           <div className='flex flex-col items-start mt-6 p-6 border border-gray-200 rounded-md'>
             <h3 className='text-base font-medium border-b w-full mb-4 pb-2'>常规设置</h3>
 
-            <div className='flex flex-row justify-between items-center my-2 w-full'>
+            {/* <div className='flex flex-row justify-between items-center my-2 w-full'>
               <span className='text-sm font-medium'>搜索增强模式</span>
               <Switch
                 checked={currentSearchEngineConfig?.extractKeywords}
                 onChange={handleExtractKeywordsChange}
               />
-            </div>
+            </div> */}
             <div className='flex flex-row justify-between items-center my-2 w-full'>
               <span className='text-sm font-medium'>搜索结果数</span>
               <div className='min-w-64'>

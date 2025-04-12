@@ -187,6 +187,7 @@ export const chats = pgTable("chats", {
 });
 
 export const messageType = pgEnum('message_type', ['text', 'image', 'error', 'break']);
+export const messageSearchStatus = pgEnum('search_status', ['none', 'searching', 'error', 'done']);
 
 export const messages = pgTable("messages", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -210,6 +211,7 @@ export const messages = pgTable("messages", {
   type: varchar('message_type').notNull().default('text'),
   searchEnabled: boolean('search_enabled').default(false),
   webSearch: json('web_search').$type<WebSearchResponse>(),
+  searchStatus: messageSearchStatus('search_status').notNull().default('none'),
   mcpTools: json('mcp_tools').$type<MCPToolResponse[]>(),
   inputTokens: integer('input_tokens'),
   outputTokens: integer('output_tokens'),

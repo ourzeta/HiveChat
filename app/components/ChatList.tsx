@@ -25,7 +25,6 @@ import { useSession } from 'next-auth/react';
 
 const ChatList = () => {
   const t = useTranslations('Chat');
-  const [messageApi, contextHolder] = message.useMessage();
   const pathname = usePathname();
   const router = useRouter();
   const currentChatId = pathname.split("/").pop() || '';
@@ -77,7 +76,7 @@ const ChatList = () => {
     const result = await deleteChatInServer(chat_id);
 
     if (result.status === 'success') {
-      messageApi.success(t('deleteSuccess'));
+      message.success(t('deleteSuccess'));
       const chatListresult = await getChatListInServer();
       setChatList(chatListresult.data as ChatType[]);
 
@@ -89,7 +88,7 @@ const ChatList = () => {
         }
       }
     } else {
-      messageApi.success(t('deleteFail'));
+      message.success(t('deleteFail'));
     }
   };
 
@@ -166,7 +165,6 @@ const ChatList = () => {
   };
   return (
     <>
-      {contextHolder}
       <div className="flex flex-col box-border pt-2 pl-0 pr-4">
         <Link href='/chat'>
           <div className="w-full border rounded-xl text-center p-2 text-sm new-chat-button whitespace-nowrap">

@@ -1,4 +1,5 @@
 'use server';
+import WebSearchService from '@/app/services/WebSearchService';
 import { searchEngineConfig } from '@/app/db/schema';
 import { db } from '@/app/db';
 import { eq } from 'drizzle-orm';
@@ -13,7 +14,34 @@ export async function getDefaultSearchEngineConfig() {
     const result = await db.query.searchEngineConfig.findFirst({
       where: eq(searchEngineConfig.isActive, true)
     });
-    return result;
+    if (result) {
+      return result;
+    } else {
+      // Check if tavily config exists
+      const tavilyConfig = await db.query.searchEngineConfig.findFirst({
+        where: eq(searchEngineConfig.id, 'tavily')
+      });
+
+      if (tavilyConfig) {
+        // If tavily config exists, set it as active
+        await db.update(searchEngineConfig)
+          .set({ isActive: true })
+          .where(eq(searchEngineConfig.id, 'tavily'));
+        return { ...tavilyConfig, isActive: true };
+      } else {
+        // If no config exists at all, create new tavily config
+        const newConfig = {
+          id: 'tavily',
+          name: 'Tavily',
+          apiKey: '',
+          isActive: true,
+          extractKeywords: false,
+          maxResults: 5,
+        };
+        await db.insert(searchEngineConfig).values(newConfig);
+        return newConfig;
+      }
+    }
   } catch (error) {
     throw new Error('query config list fail');
   }
@@ -103,4 +131,20 @@ export async function updateSearchEngineConfig(config: {
   } catch (error) {
     throw new Error('update search engine config fail');
   }
+}
+
+export const checkSearch = async (providerId: string, apiKey: string): Promise<{ valid: boolean; message?: string }> => {
+  const session = await auth();
+  if (!session?.user.isAdmin) {
+    throw new Error('not allowed');
+  }
+  const result = await WebSearchService.checkSearch({
+    id: providerId,
+    name: providerId,
+    apiKey: apiKey,
+  })
+  return {
+    valid: result.valid,
+    message: result.error?.message,
+  };
 }

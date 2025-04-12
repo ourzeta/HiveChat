@@ -117,8 +117,12 @@ const useChat = (chatId: string) => {
           setResponseStatus("done");
         }
         // 将 searchResponse 同步到数据库的 message 表下， id= responseContent.id 的记录
-        if (searchResponse && responseContent.id) {
-          await updateMessageWebSearchInServer(responseContent.id, searchResponse);
+        if (responseContent.id) {
+          await updateMessageWebSearchInServer(
+            responseContent.id,
+            (searchResultStatus && searchResultStatus !== 'none') ? true : false,
+            searchResultStatus || 'none',
+            searchResponse);
         }
         setResponseMessage({ content: '', reasoning_content: '', mcpTools: [] });
       },
@@ -127,6 +131,9 @@ const useChat = (chatId: string) => {
           role: "assistant",
           chatId: chatId,
           content: error?.message || '',
+          searchEnabled: (searchResultStatus && searchResultStatus !== 'none') ? true : false,
+          searchStatus: searchResultStatus,
+          webSearch: searchResponse,
           providerId: currentModel.provider.id,
           model: currentModel.id,
           type: 'error',
@@ -154,6 +161,7 @@ const useChat = (chatId: string) => {
           role: "assistant",
           chatId: chatId,
           content: responseContent.content,
+          searchStatus: searchStatus,
           mcpTools: responseContent.mcpTools,
           reasoninContent: responseContent.reasoning_content,
           providerId: currentModel.provider.id,
@@ -246,7 +254,6 @@ const useChat = (chatId: string) => {
     if (textContent) {
       const searchResult = await getSearchResult(textContent);
       if (searchResult.status === 'success') {
-        console.log(searchResult);
         searchResponse = searchResult.data || undefined;
         const referenceContent = `\`\`\`json\n${JSON.stringify(searchResult, null, 2)}\n\`\`\``;
         realSendMessage = REFERENCE_PROMPT.replace('{question}', textContent).replace('{references}', referenceContent);
@@ -254,10 +261,9 @@ const useChat = (chatId: string) => {
         searchStatus = 'done'
       } else {
         setSearchStatus("error");
-        searchStatus = 'error'
+        searchStatus = 'error';
       }
     }
-    // }
 
     return {
       realSendMessage,
@@ -279,6 +285,7 @@ const useChat = (chatId: string) => {
       role: "user",
       chatId: chatId,
       content: message,
+      searchEnabled: webSearchEnabled,
       providerId: currentModel.provider.id,
       model: currentModel.id,
       type: 'text' as const,
@@ -293,15 +300,12 @@ const useChat = (chatId: string) => {
     let realSendMessage = message;
     let searchStatus: searchResultType = 'none';
     let searchResponse: WebSearchResponse | undefined = undefined;
-    console.log('----------handleSubmit----------')
-    console.log(webSearchEnabled)
     if (webSearchEnabled) {
       const result = await handleWebSearch(message);
       realSendMessage = result.realSendMessage;
       searchStatus = result.searchStatus;
       searchResponse = result.searchResponse;
     }
-
     const messages = prepareMessage({
       role: "user",
       content: realSendMessage,
@@ -393,7 +397,7 @@ const useChat = (chatId: string) => {
 
     const fetchLocalMessages = async () => {
       const localMessage = await localDb.messages.where({ 'chatId': chatId }).toArray();
-      if(localMessage[0].searchEnabled){
+      if (localMessage[0].searchEnabled) {
         setWebSearchEnabled(localMessage[0].searchEnabled);
       }
       setMessageList(localMessage);

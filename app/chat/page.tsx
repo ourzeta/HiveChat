@@ -13,7 +13,6 @@ import { useLoginModal } from '@/app/contexts/loginModalContext';
 import { addChatInServer } from '@/app/chat/actions/chat';
 import { addMessageInServer } from '@/app/chat/actions/message';
 import { fetchAppSettings } from '@/app/chat/actions/chat';
-
 import { localDb } from '@/app/db/localDb';
 
 const Home = () => {

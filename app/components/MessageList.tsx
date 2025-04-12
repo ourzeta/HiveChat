@@ -17,6 +17,7 @@ import MarkdownRender from '@/app/components/Markdown';
 import useChat from '@/app/hooks/chat/useChat';
 import useImageUpload from '@/app/hooks/chat/useImageUpload';
 import useMcpServerStore from '@/app/store/mcp';
+import useGlobalConfigStore from '@/app/store/globalConfig';
 import { fileToBase64 } from '@/app/utils';
 import { throttle } from 'lodash';
 import useChatStore from '@/app/store/chat';
@@ -52,6 +53,7 @@ export const MessageList = (props: { chat_id: string }) => {
   } = useChat(props.chat_id);
 
   const { hasUseMcp, hasMcpSelected, clearAllSelect } = useMcpServerStore();
+  const { searchEnable: remoteSearchEnable } = useGlobalConfigStore();
   const { webSearchEnabled, setWebSearchEnabled } = useChatStore();
   const { uploadedImages, maxImages, handleImageUpload, removeImage, setUploadedImages } = useImageUpload();
   const router = useRouter();
@@ -120,6 +122,40 @@ export const MessageList = (props: { chat_id: string }) => {
       clearAllSelect();
     }
   }, [currentModel, clearAllSelect]);
+
+  const WebSearchButton = () => {
+    if (!remoteSearchEnable) {
+      return null;
+    }
+    if (webSearchEnabled) {
+      return <Button
+        type="text"
+        size='small'
+        className='mx-1'
+        onClick={() => {
+          setWebSearchEnabled(!webSearchEnabled)
+        }}
+        color='primary'
+        variant='filled'
+      >
+        <GlobalOutlined style={{ width: '12px', height: '12px' }} />
+        <span className='text-xs -ml-1'>联网搜索</span>
+      </Button>
+    } else {
+      return <Button
+        type="text"
+        size='small'
+        className='mx-1'
+        onClick={() => {
+          setWebSearchEnabled(!webSearchEnabled)
+        }}
+      >
+        <GlobalOutlined style={{ color: 'gray', width: '12px', height: '12px' }} />
+        <span className='text-xs -ml-1 text-gray-500'>联网搜索</span>
+      </Button>
+    }
+
+  }
   return (
     <>
       {contextHolder}
@@ -215,33 +251,7 @@ export const MessageList = (props: { chat_id: string }) => {
                 <span className='text-xs -ml-1 text-gray-300'>{t('image')}</span>
               </Button>
             </Tooltip>}
-            {
-              webSearchEnabled ? <Button
-                type="text"
-                size='small'
-                className='mx-1'
-                onClick={() => {
-                  setWebSearchEnabled(!webSearchEnabled)
-                }}
-                color='primary'
-                variant='filled'
-              >
-                <GlobalOutlined style={{ width: '12px', height: '12px' }} />
-                <span className='text-xs -ml-1'>联网搜索</span>
-              </Button>
-                :
-                <Button
-                  type="text"
-                  size='small'
-                  className='mx-1'
-                  onClick={() => {
-                    setWebSearchEnabled(!webSearchEnabled)
-                  }}
-                >
-                  <GlobalOutlined style={{ color: 'gray', width: '12px', height: '12px' }} />
-                  <span className='text-xs -ml-1 text-gray-500'>联网搜索</span>
-                </Button>
-            }
+            <WebSearchButton />
             {hasUseMcp && currentModel.supportTool &&
               <Popover
                 content={<McpServerSelect chat_id={props.chat_id} />}

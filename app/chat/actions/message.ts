@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { MCPToolResponse } from '@/types/llm';
 import { eq, and, asc } from 'drizzle-orm';
 import { messages } from '@/app/db/schema';
-import { WebSearchResponse } from '@/types/search';
+import { searchResultType, WebSearchResponse } from '@/types/search';
 
 export const clearMessageInServer = async (chatId: string) => {
   const session = await auth();
@@ -82,7 +82,8 @@ export const addMessageInServer = async (message: {
     }
   >,
   reasoninContent?: string,
-  searchEnabled?:boolean,
+  searchEnabled?: boolean,
+  searchStatus?: searchResultType,
   mcpTools?: MCPToolResponse[],
   providerId: string,
   model: string,
@@ -100,30 +101,18 @@ export const addMessageInServer = async (message: {
       message: 'please login first.'
     }
   }
-
   const [result] = await db.insert(messages)
-    .values({
-      chatId: message.chatId,
-      userId: session.user.id,
-      role: message.role,
-      content: message.content,
-      reasoninContent: message.reasoninContent,
-      searchEnabled: message.searchEnabled,
-      mcpTools: message.mcpTools,
-      model: message.model,
-      providerId: message.providerId,
-      type: message.type,
-      inputTokens: message.inputTokens,
-      outputTokens: message.outputTokens,
-      totalTokens: message.totalTokens,
-      errorType: message.errorType,
-      errorMessage: message.errorMessage,
-    })
+    .values({ userId: session.user.id, ...message })
     .returning();
   return result.id;
 }
 
-export const updateMessageWebSearchInServer = async (messageId: number, webSearch: WebSearchResponse) => {
+export const updateMessageWebSearchInServer = async (
+  messageId: number,
+  searchEnabled: boolean,
+  searchStatus: "none" | "searching" | "error" | "done",
+  webSearch?: WebSearchResponse,
+) => {
   const session = await auth();
   if (!session?.user.id) {
     return {
@@ -135,6 +124,8 @@ export const updateMessageWebSearchInServer = async (messageId: number, webSearc
   try {
     await db.update(messages)
       .set({
+        searchEnabled: searchEnabled,
+        searchStatus: searchStatus,
         webSearch: webSearch,
         updatedAt: new Date()
       })

@@ -1,7 +1,9 @@
-import React from 'react';
-import { Button, Input } from 'antd';
+'use client';
+import React, { useState } from 'react';
+import { Button, Input, message } from 'antd';
 import Link from 'next/link';
-import Image from "next/image";
+import TavilySearch from '@/app/images/tavily.svg';
+import { checkSearch } from '@/app/admin/search/actions';
 
 interface TavilySettingsProps {
   apiKey: string | null;
@@ -14,10 +16,21 @@ const TavilySettings: React.FC<TavilySettingsProps> = ({
   onApiKeyChange,
   onApiKeyBlur,
 }) => {
+  const [isChecking, setIsChecking] = useState(false);
+  const check = async () => {
+    setIsChecking(true);
+    const webSearchResult = await checkSearch('tavily', apiKey as string);
+    setIsChecking(false);
+    if (webSearchResult.valid) {
+      message.success('校验成功');
+    } else {
+      message.error(webSearchResult.message);
+    }
+  }
   return (
     <div className='flex flex-col items-start mt-6 p-6 border border-gray-200 rounded-md'>
       <h3 className='text-base font-medium border-b w-full mb-4 pb-2'>
-        <Image src='/images/tavily.svg' height={32} width={64} alt='Tavily' />
+        <TavilySearch height={32} width={64} />
       </h3>
       <span className='text-sm font-medium'>API 密钥</span>
       <div className='flex items-center my-2 w-full'>
@@ -28,7 +41,11 @@ const TavilySettings: React.FC<TavilySettingsProps> = ({
           onBlur={onApiKeyBlur}
           placeholder="请输入 API 密钥"
         />
-        <Button className='ml-2'>检查</Button>
+        <Button
+          className='ml-2 w-24'
+          loading={isChecking}
+          onClick={() => { check() }}
+        >检查</Button>
       </div>
       <Link href="https://app.tavily.com/home" target='_blank'>
         <Button type='link' size='small' style={{ padding: 0 }}>获取密钥</Button>

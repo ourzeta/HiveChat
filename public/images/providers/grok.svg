@@ -1,1 +1,6 @@
-<svg fill="currentColor" fill-rule="evenodd" height="1em" style="flex:none;line-height:1" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg"><title>Grok</title><path d="M6.469 8.776L16.512 23h-4.464L2.005 8.776H6.47zm-.004 7.9l2.233 3.164L6.467 23H2l4.465-6.324zM22 2.582V23h-3.659V7.764L22 2.582zM22 1l-9.952 14.095-2.233-3.163L17.533 1H22z"></path></svg>
+<svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill-rule="evenodd" fill="currentColor">
+ <title>Grok</title>
+ <g>
+  <path stroke="null" id="svg_1" d="m8.42616,10.10989l6.87153,9.73221l-3.05432,0l-6.87153,-9.73221l3.055,0l-0.00068,0zm-0.00274,5.40526l1.52784,2.16484l-1.52647,2.16211l-3.05637,0l3.055,-4.32695zm10.62921,-9.64326l0,13.97021l-2.50353,0l0,-10.42463l2.50353,-3.54558zm0,-1.08242l-6.80926,9.64395l-1.52784,-2.16416l5.28074,-7.47979l3.05637,0z"/>
+ </g>
+</svg>

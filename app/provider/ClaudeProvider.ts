@@ -108,7 +108,7 @@ export default class ClaudeApi implements LLMApi {
                   // 次数还没变空
                   options.onUpdate({
                     content: this.answer,
-                    reasoning_content: this.reasoning_content,
+                    reasoningContent: this.reasoning_content,
                     mcpTools: this.mcpTools,
                   });
                   const toolCallResponse = await callMCPTool(mcpTool);
@@ -123,7 +123,7 @@ export default class ClaudeApi implements LLMApi {
                   // 这里已经为空了
                   options.onUpdate({
                     content: this.answer,
-                    reasoning_content: this.reasoning_content,
+                    reasoningContent: this.reasoning_content,
                     mcpTools: this.mcpTools,
                   });
                   const toolResponsContent: ToolResultBlockParam[] = [];
@@ -160,7 +160,7 @@ export default class ClaudeApi implements LLMApi {
               options.onFinish({
                 id: json.metadata.messageId,
                 content: this.answer,
-                reasoning_content: this.reasoning_content,
+                reasoningContent: this.reasoning_content,
                 inputTokens: this.inputTokens,
                 outputTokens: this.outputTokens,
                 totalTokens: this.totalTokens,
@@ -246,7 +246,7 @@ export default class ClaudeApi implements LLMApi {
               options.onFinish({
                 id: json.metadata.messageId,
                 content: this.answer,
-                reasoning_content: this.reasoning_content,
+                reasoningContent: this.reasoning_content,
                 inputTokens: this.inputTokens,
                 outputTokens: this.outputTokens,
                 totalTokens: this.totalTokens,
@@ -388,7 +388,7 @@ export default class ClaudeApi implements LLMApi {
     }
     callback({
       content: this.answer,
-      reasoning_content: this.reasoning_content,
+      reasoningContent: this.reasoning_content,
       mcpTools: this.mcpTools,
     });
     this.answer = '';

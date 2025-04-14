@@ -44,7 +44,6 @@ export const MessageList = (props: { chat_id: string }) => {
     handleInputChange,
     clearHistory,
     handleSubmit,
-    sendMessage,
     deleteMessage,
     addBreak,
     retryMessage,

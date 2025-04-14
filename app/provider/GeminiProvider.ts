@@ -107,7 +107,7 @@ export default class GeminiApi implements LLMApi {
               });
               options.onUpdate({
                 content: this.answer,
-                reasoning_content: this.reasoning_content,
+                reasoningContent: this.reasoning_content,
                 mcpTools: this.mcpTools,
               });
               const _mcpTools = this.mcpTools;
@@ -127,7 +127,7 @@ export default class GeminiApi implements LLMApi {
 
               options.onUpdate({
                 content: this.answer,
-                reasoning_content: this.reasoning_content,
+                reasoningContent: this.reasoning_content,
                 mcpTools: _mcpTools,
               });
 
@@ -151,7 +151,7 @@ export default class GeminiApi implements LLMApi {
             options.onFinish({
               id: json.metadata.messageId,
               content: this.answer,
-              reasoning_content: this.reasoning_content,
+              reasoningContent: this.reasoning_content,
               inputTokens: this.inputTokens,
               outputTokens: this.outputTokens,
               totalTokens: this.totalTokens,
@@ -311,7 +311,7 @@ export default class GeminiApi implements LLMApi {
               resTextRaw = await res.clone().text();
             }
             const responseTexts = [resTextRaw];
-            if (res.status === 429) {
+            if (res.status === 459) {
               options.onError?.(new OverQuotaError('Over Quota'));
             } else if (res.status >= 400 && res.status < 500) {
               options.onError?.(new InvalidAPIKeyError('Invalid API Key'));
@@ -354,7 +354,7 @@ export default class GeminiApi implements LLMApi {
     }
     callback({
       content: this.answer,
-      reasoning_content: this.reasoning_content
+      reasoningContent: this.reasoning_content
     });
     this.answer = '';
   }

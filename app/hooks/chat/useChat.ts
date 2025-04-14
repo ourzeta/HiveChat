@@ -22,7 +22,7 @@ const useChat = (chatId: string) => {
   const [responseStatus, setResponseStatus] = useState<"done" | "pending">("done");
   const [searchStatus, setSearchStatus] = useState<searchResultType>("none");
   const [chatBot, setChatBot] = useState<LLMApi | null>(null);
-  const [responseMessage, setResponseMessage] = useState<ResponseContent>({ content: '', reasoning_content: '' });
+  const [responseMessage, setResponseMessage] = useState<ResponseContent>({ content: '', reasoningContent: '' });
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [input, setInput] = useState('');
   const [userSendCount, setUserSendCount] = useState(0);
@@ -82,7 +82,6 @@ const useChat = (chatId: string) => {
     searchResponse?: WebSearchResponse,
     mcpTools?: MCPTool[]
   ) => {
-    let lastUpdate = Date.now();
     setResponseStatus("pending");
     const options: ChatOptions = {
       messages: messages,
@@ -90,10 +89,7 @@ const useChat = (chatId: string) => {
       chatId: chatId,
       mcpTools,
       onUpdate: (responseContent: ResponseContent) => {
-        const now = Date.now();
-        if (now - lastUpdate < 60) return; // 如果距离上次更新小于 60ms，则不更新
         setResponseMessage(responseContent);
-        lastUpdate = now;
       },
       onFinish: async (responseContent: ResponseContent, shouldContinue?: boolean) => {
         const respMessage: Message = {
@@ -101,7 +97,7 @@ const useChat = (chatId: string) => {
           role: "assistant",
           chatId: chatId,
           content: responseContent.content,
-          reasoninContent: responseContent.reasoning_content,
+          reasoninContent: responseContent.reasoningContent,
           searchStatus: searchResultStatus,
           inputTokens: responseContent.inputTokens,
           outputTokens: responseContent.outputTokens,
@@ -113,6 +109,8 @@ const useChat = (chatId: string) => {
           createdAt: new Date()
         };
         setMessageList(prevList => [...prevList, respMessage]);
+        setSearchStatus('none');
+        setResponseMessage({ content: '', reasoningContent: '', mcpTools: [] });
         if (!shouldContinue) {
           setResponseStatus("done");
         }
@@ -124,7 +122,6 @@ const useChat = (chatId: string) => {
             searchResultStatus || 'none',
             searchResponse);
         }
-        setResponseMessage({ content: '', reasoning_content: '', mcpTools: [] });
       },
       onError: async (error) => {
         const respMessage: Message = {
@@ -143,7 +140,8 @@ const useChat = (chatId: string) => {
         };
         setMessageList((m) => ([...m, respMessage]));
         setResponseStatus("done");
-        setResponseMessage({ content: '', reasoning_content: '' });
+        setSearchStatus('none');
+        setResponseMessage({ content: '', reasoningContent: '' });
       }
     }
     chatBot?.chat(options);
@@ -156,14 +154,14 @@ const useChat = (chatId: string) => {
   const stopChat = () => {
     setResponseStatus("done");
     chatBot?.stopChat((responseContent: ResponseContent) => {
-      if (responseContent.content || responseContent.reasoning_content) {
+      if (responseContent.content || responseContent.reasoningContent) {
         const respMessage: Message = {
           role: "assistant",
           chatId: chatId,
           content: responseContent.content,
           searchStatus: searchStatus,
           mcpTools: responseContent.mcpTools,
-          reasoninContent: responseContent.reasoning_content,
+          reasoninContent: responseContent.reasoningContent,
           providerId: currentModel.provider.id,
           model: currentModel.id,
           type: 'text',
@@ -172,7 +170,8 @@ const useChat = (chatId: string) => {
         setMessageList((m) => ([...m, respMessage]));
         addMessageInServer(respMessage);
       }
-      setResponseMessage({ content: '', reasoning_content: '' });
+      setSearchStatus('none');
+      setResponseMessage({ content: '', reasoningContent: '' });
     });
   }
 

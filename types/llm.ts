@@ -60,7 +60,7 @@ export type Message = {
 export type ResponseContent = {
   id?: number;
   content: string;
-  reasoning_content?: string;
+  reasoningContent?: string;
   inputTokens?: number;
   outputTokens?: number;
   totalTokens?: number;

@@ -1,6 +1,7 @@
 'use client';
 import App from "@/app/components/App";
 import ChatPrepare from "@/app/components/ChatPrepare";
+import { App as AntdApp } from 'antd';
 
 export default function ChatLayout({
   children,
@@ -11,7 +12,9 @@ export default function ChatLayout({
   return (
     <div className="flex flex-col h-dvh">
       <ChatPrepare />
-      <App>{children}</App>
+      <AntdApp>
+        <App>{children}</App>
+      </AntdApp>
     </div>
   )
 }

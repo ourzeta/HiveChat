@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     });
     // 检查响应是否成功
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.text();
       return new Response(JSON.stringify(errorData), {
         status: response.status,
         headers: { 'Content-Type': 'application/json' },

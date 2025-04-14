@@ -58,7 +58,7 @@ export const Sidebar = () => {
         {status !== 'loading' &&
           <div className='mt-auto'>
             {session ? <div className="flex items-center flex-grow-0 h-10 mr-4 border-t border-gray-200">
-              <Link className='w-full text-sm' href={"/chat/settings/account"}>
+              <Link className='w-full text-sm text-inherit hover:text-inherit' href={"/chat/settings/account"}>
                 <div className={clsx('flex items-center pl-3 mt-2 hover:bg-gray-200 h-9 w-full rounded', pathname.startsWith('/chat/settings') ? 'bg-gray-200' : '')}>
                   <SettingOutlined /><span className='ml-2 whitespace-nowrap'>{t('settings')}</span>
                 </div>
@@ -66,7 +66,7 @@ export const Sidebar = () => {
             </div>
               :
               <div className="flex items-center flex-grow-0 h-10 mr-4 border-t border-gray-200">
-                <Link className='w-full text-sm' href={"/login"}>
+                <Link className='w-full text-sm text-inherit hover:text-inherit' href={"/login"}>
                   <div className={clsx('flex items-center pl-3 mt-2 hover:bg-gray-200 h-9 w-full rounded', pathname.startsWith('/chat/settings') ? 'bg-gray-200' : '')}>
                     <><UserOutlined /><span className='ml-2 whitespace-nowrap'>{t('login')}</span></>
                   </div>
@@ -74,7 +74,7 @@ export const Sidebar = () => {
               </div>}
 
             {session?.user.isAdmin && <div className="flex items-center flex-grow-0 h-10 mr-4">
-              <Link className='w-full text-sm' href={"/admin/llm"}>
+              <Link className='w-full text-sm text-inherit hover:text-inherit' href={"/admin/llm"}>
                 <div className='flex items-center pl-3 mt-2 hover:bg-gray-200 h-9 w-full rounded'>
                   <ControlOutlined />
                   <span className='ml-2 whitespace-nowrap'>{t('adminPanel')}</span>

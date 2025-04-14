@@ -90,7 +90,7 @@ const List = () => {
           <ul>
             {todayList.map((chat) => (
               <li key={chat.id} className='flex flex-row items-center justify-between text-sm hover:bg-gray-100 bg-gray-50 mb-3 group px-3 h-12 rounded-lg'>
-                <Link key={chat.id} href={`/chat/${chat.id}`} >
+                <Link key={chat.id} className='text-inherit hover:text-inherit' href={`/chat/${chat.id}`} >
                   <span>{chat.title}</span>
                 </Link>
                 <span className='text-gray-400 inline-block group-hover:hidden'>{chat.createdAt.toLocaleTimeString('zh-CN', { hour: "numeric", minute: "numeric" })}</span>
@@ -120,7 +120,7 @@ const List = () => {
           <ul >
             {weekList.map((chat) => (
               <li key={chat.id} className='flex flex-row items-center justify-between text-sm hover:bg-gray-100 bg-gray-50 mb-3 group px-3 h-12 rounded-lg'>
-                <Link key={chat.id} href={`/chat/${chat.id}`} >
+                <Link key={chat.id} className='text-inherit hover:text-inherit' href={`/chat/${chat.id}`} >
                   <span className=''>{chat.title}</span>
                 </Link>
                 <span className='text-gray-400 inline-block group-hover:hidden'>{chat.createdAt.toLocaleDateString('zh-CN', { month: "short", day: "numeric" })}</span>
@@ -150,7 +150,7 @@ const List = () => {
           <ul>
             {monthList.map((chat) => (
               <li key={chat.id} className='flex flex-row items-center justify-between text-sm hover:bg-gray-100 bg-gray-50 mb-3 group px-3 h-12 rounded-lg'>
-                <Link key={chat.id} href={`/chat/${chat.id}`} >
+                <Link key={chat.id} className='text-inherit hover:text-inherit' href={`/chat/${chat.id}`} >
                   <span className=''>{chat.title}</span>
                 </Link>
                 <span className='text-gray-400 inline-block group-hover:hidden'>{chat.createdAt.toLocaleDateString('zh-CN', { month: "short", day: "numeric" })}</span>
@@ -179,7 +179,7 @@ const List = () => {
           <ul>
             {otherList.map((chat) => (
               <li key={chat.id} className='flex flex-row items-center justify-between text-sm hover:bg-gray-100 bg-gray-50 mb-3 group px-3 h-12 rounded-lg'>
-                <Link key={chat.id} href={`/chat/${chat.id}`} >
+                <Link key={chat.id} className='text-inherit hover:text-inherit' href={`/chat/${chat.id}`} >
                   <span className=''>{chat.title}</span>
                 </Link>
                 <span className='text-gray-400 inline-block group-hover:hidden'>{chat.createdAt.toLocaleDateString('zh-CN', { month: "short", day: "numeric" })}</span>

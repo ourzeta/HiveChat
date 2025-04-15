@@ -9,6 +9,7 @@ export const modelList: LLMModel[] = [
     'id': 'grok-3-beta',
     'displayName': 'Grok3',
     'supportVision': false,
+    'supportTool': true,
     "maxTokens": 131072,
     'selected': true,
     provider
@@ -17,6 +18,7 @@ export const modelList: LLMModel[] = [
     'id': 'grok-3-mini-beta',
     'displayName': 'Grok3 Mini',
     'supportVision': false,
+    'supportTool': true,
     "maxTokens": 131072,
     'selected': true,
     provider

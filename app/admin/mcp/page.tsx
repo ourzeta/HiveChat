@@ -2,11 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import { MCPTool } from '@/types/llm';
 import { getMcpServerList, addMcpServer, updateMcpServer, deleteMcpServer, fetchToolList } from './actions';
-import { Tag, Button, Modal, Form, Input, Switch, Divider, message, Skeleton } from 'antd';
+import { Tag, Button, Modal, Form, Input, Switch, Divider, message, Skeleton, Radio } from 'antd';
 import { useTranslations } from 'next-intl';
 type FormValues = {
+  id?: string;
   name: string;
   description: string | null;
+  type: 'sse' | 'streamableHttp';
   isActive: boolean;
   baseUrl: string;
 }
@@ -76,7 +78,10 @@ const McpPage = () => {
 
   const onEditFinish = async (values: FormValues) => {
     setConfirmLoading(true);
-    const result = await updateMcpServer(values.name, values);
+    const result = await updateMcpServer(values.id!, {
+      ...values,
+      description: values.description || undefined
+    });
     if (result.success) {
       setConfirmLoading(false);
       setIsEditModalOpen(false);
@@ -91,12 +96,7 @@ const McpPage = () => {
   };
 
   const handleEditMcpServer = async (mcpInfo: FormValues) => {
-    editForm.setFieldsValue({
-      'name': mcpInfo.name,
-      'description': mcpInfo.description,
-      'baseUrl': mcpInfo.baseUrl,
-      'isActive': mcpInfo.isActive,
-    })
+    editForm.setFieldsValue(mcpInfo)
     setIsEditModalOpen(true);
   }
 
@@ -132,22 +132,24 @@ const McpPage = () => {
         <><div className="overflow-hidden rounded-lg border border-slate-300">
           <table className='border-collapse w-full'>
             <thead>
-              <tr className="bg-slate-100">
-                <th className='border-b border-r border-slate-300 p-2 w-64'>名称</th>
-                <th className='border-b border-r border-slate-300 p-2'>描述</th>
-                <th className='border-b border-r border-slate-300 p-2 w-16'>类型</th>
-                <th className='border-b border-r border-slate-300 p-2 w-28'>状态</th>
-                <th className='border-b border-slate-300 p-2 w-32'>{t('action')}</th>
+              <tr className="bg-slate-100 text-sm">
+                <th className='border-r border-slate-300 p-2 w-72'>名称</th>
+                <th className='border-r border-slate-300 p-2'>描述</th>
+                <th className='border-r border-slate-300 p-2 w-28'>状态</th>
+                <th className='border-slate-300 p-2 w-32'>{t('action')}</th>
               </tr>
             </thead>
             <tbody>
               {mcpServerList.map((mcpServer, index) => (
                 <tr key={mcpServer.name} className="hover:bg-slate-50">
-                  <td className='border-t border-r text-sm border-slate-300 p-2 pl-0'>
+                  <td className='border-t flex border-r text-sm border-slate-300 p-2 pl-0 justify-between'>
                     <Button size='small' type='link' onClick={() => { handleShowToolModal(mcpServer.name) }}>{mcpServer.name}</Button>
+                    {mcpServer.type === 'streamableHttp' ?
+                      <Tag style={{ margin: 0 }}>Streamable HTTP</Tag>
+                      : <Tag style={{ margin: 0 }}>SSE</Tag>
+                    }
                   </td>
                   <td className='border-t border-r text-sm border-slate-300 p-2'>{mcpServer.description}</td>
-                  <td className='border-t border-r text-sm border-slate-300 w-16 text-center'><Tag style={{ margin: 0 }}>SSE</Tag></td>
                   <td className='border-t border-r text-sm border-slate-300 p-2 text-center'>{mcpServer.isActive ?
                     <div className='flex flex-row items-center justify-center'>
                       <div className='w-2 h-2 bg-green-500 rounded-full'></div>
@@ -209,9 +211,20 @@ const McpPage = () => {
             <Input.TextArea rows={2} />
           </Form.Item>
 
+          <Form.Item
+            name="type"
+            label={<label htmlFor="mcpType">类型</label>}
+            initialValue="sse"
+            rules={[{ required: true, message: '此项为必填' }]}
+          >
+            <Radio.Group id="mcpType">
+              <Radio value="sse">服务器发送事件(SSE)</Radio>
+              <Radio value="streamableHttp">可流式传输的 HTTP (Streamable HTTP)</Radio>
+            </Radio.Group>
+          </Form.Item>
+
           <Form.Item label={<span className='font-medium'>URL</span>}
             name='baseUrl'
-            extra="仅支持 SSE 方式"
             validateTrigger='onBlur'
             rules={[{ required: true, message: '此项为必填' }]}>
             <Input type='url' />
@@ -238,12 +251,24 @@ const McpPage = () => {
           <Form.Item label={<span className='font-medium'>名称</span>} name='name'>
             <Input type='text' disabled />
           </Form.Item>
+          <Form.Item name="id" hidden>
+            <Input type="hidden" />
+          </Form.Item>
           <Form.Item label={<span className='font-medium'>描述</span>} name='description'>
             <Input.TextArea rows={2} />
           </Form.Item>
+          <Form.Item
+            name="type"
+            label="类型"
+            rules={[{ required: true, message: '此项为必填' }]}
+          >
+            <Radio.Group>
+              <Radio value="sse">服务器发送事件(SSE)</Radio>
+              <Radio value="streamableHttp">可流式传输的 HTTP (Streamable HTTP)</Radio>
+            </Radio.Group>
+          </Form.Item>
           <Form.Item label={<span className='font-medium'>URL</span>}
             name='baseUrl'
-            extra="仅支持 SSE 方式"
             validateTrigger='onBlur'
             rules={[{ required: true, message: '此项为必填' }]}>
             <Input type='url' />

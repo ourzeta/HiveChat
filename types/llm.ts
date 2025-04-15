@@ -166,6 +166,7 @@ export interface MCPTool {
 export interface MCPServer {
   name: string
   description?: string
+  type: 'sse' | 'streamableHttp'
   baseUrl?: string
   isActive: boolean
 }

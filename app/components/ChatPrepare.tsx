@@ -16,15 +16,19 @@ const AppPrepare = () => {
         setHasUseMcp(true);
         setMcpServers(mcpServers.map(server => ({
           ...server,
+          type: server.type || 'sse',
           description: server.description ?? undefined,
         })));
-        setAllTools(tools.map(tool => ({
-          id: tool.name,
-          name: tool.name,
-          serverName: tool.serverName,
-          description: tool.description || undefined,
-          inputSchema: JSON.parse(tool.inputSchema),
-        })))
+        setAllTools(tools.map(tool => {
+          const server = mcpServers.find(s => s.id === tool.serverId);
+          return {
+            id: tool.name,
+            name: tool.name,
+            serverName: server?.name || '',
+            description: tool.description || undefined,
+            inputSchema: JSON.parse(tool.inputSchema),
+          };
+        }));
       } else {
         setHasUseMcp(false);
         setMcpServers([]);

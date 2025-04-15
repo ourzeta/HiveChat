@@ -9,6 +9,7 @@ import {
   varchar,
   json,
   date,
+  uuid,
   unique
 } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
@@ -297,19 +298,23 @@ export const searchEngineConfig = pgTable("search_engine_config", {
   isActive: boolean("is_active").default(false).notNull(),
 })
 
+export const mcpServerType = pgEnum('mcp_server_type', ['sse', 'streamableHttp'])
 export const mcpServers = pgTable("mcp_servers", {
-  name: text("name").notNull().primaryKey(),
+  id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull().unique(),
   description: text("description"),
+  type: mcpServerType('type').default('sse'),
   baseUrl: text("base_url").notNull(),
   isActive: boolean("is_active").default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 })
 
 export const mcpTools = pgTable("mcp_tools", {
+  id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
-  serverName: text("server_name")
+  serverId: uuid("server_id")
     .notNull()
-    .references(() => mcpServers.name, { onDelete: "cascade" }),
+    .references(() => mcpServers.id, { onDelete: "cascade" }),
   description: text("description"),
   inputSchema: text('input_schema').notNull(),
 })

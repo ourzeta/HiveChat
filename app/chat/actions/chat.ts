@@ -257,13 +257,13 @@ export const getMcpServersAndAvailableTools = async () => {
       .select({
         name: mcpTools.name,
         description: mcpTools.description,
-        serverName: mcpTools.serverName,
+        serverId: mcpTools.serverId,
         inputSchema: mcpTools.inputSchema,
       })
       .from(mcpTools)
-      .leftJoin(mcpServers, eq(mcpTools.serverName, mcpServers.name))
+      .leftJoin(mcpServers, eq(mcpTools.serverId, mcpServers.id))
       .orderBy(
-        asc(mcpTools.serverName),
+        asc(mcpTools.serverId),
       )
       .where(
         eq(mcpServers.isActive, true)

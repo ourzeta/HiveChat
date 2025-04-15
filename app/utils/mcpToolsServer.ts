@@ -1,25 +1,37 @@
 'use server';
-import { MCPTool } from '@/types/llm';
+import { MCPTool, MCPServer } from '@/types/llm';
 import mcpService from '@/app/services/MCPService';
-
-export async function getToolList(serverNames: string[]): Promise<MCPTool[]> {
-  if (serverNames.length > 0) {
-    const tools = await mcpService.listTools(serverNames);
-    return tools;
-  } else {
-    return [];
-  }
-}
+import { mcpServers } from '@/app/db/schema';
+import { db } from '@/app/db';
+import { eq } from 'drizzle-orm';
 
 export async function callMCPTool(tool: MCPTool): Promise<any> {
   const toolInfo = {
-    client: tool.serverName,
     name: tool.name,
     args: tool.inputSchema,
   }
   try {
-    const resp = await mcpService.callTool(toolInfo)
-    return resp
+    const server = await db.query.mcpServers.findFirst({
+      where: eq(mcpServers.name, tool.serverName),
+    });
+    if (server) {
+      const serverInfo: MCPServer = {
+        name: server.name,
+        description: server.description || undefined,
+        type: server.type || 'sse',
+        baseUrl: server.baseUrl,
+        isActive: true,
+      }
+      console.log('------------serverInfo------------')
+      console.log(serverInfo)
+      console.log('------------toolInfo------------')
+      console.log(toolInfo)
+      const resp = await mcpService.callTool({ server: serverInfo, ...toolInfo })
+      return resp;
+    } else {
+      throw new Error(`MCP Client ${tool.serverName} not found`)
+    }
+
   } catch (e) {
     console.error(`[MCP] Error calling Tool: ${tool.serverName} ${tool.name}`, e)
     return Promise.resolve({

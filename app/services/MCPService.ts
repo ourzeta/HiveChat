@@ -1,186 +1,130 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
+import { SSEClientTransport, SSEClientTransportOptions } from '@modelcontextprotocol/sdk/client/sse.js'
+import { StreamableHTTPClientTransport, type StreamableHTTPClientTransportOptions } from './MCPStreamableHttpClient'
 import { MCPServer, MCPTool } from '@/types/llm';
-import { mcpServers } from '@/app/db/schema';
-import { db } from '@/app/db';
-import { eq } from 'drizzle-orm'
-import { v4 as uuidv4 } from 'uuid';
 
 class MCPService {
-  private servers: MCPServer[] = []
-  private activeServers: Map<string, any> = new Map()
-  private clients: { [key: string]: any } = {}
-  private Client: typeof Client | undefined
-  private sseTransport: typeof SSEClientTransport | undefined
+  private clients: Map<string, Client> = new Map()
   private initialized = false
 
   constructor() {
     if (this.initialized) return;
-    this.Client = Client;
-    this.sseTransport = SSEClientTransport;
     this.initialized = true
   }
 
-  /**
-   * Add a new MCP server
-   */
-  public async addServer(server: MCPServer): Promise<void> {
-    // Check for duplicate name
-    if (this.servers.some((s) => s.name === server.name)) {
-      console.log(`Server with name ${server.name} already exists`);
-      return;
-    }
-
-    // Activate if needed
-    if (server.isActive) {
-      await this.activate(server)
-    }
-
-    // Add to servers list
-    this.servers = [...this.servers, server]
-  }
-
-  public async activate(server: MCPServer): Promise<void> {
-
-    const { name, baseUrl } = server
-    // Skip if already running
-    if (this.clients[name]) {
-      console.log(`[MCP] Server ${name} is already running`)
-      return
-    }
-
-    let transport: SSEClientTransport
-
-    try {
-      // Create appropriate transport based on configuration
-      transport = new this.sseTransport!(new URL(baseUrl!))
-      // Create and connect client
-      const client = new this.Client!({ name, version: '1.0.0' }, { capabilities: {} })
-
-      // 设置连接超时时间为30秒
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Connection timeout')), 20000);
-      });
-
-      await Promise.race([
-        client.connect(transport),
-        timeoutPromise
-      ]);
-
-      // Store client and server info
-      this.clients[name] = client
-      this.activeServers.set(name, { client, server })
-    } catch (error) {
-      console.log(`[MCP] Error activating server ${name}:`, error)
-      this.deactivate(name)
-      throw error
-    }
-  }
-
-  public async deactivate(name: string): Promise<void> {
-    if (!this.clients[name]) {
-      console.log(`[MCP] Server ${name} is not running`)
-      return
-    }
-
-    try {
-      console.log(`[MCP] Stopping server: ${name}`)
-      await this.clients[name].close()
-      delete this.clients[name]
-      this.activeServers.delete(name)
-    } catch (error) {
-      console.log(`[MCP] Error deactivating server ${name}:`, error)
-      throw error
-    }
-  }
-
-  /**
-   * Delete an MCP server
-   */
-  public async deleteServer(serverName: string): Promise<void> {
-
-    // Deactivate if running
-    if (this.clients[serverName]) {
-      await this.deactivate(serverName)
-    }
-
-    // Update servers list
-    const filteredServers = this.servers.filter((s) => s.name !== serverName)
-    this.servers = filteredServers;
-  }
-
-  public async listTools(serverNames: string[]): Promise<MCPTool[]> {
-    try {
-
-      // Otherwise list tools from all active servers
-      let allTools: MCPTool[] = []
-
-      for (const serverName of serverNames) {
-        try {
-          const tools = await this.listToolsFromServer(serverName)
-          allTools = allTools.concat(tools)
-        } catch (error) {
-          console.error(`Error listing tools for ${serverName}`, error)
+  public async initClient(server: MCPServer): Promise<Client> {
+    const existingClient = this.clients.get(server.name);
+    if (existingClient) {
+      try {
+        // Check if the existing client is still connected
+        const pingResult = await existingClient.ping()
+        console.info(`[MCP] Ping result for ${server.name}:`, pingResult)
+        if (!pingResult) {
+          this.clients.delete(server.name)
+        } else {
+          return existingClient
         }
+      } catch (error) {
+        console.error(`[MCP] Error pinging server ${server.name}:`, error)
+        this.clients.delete(server.name);
       }
+    }
 
-      console.log(`[MCP] Total tools listed: ${allTools.length}`)
-      return allTools
+    const client = new Client({ name: 'Hivechat', version: '0.1.0' }, { capabilities: {} })
+    let transport: SSEClientTransport | StreamableHTTPClientTransport;
+    try {
+      if (server.type === 'streamableHttp') {
+        const options: StreamableHTTPClientTransportOptions = {}
+        transport = new StreamableHTTPClientTransport(new URL(server.baseUrl!), options)
+      } else {
+        const options: SSEClientTransportOptions = {
+          requestInit: {}
+        }
+        transport = new SSEClientTransport(new URL(server.baseUrl!), options)
+      }
+      await client.connect(transport);
+      this.clients.set(server.name, client)
+
+      console.info(`[MCP] Activated server: ${server.name}`)
+      return client;
+    } catch (error: any) {
+      console.error(`[MCP] Error activating server ${server.name}:`, error)
+      throw new Error(`[MCP] Error activating server ${server.name}: ${error.message}`)
+    }
+  }
+
+  async closeClient(serverName: string) {
+    const client = this.clients.get(serverName)
+    if (client) {
+      await client.close()
+      console.info(`[MCP] Closed server: ${serverName}`)
+      this.clients.delete(serverName)
+      console.info(`[MCP] Cleared cache for server: ${serverName}`)
+    } else {
+      console.warn(`[MCP] No client found for server: ${serverName}`)
+    }
+  }
+
+  async stopServer(server: MCPServer) {
+    console.info(`[MCP] Stopping server: ${server.name}`)
+    await this.closeClient(server.name)
+  }
+
+  async removeServer(server: MCPServer) {
+    const existingClient = this.clients.get(server.name)
+    if (existingClient) {
+      await this.closeClient(server.name)
+    }
+  }
+
+  async restartServer(server: MCPServer) {
+    console.info(`[MCP] Restarting server: ${server.name}`)
+    await this.closeClient(server.name)
+    await this.initClient(server)
+  }
+
+  public deactivate(serverName: string) {
+    this.closeClient(serverName)
+  }
+
+  public deleteServer(serverName: string) {
+    this.closeClient(serverName)
+  }
+
+  async listTools(server: MCPServer): Promise<MCPTool[]> {
+    console.info(`[MCP] Listing tools for server: ${server.name}`)
+    const client = await this.initClient(server)
+    try {
+      const { tools } = await client.listTools()
+      const serverTools: MCPTool[] = []
+      tools.map((tool: any) => {
+        const serverTool: MCPTool = {
+          ...tool,
+          id: tool.name,
+          serverName: server.name
+        }
+        serverTools.push(serverTool)
+      })
+      return serverTools
     } catch (error) {
-      console.error('Error listing tools:', error)
+      console.error(`[MCP] Failed to list tools for server: ${server.name}`, error)
       return []
     }
   }
-
-  /**
-   * Helper method to list tools from a specific server
-  */
-  private async listToolsFromServer(serverName: string): Promise<MCPTool[]> {
-    if (!this.clients[serverName]) {
-      throw new Error(`MCP Client ${serverName} not found`)
-    }
-    const { tools } = await this.clients[serverName].listTools()
-
-    return tools.map((tool: any) => ({
-      ...tool,
-      serverName,
-      id: 'f' + uuidv4().replace(/-/g, '')
-    }))
-  }
-
   /**
    * Call a tool on an MCP server
    */
-  public async callTool(params: { client: string; name: string; args: any }): Promise<any> {
-    const { client, name, args } = params
-    if (!this.clients[client]) {
-      // 需要自动重新连接
-      console.log(`Restart Server ${client}, call function ${name}`)
-      const server = await db.query.mcpServers.findFirst({
-        where: eq(mcpServers.name, client),
-      });
-      if (server) {
-        await this.addServer({
-          ...server,
-          isActive: true,
-          description: server.description || undefined,
-        })
-      } else {
-        throw new Error(`MCP Client ${client} not found`)
-      }
-    }
-    console.info('[MCP] Calling:', client, name, args)
+  public async callTool({ server, name, args }: { server: MCPServer; name: string; args: any }): Promise<any> {
     try {
-      return await this.clients[client].callTool({
-        name,
-        arguments: args
-      })
+      console.info('[MCP] Calling:', server.name, name, args)
+      const client = await this.initClient(server)
+      const result = await client.callTool({ name, arguments: args })
+      return result
     } catch (error) {
-      console.error(`[MCP] Error calling tool ${name} on ${client}:`, error)
+      console.error(`[MCP] Error calling tool ${name} on ${server.name}:`, error)
       throw error
     }
   }
 }
-
 const mcpServiceInstance = new MCPService();
 export default mcpServiceInstance;

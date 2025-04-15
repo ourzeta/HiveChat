@@ -15,7 +15,10 @@ export async function getMcpServerList() {
     const result = await db.query.mcpServers.findMany({
       orderBy: [mcpServers.createdAt],
     });
-    return result;
+    return result.map(server => ({
+      ...server,
+      type: server.type || 'sse'
+    }));
   } catch (error) {
     throw new Error('query user list fail');
   }
@@ -24,6 +27,7 @@ export async function getMcpServerList() {
 export async function addMcpServer(mcpServerInfo: {
   name: string;
   isActive: boolean;
+  type: 'sse' | 'streamableHttp';
   description?: string;
   baseUrl: string;
 }) {
@@ -46,12 +50,14 @@ export async function addMcpServer(mcpServerInfo: {
     // 连接测试
     if (mcpServerInfo.isActive) {
       try {
-        await mcpService.addServer(mcpServerInfo);
         try {
-          const tools = await mcpService.listTools([mcpServerInfo.name]);
-          await db.insert(mcpServers).values(mcpServerInfo);
+          const tools = await mcpService.listTools(mcpServerInfo);
+          const serverResult = await db.insert(mcpServers).values(mcpServerInfo).returning();
+          const insertedServer = serverResult[0];
           await db.insert(mcpTools).values(tools.map(tool => ({
-            ...tool,
+            name: tool.name,
+            serverId: insertedServer.id,
+            description: tool.description,
             inputSchema: JSON.stringify(tool.inputSchema),
           })));
         } catch (e) {
@@ -80,9 +86,11 @@ export async function addMcpServer(mcpServerInfo: {
   }
 }
 
-export async function updateMcpServer(name: string, mcpServerInfo: {
-  isActive?: boolean;
-  description?: string | null;
+export async function updateMcpServer(serverId: string, mcpServerInfo: {
+  name: string;
+  isActive: boolean;
+  description?: string;
+  type: 'sse' | 'streamableHttp';
   baseUrl?: string;
 }) {
   const session = await auth();
@@ -91,7 +99,7 @@ export async function updateMcpServer(name: string, mcpServerInfo: {
   }
   try {
     const existingServer = await db.query.mcpServers.findFirst({
-      where: eq(mcpServers.name, name),
+      where: eq(mcpServers.id, serverId),
     });
 
     if (!existingServer) {
@@ -102,19 +110,17 @@ export async function updateMcpServer(name: string, mcpServerInfo: {
     } else {
       await db.update(mcpServers)
         .set(mcpServerInfo)
-        .where(eq(mcpServers.name, name));
+        .where(eq(mcpServers.id, serverId));
       if (mcpServerInfo.isActive) {
         try {
-          await mcpService.activate({
-            ...existingServer,
-            description: existingServer.description || undefined,
-          });
           // 删除原有的工具，再新增
-          await db.delete(mcpTools).where(eq(mcpTools.serverName, name));
+          await db.delete(mcpTools).where(eq(mcpTools.serverId, existingServer.id));
           // 新增新的工具
-          const tools = await mcpService.listTools([name]);
+          const tools = await mcpService.listTools(mcpServerInfo);
           await db.insert(mcpTools).values(tools.map(tool => ({
-            ...tool,
+            name: tool.name,
+            serverId: existingServer.id,
+            description: tool.description || '',
             inputSchema: JSON.stringify(tool.inputSchema),
           })));
         } catch (error) {
@@ -164,14 +170,20 @@ export async function fetchToolList(serverName: string): Promise<MCPTool[]> {
     return [];
   }
   try {
+    const server = await db.query.mcpServers.findFirst({
+      where: eq(mcpServers.name, serverName),
+    });
+
+    if (!server) return [];
+
     const result = await db.query.mcpTools.findMany({
-      where: eq(mcpTools.serverName, serverName),
+      where: eq(mcpTools.serverId, server.id),
     });
     return result.map(item => ({
       id: item.name,
       name: item.name,
       description: item.description || undefined,
-      serverName: item.serverName,
+      serverName: serverName,
       inputSchema: JSON.parse(item.inputSchema)
     }));
   } catch (error) {

@@ -159,7 +159,7 @@ export const MessageList = (props: { chat_id: string }) => {
     <>
       {contextHolder}
       <ChatHeader />
-      <div onScroll={throttledHandleScroll} ref={messageListRef} className='flex w-full flex-col h-0 px-4 grow py-6 relative overflow-y-auto leading-7 chat-list text-sm'>
+      <div onScroll={throttledHandleScroll} ref={messageListRef} className='flex w-full flex-col h-0 px-2 grow py-6 relative overflow-y-auto leading-7 chat-list text-sm'>
         {!isPending && chat?.prompt && <div className="flex container mx-auto max-w-screen-md mb-4 w-full flex-col justify-center items-center">
           <div className='flex max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-col pr-4 pl-4'>
             <div className='flex flex-row items-center mb-2'>

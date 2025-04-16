@@ -116,6 +116,7 @@ export async function updateMcpServer(serverId: string, mcpServerInfo: {
           // 删除原有的工具，再新增
           await db.delete(mcpTools).where(eq(mcpTools.serverId, existingServer.id));
           // 新增新的工具
+          await mcpService.removeServer(mcpServerInfo);
           const tools = await mcpService.listTools(mcpServerInfo);
           await db.insert(mcpTools).values(tools.map(tool => ({
             name: tool.name,

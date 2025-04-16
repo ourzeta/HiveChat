@@ -20,7 +20,6 @@ const List = () => {
   const [newChatName, setNewChatName] = useState('');
   const [renameChatId, setRenameChatId] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
   useEffect(() => {
     const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
     const weekStart = new Date();
@@ -63,7 +62,7 @@ const List = () => {
     const result = await deleteChatInServer(chat_id);
 
     if (result.status === 'success') {
-      messageApi.success(t('deleteSuccess'));
+      message.success(t('deleteSuccess'));
       const chatListresult = await getChatListInServer();
       setChatList(chatListresult.data as ChatType[]);
     }
@@ -80,7 +79,6 @@ const List = () => {
         <InPageCollapsed />
       </div>
       <div className="container max-w-3xl mx-auto p-4">
-        {contextHolder}
         <div className='w-full flex flex-row justify-between items-center border-b border-gray-200 mb-6'>
           <h1 className='text-xl font-bold mb-4 ml-3'>{t('historyChat')}</h1>
         </div>

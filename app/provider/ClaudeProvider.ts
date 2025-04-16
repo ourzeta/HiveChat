@@ -170,7 +170,8 @@ export default class ClaudeApi implements LLMApi {
               this.answer = '';
               this.reasoning_content = '';
               this.mcpTools = [];
-
+              Object.keys(final_tool_calls).forEach(key => delete final_tool_calls[Number(key)]);
+              
               if (!this.controller) {
                 this.controller = new AbortController();
               }

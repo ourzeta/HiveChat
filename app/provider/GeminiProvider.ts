@@ -160,6 +160,7 @@ export default class GeminiApi implements LLMApi {
             syncMcpTools(json.metadata.messageId, this.mcpTools);
 
             this.mcpTools = [];
+            this.answer = '';
             this.finishReason = '';
             this.fcallParts = [];
             if (!this.controller) {

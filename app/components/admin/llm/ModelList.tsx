@@ -25,7 +25,6 @@ const ModelList: React.FC<ModelListProps> = ({
 }) => {
   const t = useTranslations('Admin.Models');
   const [isManageAllModalOpen, setIsManageAllModalOpen] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
   const { modelList, setModelList, changeSelect, deleteCustomModel } = useModelListStore();
   const listRef = useRef<HTMLDivElement>(null);
   const sortableRef = useRef<Sortable | null>(null);
@@ -116,7 +115,7 @@ const ModelList: React.FC<ModelListProps> = ({
                   description={t('currentModelWillbeDeleted')}
                   onConfirm={() => {
                     handleDeleteCustomModel(item.id);
-                    messageApi.success(t('deleteSuccess'))
+                    message.success(t('deleteSuccess'))
                   }}
                   okText={t('confirm')}
                   cancelText={t('cancel')}

@@ -35,7 +35,18 @@ export function generateTitle(messages: RequestMessage[],
     onUpdate: (responseContent: ResponseContent) => {
     },
     onFinish: async (responseContent: ResponseContent) => {
-      onFinish(responseContent.content as string);
+      if (typeof responseContent.content === 'string') {
+        onFinish(responseContent.content);
+      } else if (Array.isArray(responseContent.content)) {
+        const textContent = responseContent.content.find(item => item.type === 'text');
+        if (textContent && 'text' in textContent) {
+          onFinish(textContent.text);
+        } else {
+          onFinish("闲聊1");
+        }
+      } else {
+        onFinish("闲聊2");
+      }
     },
     onError: async (err?: Error) => {
       onError();

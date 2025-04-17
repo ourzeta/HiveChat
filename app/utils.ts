@@ -35,7 +35,7 @@ export function generateTitle(messages: RequestMessage[],
     onUpdate: (responseContent: ResponseContent) => {
     },
     onFinish: async (responseContent: ResponseContent) => {
-      onFinish(responseContent.content);
+      onFinish(responseContent.content as string);
     },
     onError: async (err?: Error) => {
       onError();

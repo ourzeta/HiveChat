@@ -88,7 +88,12 @@ export const MessageList = (props: { chat_id: string }) => {
 
       requestAnimationFrame(scrollToBottom);
     }
-  }, [responseMessage, isUserScrolling]);
+  }, [
+    responseMessage.content,
+    responseMessage.reasoningContent,
+    responseMessage.mcpTools?.length,
+    isUserScrolling
+  ]);
 
   const handleScroll = useCallback(() => {
     const chatElement = messageListRef.current;

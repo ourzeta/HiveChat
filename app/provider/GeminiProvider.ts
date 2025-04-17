@@ -1,6 +1,6 @@
 'use client'
 import { fetchEventSource, EventStreamContentType, EventSourceMessage } from '@microsoft/fetch-event-source';
-import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse } from '@/types/llm';
+import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse, MessageContent } from '@/types/llm';
 import { prettyObject } from '@/app/utils';
 import { InvalidAPIKeyError, OverQuotaError, TimeoutError } from '@/types/errorTypes';
 import { FunctionCallPart, FunctionResponsePart } from '@google/generative-ai';
@@ -10,7 +10,7 @@ import { mcpToolsToGeminiTools, geminiFunctionCallToMcpTool } from '@/app/utils/
 
 export default class GeminiApi implements LLMApi {
   private controller: AbortController | null = null;
-  private answer = '';
+  private answer: MessageContent = '';
   private reasoning_content = '';
   private finishReason = '';
   private inputTokens = 0;
@@ -242,16 +242,49 @@ export default class GeminiApi implements LLMApi {
           }
         }
         //tool 调用 end
-
         const firstCandidate = json?.candidates[0];
-        if (firstCandidate.content.parts) {
-          const deltaContent = firstCandidate.content.parts[0]?.text;
-          if (deltaContent) {
-            this.answer += deltaContent;
+        const parts = firstCandidate.content.parts;
+        if (parts) {
+          const convertedContent = parts.map((part: { text?: string } | { inlineData: { mimeType: string, data: string } }) => {
+            if ('text' in part && part.text) {
+              return {
+                type: 'text',
+                text: part.text
+              };
+            }
+            if ('inlineData' in part && part.inlineData) {
+              return {
+                type: 'image',
+                mimeType: part.inlineData.mimeType,
+                data: 'data:' + part.inlineData.mimeType + ';base64,' + part.inlineData.data,
+              };
+            }
+          }).filter(Boolean);
+
+
+
+          if (this.answer === '') {
+            this.answer = [];
+          }
+          if (Array.isArray(this.answer)) {
+            // Merge consecutive text elements
+            const mergedContent = this.answer.concat(convertedContent).reduce((acc: any[], curr: { type: string; text?: string; mimeType?: string; data?: string }) => {
+              if (!curr) return acc;
+
+              const lastElement = acc[acc.length - 1];
+              if (lastElement && lastElement.type === 'text' && curr.type === 'text') {
+                lastElement.text += curr.text;
+                return acc;
+              }
+
+              acc.push(curr);
+              return acc;
+            }, []);
+            this.answer = mergedContent;
             options.onUpdate({ content: this.answer });
           }
 
-          const fcallParts: FunctionCallPart[] = firstCandidate.content.parts
+          const fcallParts: FunctionCallPart[] = parts
             .filter((part: any) => 'functionCall' in part);
           this.fcallParts.push(...fcallParts);
         }
@@ -273,11 +306,22 @@ export default class GeminiApi implements LLMApi {
     const messages = this.prepareMessage(options.messages);
 
     let toolsParameter = {};
+    let generationConfig = {};
     if (options.mcpTools) {
       const tools = mcpToolsToGeminiTools(options.mcpTools);
       if (tools.length > 0) {
         toolsParameter = {
           tools: tools
+        }
+      }
+    }
+    if (options.config.model.includes('image-generation')) {
+      generationConfig = {
+        "generationConfig": {
+          "responseModalities": [
+            "Text",
+            "Image"
+          ]
         }
       }
     }
@@ -293,6 +337,7 @@ export default class GeminiApi implements LLMApi {
         body: JSON.stringify({
           "contents": messages,
           ...toolsParameter,
+          ...generationConfig,
         }),
         signal: this.controller.signal,
         onopen: async (res) => {

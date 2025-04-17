@@ -82,6 +82,7 @@ const useChat = (chatId: string) => {
     searchResponse?: WebSearchResponse,
     mcpTools?: MCPTool[]
   ) => {
+    let lastUpdate = Date.now() - 81;
     setResponseStatus("pending");
     const options: ChatOptions = {
       messages: messages,
@@ -89,7 +90,10 @@ const useChat = (chatId: string) => {
       chatId: chatId,
       mcpTools,
       onUpdate: (responseContent: ResponseContent) => {
+        const now = Date.now();
+        if (now - lastUpdate < 80) return; // 如果距离上次更新小于 80ms，则不更新
         setResponseMessage(responseContent);
+        lastUpdate = now;
       },
       onFinish: async (responseContent: ResponseContent, shouldContinue?: boolean) => {
         const respMessage: Message = {
@@ -168,9 +172,8 @@ const useChat = (chatId: string) => {
           providerId: currentModel.provider.id,
           model: currentModel.id,
           type: 'text',
-          createdAt: new Date()
         };
-        setMessageList((m) => ([...m, respMessage]));
+        setMessageList((m) => ([...m, { ...respMessage, createdAt: new Date() }]));
         addMessageInServer(respMessage);
       }
       setSearchStatus('none');
@@ -200,10 +203,9 @@ const useChat = (chatId: string) => {
       providerId: currentModel.provider.id,
       model: currentModel.id,
       type: 'break' as 'break',
-      createdAt: new Date()
     };
     addMessageInServer(toAddMessage);
-    setMessageList((m) => ([...m, toAddMessage]));
+    setMessageList((m) => ([...m, { ...toAddMessage, createdAt: new Date() }]));
   }
 
   const prepareMessage = useCallback((newMessage: RequestMessage): RequestMessage[] => {
@@ -291,11 +293,10 @@ const useChat = (chatId: string) => {
       providerId: currentModel.provider.id,
       model: currentModel.id,
       type: 'text' as const,
-      createdAt: new Date()
     };
 
     setInput('');
-    setMessageList((m) => ([...m, currentMessage]));
+    setMessageList((m) => ([...m, { ...currentMessage, createdAt: new Date() }]));
     addMessageInServer(currentMessage);
     setUserSendCount(userSendCount + 1);
 

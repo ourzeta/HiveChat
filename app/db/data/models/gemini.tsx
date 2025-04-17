@@ -22,6 +22,14 @@ export const modelList: LLMModel[] = [
     provider
   },
   {
+    'id': 'gemini-2.0-flash-exp-image-generation',
+    'displayName': 'Gemini2.0 Flash Exp Image Generation',
+    'supportVision': true,
+    'supportTool': false,
+    'selected': true,
+    provider
+  },
+  {
     'id': 'gemini-2.0-flash-lite',
     'displayName': 'Gemini 2.0 Flash Lite',
     'supportVision': true,

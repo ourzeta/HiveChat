@@ -54,12 +54,12 @@ export type Message = {
   totalTokens?: number;
   errorType?: string;
   errorMessage?: string;
-  createdAt: Date;
+  createdAt?: Date;
 }
 
 export type ResponseContent = {
   id?: number;
-  content: string;
+  content: MessageContent;
   reasoningContent?: string;
   inputTokens?: number;
   outputTokens?: number;

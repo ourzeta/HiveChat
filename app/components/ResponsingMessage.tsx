@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import MarkdownRender from '@/app/components/Markdown';
-import { Avatar } from "antd";
+import { Avatar, Image as AntdImage } from "antd";
 import { ResponseContent } from '@/types/llm';
 import DotsLoading from '@/app/components/loading/DotsLoading';
 import BallsLoading from '@/app/components/loading/BallsLoading';
@@ -12,7 +12,7 @@ import { useTranslations } from 'next-intl';
 // 将搜索状态提示抽离为独立组件
 const SearchStatusIndicator = React.memo(({ status }: { status: "none" | "searching" | "error" | "done" }) => {
   if (status === "none") return null;
-  
+
   const statusMessages = {
     searching: "正在联网搜索...",
     error: "搜索出错，请联系管理员检查搜索引擎配置",
@@ -29,14 +29,14 @@ const SearchStatusIndicator = React.memo(({ status }: { status: "none" | "search
 SearchStatusIndicator.displayName = 'SearchStatusIndicator';
 
 // 将工具调用详情抽离为独立组件
-const ToolInvocationDetails = React.memo(({ 
-  mcp, 
-  isOpen, 
-  onToggle 
-}: { 
-  mcp: any, 
-  isOpen: boolean, 
-  onToggle: () => void 
+const ToolInvocationDetails = React.memo(({
+  mcp,
+  isOpen,
+  onToggle
+}: {
+  mcp: any,
+  isOpen: boolean,
+  onToggle: () => void
 }) => {
   return (
     <details open={false} className='flex flex-row bg-gray-100 hover:bg-slate-100 text-gray-800 rounded-md mb-3 border border-gray-200 text-sm'>
@@ -52,7 +52,7 @@ const ToolInvocationDetails = React.memo(({
         {mcp.status === 'done' && !mcp.response.isError &&
           <div><CheckCircleOutlined style={{ color: 'green' }} /><span className='ml-1 text-green-700'>已完成</span></div>
         }
-        {mcp.status === 'invoking' && 
+        {mcp.status === 'invoking' &&
           <div>
             <RedoOutlined spin={true} style={{ color: 'green' }} /><span className='ml-1 text-green-700'>执行中</span>
           </div>
@@ -114,7 +114,7 @@ const ResponsingMessage = (props: {
           <div className='flex flex-col w-0 grow'>
             <div className='px-3 py-2 ml-2 bg-gray-100 text-gray-600 w-full grow markdown-body answer-content rounded-xl'>
               <SearchStatusIndicator status={props.searchStatus} />
-              
+
               {props.responseMessage.reasoningContent && (
                 <div className='text-sm mb-4'>
                   <div className='flex text-xs flex-row items-center text-gray-800 bg-gray-100 rounded-md p-2'>
@@ -128,9 +128,22 @@ const ResponsingMessage = (props: {
                   </div>
                 </div>
               )}
-              
-              <MarkdownRender content={props.responseMessage.content} />
-              
+
+              {typeof props.responseMessage.content === 'string' && <MarkdownRender content={props.responseMessage.content} />
+              }
+
+              {
+                Array.isArray(props.responseMessage.content) && props.responseMessage.content.map((part, index) =>
+                  <div key={index}>
+                    {part.type === 'text' && <MarkdownRender content={part.text} />}
+                    {part.type === 'image' && <AntdImage
+                      className='cursor-pointer'
+                      src={part.data}
+                      preview={{ mask: false }}
+                      style={{ maxWidth: '250px', borderRadius: '4px', boxShadow: '3px 4px 7px 0px #dedede' }} />}
+                  </div>)
+              }
+
               {props.responseMessage.mcpTools?.map((mcp, index) => (
                 <ToolInvocationDetails
                   key={index}
@@ -139,10 +152,10 @@ const ResponsingMessage = (props: {
                   onToggle={handleToggle}
                 />
               ))}
-              
+
               {(props.responseMessage.content === "" && props.responseMessage.reasoningContent === "") && <DotsLoading />}
             </div>
-            
+
             {(props.responseMessage.content !== "" || props.responseMessage.reasoningContent !== "") && (
               <div className='px-3'>
                 <BallsLoading />

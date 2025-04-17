@@ -22,7 +22,7 @@ export default async function proxyGeminiStream(response: Response,
   const stream = new ReadableStream({
     async start(controller: ReadableStreamDefaultController) {
       let bufferedData = '';
-      let completeResponse = '';
+      let completeResponse: Array<{ text: string } | { inlineData: { mimeType: string, data: string } }> = [];
       let promptTokens = 0;
       let completionTokens = 0;
       let totalTokens = 0;
@@ -45,14 +45,13 @@ export default async function proxyGeminiStream(response: Response,
             const parsedData = JSON.parse(cleanedLine);
             const { content, finishReason } = parsedData.candidates[0];
             const usage = parsedData.usageMetadata;
-            const contentText = content.parts[0].text;
-            if (contentText) {
-              completeResponse += contentText;
-            }
+            const parts = content.parts;
+            completeResponse = completeResponse.concat(parts);
+
             if (finishReason && usage) {
-              promptTokens = usage.promptTokenCount;
-              completionTokens = usage.candidatesTokenCount;
-              totalTokens = usage.totalTokenCount;
+              promptTokens = usage.promptTokenCount || 0;
+              completionTokens = usage.candidatesTokenCount || 0;
+              totalTokens = usage.totalTokenCount || 0;
             }
 
           } catch (error) {
@@ -61,11 +60,39 @@ export default async function proxyGeminiStream(response: Response,
         }
         controller.enqueue(value);
       }
-      // 有 ChatId 的存储到 messages 表
+      // 有 ChatId 的存储到 messages 表，需要转为数据库的格式
+      const convertedContent = completeResponse.filter(Boolean).map((part): { type: "text"; text: string; } | { type: "image"; mimeType: string; data: string; } | null => {
+        if ('text' in part && part.text) {
+          return {
+            type: 'text' as const,
+            text: part.text
+          };
+        }
+        if ('inlineData' in part && part.inlineData) {
+          return {
+            type: 'image' as const,
+            mimeType: part.inlineData.mimeType,
+            data: 'data:' + part.inlineData.mimeType + ';base64,' + part.inlineData.data,
+          };
+        } 
+        return null;
+      }).filter((item) => item !== null);
+
+      const mergedContent = convertedContent.reduce((acc: any[], curr: { type: string; text?: string; mimeType?: string; data?: string }) => {
+        if (!curr) return acc;
+        const lastElement = acc[acc.length - 1];
+        if (lastElement && lastElement.type === 'text' && curr.type === 'text') {
+          lastElement.text += curr.text;
+          return acc;
+        }
+
+        acc.push(curr);
+        return acc;
+      }, []);
       if (messageInfo.chatId) {
         const toAddMessage = {
           chatId: messageInfo.chatId,
-          content: completeResponse,
+          content: mergedContent,
           role: 'assistant',
           type: 'text' as const,
           inputTokens: promptTokens,

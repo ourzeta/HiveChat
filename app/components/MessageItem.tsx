@@ -282,7 +282,21 @@ const MessageItem = memo((props: {
                     <MarkdownRender content={props.item.reasoninContent as string} />
                   </div>
                 </details>}
-              <MarkdownRender content={props.item.content as string} />
+              {typeof props.item.content === 'string' && <MarkdownRender content={props.item.content} />
+              }
+
+              {
+                Array.isArray(props.item.content) && props.item.content.map((part, index) =>
+                  <div key={index}>
+                    {part.type === 'text' && <MarkdownRender content={part.text} />}
+                    {part.type === 'image' && <AntdImage
+                      className='cursor-pointer'
+                      src={part.data}
+                      preview={{ mask: false }}
+                      style={{ maxWidth: '250px', borderRadius: '4px', boxShadow: '3px 4px 7px 0px #dedede' }} />}
+                  </div>)
+              }
+
               {
                 props.item.mcpTools && props.item.mcpTools.map((mcp, index) => {
                   return <details open={false} key={index} className='flex flex-row bg-gray-100 hover:bg-slate-100 text-gray-800 rounded-md mb-3  border border-gray-200 text-sm'>

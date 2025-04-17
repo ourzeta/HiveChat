@@ -1,7 +1,7 @@
 'use server';
 import { db } from '@/app/db';
 import { auth } from "@/auth";
-import { MCPToolResponse } from '@/types/llm';
+import { MCPToolResponse, MessageContent } from '@/types/llm';
 import { eq, and, asc } from 'drizzle-orm';
 import { messages } from '@/app/db/schema';
 import { searchResultType, WebSearchResponse } from '@/types/search';
@@ -70,17 +70,7 @@ export const getMessagesInServer = async (chatId: string) => {
 export const addMessageInServer = async (message: {
   chatId: string,
   role: string,
-  content: string | Array<
-    {
-      type: 'text';
-      text: string;
-    }
-    | {
-      type: 'image';
-      mimeType: string;
-      data: string;
-    }
-  >,
+  content: MessageContent,
   reasoninContent?: string,
   searchEnabled?: boolean,
   searchStatus?: searchResultType,

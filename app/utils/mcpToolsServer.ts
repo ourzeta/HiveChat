@@ -22,10 +22,6 @@ export async function callMCPTool(tool: MCPTool): Promise<any> {
         baseUrl: server.baseUrl,
         isActive: true,
       }
-      console.log('------------serverInfo------------')
-      console.log(serverInfo)
-      console.log('------------toolInfo------------')
-      console.log(toolInfo)
       const resp = await mcpService.callTool({ server: serverInfo, ...toolInfo })
       return resp;
     } else {

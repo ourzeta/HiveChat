@@ -11,6 +11,7 @@ import { useTranslations } from 'next-intl';
 const MessageItem = memo((props: {
   item: Message,
   index: number,
+  isConsecutive: boolean;
   role: 'assistant' | 'user' | 'system',
   retryMessage: (index: number) => void,
   deleteMessage: (index: number) => void
@@ -241,9 +242,9 @@ const MessageItem = memo((props: {
         <div className='items-start flex max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
           <div className='flex flex-col h-full'>
             {ProviderAvatar}
-            {/* <div className="flex justify-center h-0 grow">
+            {props.isConsecutive && <div className="flex justify-center h-0 grow">
               <div className="h-full border-l border-dashed border-gray-300 my-1"></div>
-            </div> */}
+            </div>}
           </div>
           <div className='flex flex-col w-0 grow group'>
             <div className='px-3 py-2 ml-2  bg-gray-100  text-gray-600 w-full grow markdown-body answer-content rounded-xl'>

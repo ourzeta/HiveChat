@@ -371,6 +371,16 @@ export default class ChatGPTApi implements LLMApi {
               if (thinkContent) {
                 this.reasoning_content += thinkContent;
               }
+            }
+            // 智谱等特殊情况， <think> 标签可能被拆分在不同 chunk 中
+            else if ((this.answer + deltaContent).includes('<think>')) {
+              this.isThinking = true;
+              const text = this.answer + deltaContent;
+              const thinkContent = text.slice(text.indexOf('<think>') + 7).trim();
+              if (thinkContent) {
+                this.reasoning_content = thinkContent;
+              }
+              this.answer = '';
             } else {
               this.answer += deltaContent;
             }
@@ -380,6 +390,19 @@ export default class ChatGPTApi implements LLMApi {
               const thinkContent = deltaContent.slice(0, -8).trim();
               if (thinkContent) {
                 this.reasoning_content += thinkContent;
+              }
+            } 
+            // 智谱等特殊情况， </think> 标签可能被拆分在不同 chunk 中
+            else if ((this.reasoning_content + deltaContent).includes('</think>')) {
+              this.isThinking = false;
+              const text = this.reasoning_content + deltaContent;
+              const thinkContent = text.slice(0, text.indexOf('</think>')).trim();
+              if (thinkContent) {
+                this.reasoning_content = thinkContent;
+              }
+              const answerText = text.slice(text.indexOf('</think>') + 8).trim();
+              if (answerText) {
+                this.answer = answerText;
               }
             } else {
               if (deltaContent.trim()) {

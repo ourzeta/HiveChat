@@ -73,7 +73,18 @@ export default async function proxyOpenAiStream(response: Response,
                   if (thinkContent) {
                     completeReasonin += thinkContent;
                   }
-                } else {
+                }
+                // 智谱等特殊情况， <think> 标签可能被拆分在不同 chunk 中
+                else if ((completeResponse + content).includes('<think>')) {
+                  isThinking = true;
+                  const text = completeResponse + content;
+                  const thinkContent = text.slice(text.indexOf('<think>') + 7).trim();
+                  if (thinkContent) {
+                    completeReasonin = thinkContent;
+                  }
+                  completeResponse = '';
+                }
+                else {
                   completeResponse += content;
                 }
               } else {
@@ -83,7 +94,21 @@ export default async function proxyOpenAiStream(response: Response,
                   if (thinkContent) {
                     completeReasonin += thinkContent;
                   }
-                } else {
+                }
+                // 智谱等特殊情况， </think> 标签可能被拆分在不同 chunk 中
+                else if ((completeReasonin + content).includes('</think>')) {
+                  isThinking = false;
+                  const text = completeReasonin + content;
+                  const thinkContent = text.slice(0, text.indexOf('</think>')).trim();
+                  if (thinkContent) {
+                    completeReasonin = thinkContent;
+                  }
+                  const answerText = text.slice(text.indexOf('</think>') + 8).trim();
+                  if (answerText) {
+                    completeResponse = answerText;
+                  }
+                }
+                else {
                   if (content.trim()) {
                     completeReasonin += content;
                   }

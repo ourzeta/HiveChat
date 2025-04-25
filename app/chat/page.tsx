@@ -13,7 +13,6 @@ import { useLoginModal } from '@/app/contexts/loginModalContext';
 import { addChatInServer } from '@/app/chat/actions/chat';
 import { addMessageInServer } from '@/app/chat/actions/message';
 import { fetchAppSettings } from '@/app/chat/actions/chat';
-import { localDb } from '@/app/db/localDb';
 
 const Home = () => {
   const t = useTranslations('Chat');
@@ -142,9 +141,7 @@ const Home = () => {
         providerId: currentModel.provider.id,
         createdAt: new Date(),
       };
-      localDb.messages.add(toAddMessage);
       await addMessageInServer(toAddMessage);
-      localStorage.setItem('f', 'home');
       router.push(`/chat/${result.data?.id}?f=home`);
     }
   };

@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button, Input, Tooltip, Modal, Popover, Skeleton, message, Image as AntdImage } from "antd";
-import { PictureOutlined, ClearOutlined, FieldTimeOutlined, ArrowUpOutlined, GlobalOutlined } from '@ant-design/icons';
+import { PictureOutlined, ClearOutlined, FieldTimeOutlined, ArrowUpOutlined, GlobalOutlined, DownOutlined } from '@ant-design/icons';
 import { Square } from '@icon-park/react';
 import Eraser from '@/app/images/eraser.svg'
 import CloseIcon from '@/app/images/close.svg'
@@ -29,6 +29,7 @@ export const MessageList = (props: { chat_id: string }) => {
   const messageListRef = useRef<HTMLDivElement>(null);
   const [historySettingOpen, SetHistorySettingOpen] = useState(false);
   const [mcpServerSelectOpen, SetMcpServerSelectOpen] = useState(false);
+  const [stableShowScrollButton, setStableShowScrollButton] = useState(false);
   const {
     input,
     chat,
@@ -79,7 +80,10 @@ export const MessageList = (props: { chat_id: string }) => {
       const scrollToBottom = () => {
         if (messageListRef.current) {
           try {
-            messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
+            messageListRef.current.scrollTo({
+              top: messageListRef.current.scrollHeight,
+              behavior: 'smooth'
+            });
           } catch (error) {
             console.error('Scroll error:', error);
           }
@@ -102,10 +106,14 @@ export const MessageList = (props: { chat_id: string }) => {
     try {
       const isNearBottom = chatElement.scrollHeight - chatElement.scrollTop <= chatElement.clientHeight + 20;
       setIsUserScrolling(!isNearBottom);
+      
+      if (responseStatus !== 'pending' || isUserScrolling) {
+        setStableShowScrollButton(!isNearBottom && chatElement.scrollHeight > chatElement.clientHeight + 50);
+      }
     } catch (error) {
       console.error('Scroll calculation error:', error);
     }
-  }, [setIsUserScrolling]);
+  }, [setIsUserScrolling, responseStatus, isUserScrolling]);
 
   const throttledHandleScroll = useMemo(
     () => throttle(handleScroll, 100, { leading: true, trailing: true }),
@@ -116,6 +124,26 @@ export const MessageList = (props: { chat_id: string }) => {
       throttledHandleScroll.cancel();
     };
   }, [throttledHandleScroll]);
+
+  // 添加一个useEffect来初始化滚动按钮状态
+  useEffect(() => {
+    // 组件挂载后或消息列表变化时检查滚动状态
+    const checkInitialScrollState = () => {
+      const chatElement = messageListRef.current;
+      if (!chatElement) return;
+      
+      try {
+        const isNearBottom = chatElement.scrollHeight - chatElement.scrollTop <= chatElement.clientHeight + 20;
+        const shouldShowButton = !isNearBottom && chatElement.scrollHeight > chatElement.clientHeight + 50;
+        setStableShowScrollButton(shouldShowButton);
+      } catch (error) {
+        console.error('Initial scroll check error:', error);
+      }
+    };
+    
+    // 使用requestAnimationFrame确保DOM已完全渲染
+    requestAnimationFrame(checkInitialScrollState);
+  }, [messageList, responseMessage.content]);
 
   useEffect(() => {
     setWebSearchEnabled(false)
@@ -160,10 +188,36 @@ export const MessageList = (props: { chat_id: string }) => {
     }
 
   }
+
+  const scrollToBottom = () => {
+    if (messageListRef.current) {
+      messageListRef.current.scrollTo({
+        top: messageListRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+      setIsUserScrolling(false);
+    }
+  };
+
   return (
     <>
       {contextHolder}
       <ChatHeader />
+      {stableShowScrollButton && (
+        <Button
+          shape="circle"
+          icon={<DownOutlined />}
+          onClick={scrollToBottom}
+          style={{
+            position: 'absolute',
+            right: '50%',
+            bottom: '150px',
+            zIndex: '100',
+            boxShadow: 'rgb(173 164 164 / 21%) 1px 1px 3px 3px',
+            transform: 'translateX(-50%)'
+          }}
+        />
+      )}
       <div onScroll={throttledHandleScroll} ref={messageListRef} className='flex w-full flex-col h-0 px-2 grow py-6 relative overflow-y-auto leading-7 chat-list text-sm'>
         {!isPending && chat?.prompt && <div className="flex container mx-auto max-w-screen-md mb-4 w-full flex-col justify-center items-center">
           <div className='flex max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-col pr-4 pl-4'>

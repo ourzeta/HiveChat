@@ -7,7 +7,7 @@ import McpIcon from "@/app/images/mcp.svg";
 import CloseIcon from '@/app/images/close.svg';
 import McpServerSelect from '@/app/components/McpServerSelect';
 import { fileToBase64 } from '@/app/utils';
-import { ArrowUpOutlined } from '@ant-design/icons';
+import { ArrowUpOutlined, Loading3QuartersOutlined } from '@ant-design/icons';
 import { LLMModel } from '@/types/llm';
 import useMcpServerStore from '@/app/store/mcp';
 import useGlobalConfigStore from '@/app/store/globalConfig';
@@ -278,7 +278,7 @@ const AdaptiveTextarea = (props: {
                   style={{ backgroundColor: '#6ba7fc', color: '#fff', border: 'none' }}
                   disabled
                   shape="circle"
-                  icon={<ArrowUpOutlined color='#fff' />} />
+                  icon={pending ? <Loading3QuartersOutlined spin color='#fff' /> : <ArrowUpOutlined color='#fff' />} />
                 :
                 <Button
                   type="primary"

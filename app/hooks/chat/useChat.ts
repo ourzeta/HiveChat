@@ -8,7 +8,6 @@ import useModelListStore from '@/app/store/modelList';
 import { getChatInfoInServer } from '@/app/chat/actions/chat';
 import { addMessageInServer, getMessagesInServer, deleteMessageInServer, clearMessageInServer, updateMessageWebSearchInServer } from '@/app/chat/actions/message';
 import useGlobalConfigStore from '@/app/store/globalConfig';
-import { localDb } from '@/app/db/localDb';
 import { getSearchResult } from '@/app/chat/actions/chat';
 import { searchResultType, WebSearchResponse } from '@/types/search';
 import { REFERENCE_PROMPT } from '@/app/config/prompts';
@@ -82,7 +81,6 @@ const useChat = (chatId: string) => {
     searchResponse?: WebSearchResponse,
     mcpTools?: MCPTool[]
   ) => {
-    let lastUpdate = Date.now() - 81;
     setResponseStatus("pending");
     const options: ChatOptions = {
       messages: messages,
@@ -90,10 +88,7 @@ const useChat = (chatId: string) => {
       chatId: chatId,
       mcpTools,
       onUpdate: (responseContent: ResponseContent) => {
-        const now = Date.now();
-        if (now - lastUpdate < 80) return; // 如果距离上次更新小于 80ms，则不更新
         setResponseMessage(responseContent);
-        lastUpdate = now;
       },
       onFinish: async (responseContent: ResponseContent, shouldContinue?: boolean) => {
         const respMessage: Message = {
@@ -369,7 +364,6 @@ const useChat = (chatId: string) => {
     } else {
       // 单独处理重试的逻辑
       setResponseStatus("pending");
-      setIsUserScrolling(false);
       setInput('');
       const messages: RequestMessage[] = prepareMessageFromIndex(index);
       sendMessage(messages);
@@ -378,64 +372,29 @@ const useChat = (chatId: string) => {
   }
 
   useEffect(() => {
-    const fetchMessages = async () => {
+    const initializeChatData = async () => {
       try {
+        setIsPending(true);
+        const { status, data } = await getChatInfoInServer(chatId);
+        if (status === 'success') {
+          initializeChat(data!);
+          if (data?.defaultProvider && data?.defaultModel) {
+            setCurrentModelExact(data.defaultProvider, data.defaultModel);
+          }
+        }
+        
         let messageList: Message[] = [];
         const result = await getMessagesInServer(chatId);
         if (result.status === 'success') {
-          messageList = result.data as Message[]
+          messageList = result.data as Message[];
         }
         setMessageList(messageList);
-        let tmpUserSendCount = 0;
-        messageList.forEach((item) => {
-          if (item.role === "user") {
-            tmpUserSendCount = tmpUserSendCount + 1;
-          }
-        });
-        setUserSendCount(tmpUserSendCount);
-      } catch (error) {
-        console.error('Error fetching items from database:', error);
-      }
-    };
-
-    const fetchLocalMessages = async () => {
-      const localMessage = await localDb.messages.where({ 'chatId': chatId }).toArray();
-      if (localMessage[0].searchEnabled) {
-        setWebSearchEnabled(localMessage[0].searchEnabled);
-      }
-      setMessageList(localMessage);
-      setUserSendCount(1);
-      await localDb.messages.clear();
-    };
-
-    const fetchChatInfo = async () => {
-      const { status, data } = await getChatInfoInServer(chatId);
-      if (status === 'success') {
-        initializeChat(data!);
-        if (data?.defaultProvider && data?.defaultModel) {
-          setCurrentModelExact(data.defaultProvider, data.defaultModel);
-        }
-      }
-    };
-
-    const initializeChatData = async () => {
-      try {
-        if (localStorage.getItem('f') === 'home') {
-          fetchLocalMessages();
-          localStorage.removeItem('f');
-        } else {
-          setIsPending(true);
-          try {
-            await Promise.all([
-              fetchMessages(),
-              fetchChatInfo()
-            ]);
-          } catch (error) {
-            console.error('Error initializing chat data:', error);
-          } finally {
-            setIsPending(false);
-          }
-        }
+        
+        // 计算用户消息数量
+        const userMessageCount = messageList.filter(item => item.role === "user").length;
+        setUserSendCount(userMessageCount);
+        
+        setIsPending(false);
       } catch (error) {
         console.error('Error in chat initialization:', error);
         setIsPending(false);
@@ -443,51 +402,61 @@ const useChat = (chatId: string) => {
     };
 
     initializeChatData();
-  }, [chatId, setWebSearchEnabled, initializeChat, setCurrentModelExact]);
+  }, [chatId, initializeChat, setCurrentModelExact]);
 
   const shouldSetNewTitleRef = useRef(shouldSetNewTitle);
+  const processedMessageIds = useRef(new Set<string>());
 
   useEffect(() => {
-    const handleHomeEntry = async () => {
-      if (!isFromHome) return;
-
-      try {
-        let existMessages: Message[] = [];
-        const result = await getMessagesInServer(chatId);
-        if (result.status === 'success') {
-          existMessages = result.data as Message[];
+    const handleInitialResponse = async () => {
+      // 使用URL查询参数检测是否来自首页
+      const urlParams = new URLSearchParams(window.location.search);
+      const fromHome = urlParams.get('f') === 'home';
+      
+      if (!fromHome) return;
+      
+      // 清除URL参数
+      router.replace(`/chat/${chatId}`);
+      
+      // 检查是否有未回复的用户消息
+      if (messageList.length === 1 && messageList[0].role === 'user') {
+        const userMessage = messageList[0];
+        // 创建一个消息标识符
+        const messageId = `${userMessage.id || '-'}`;
+        
+        // 检查是否已处理过这条消息
+        if (processedMessageIds.current.has(messageId)) {
+          return;
         }
-        if (existMessages.length === 1 && existMessages[0]['role'] === 'user') {
-          const _searchEnabled = existMessages[0].searchEnabled || false
-          const question = existMessages[0]['content'];
-          let realSendMessage = question;
-          let searchStatus: searchResultType = 'none';
-          let searchResponse: WebSearchResponse | undefined = undefined;
-          if (_searchEnabled) {
-            setResponseStatus('pending');
-            const result = await handleWebSearch(question);
-            realSendMessage = result.realSendMessage;
-            searchStatus = result.searchStatus;
-            searchResponse = result.searchResponse;
-          }
-          const messages = [{
-            role: 'user' as const,
-            content: realSendMessage
-          }];
-          await sendMessage(messages, searchStatus, searchResponse, selectedTools);
-          shouldSetNewTitleRef.current([{
-            role: 'user' as const,
-            content: question
-          }]);
-          router.replace(`/chat/${chatId}`);
+        
+        // 标记消息为已处理
+        processedMessageIds.current.add(messageId);
+        
+        const _searchEnabled = userMessage.searchEnabled || false;
+        const question = userMessage.content;
+        
+        // 处理请求发送
+        let realSendMessage = question;
+        let searchStatus: searchResultType = 'none';
+        let searchResponse = undefined;
+        
+        if (_searchEnabled) {
+          setResponseStatus('pending');
+          const result = await handleWebSearch(question);
+          realSendMessage = result.realSendMessage;
+          searchStatus = result.searchStatus;
+          searchResponse = result.searchResponse;
         }
-      } catch (error) {
-        console.error('Error handling home entry:', error);
+        const messages = [{ role: 'user' as const, content: realSendMessage }];
+        await sendMessage(messages, searchStatus, searchResponse, selectedTools);
+        shouldSetNewTitleRef.current([{ role: 'user' as const, content: question }]);
       }
     };
-
-    handleHomeEntry();
-  }, [isFromHome, chatId, selectedTools, router, sendMessage, handleWebSearch]);
+    
+    if (messageList.length > 0) {
+      handleInitialResponse();
+    }
+  }, [messageList, chatId, selectedTools, router, sendMessage, handleWebSearch]);
 
   return {
     input,

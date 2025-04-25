@@ -55,7 +55,7 @@ const App: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <Sidebar />
         <div
           className={clsx(
-            "h-full w-0 grow flex flex-col transition-all duration-300 ease-in-out overflow-y-auto",
+            "h-full w-0 relative grow flex flex-col transition-all duration-300 ease-in-out overflow-y-auto",
             {
               "md:w-full md:-ml-72": isSidebarCollapsed,
               "w-full": isSidebarCollapsed

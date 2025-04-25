@@ -11,7 +11,6 @@ The application uses Drizzle ORM for database operations.
 - [app/db/schema.ts](mdc:app/db/schema.ts): Database schema definitions
 - [app/db/index.ts](mdc:app/db/index.ts): Database connection setup
 - [app/db/relations.ts](mdc:app/db/relations.ts): Relationship definitions between models
-- [app/db/localDb.ts](mdc:app/db/localDb.ts): Local database configuration
 - [drizzle.config.ts](mdc:drizzle.config.ts): Drizzle ORM configuration
 
 ## Seed Data

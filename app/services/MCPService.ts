@@ -95,7 +95,19 @@ class MCPService {
     console.info(`[MCP] Listing tools for server: ${server.name}`)
     const client = await this.initClient(server)
     try {
-      const { tools } = await client.listTools()
+      // Create a timeout promise that rejects after 20 seconds
+      const timeoutPromise = new Promise<{tools: any[]}>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error(`Timeout: Listing tools on '${server.name}' exceeded 20 seconds`));
+        }, 20000);
+      });
+
+      // Race the actual tool listing against the timeout
+      const { tools } = await Promise.race([
+        client.listTools(),
+        timeoutPromise
+      ]);
+      
       const serverTools: MCPTool[] = []
       tools.map((tool: any) => {
         const serverTool: MCPTool = {
@@ -118,8 +130,21 @@ class MCPService {
     try {
       console.info('[MCP] Calling:', server.name, name, args)
       const client = await this.initClient(server)
-      const result = await client.callTool({ name, arguments: args })
-      return result
+      
+      // Create a timeout promise that rejects after 20 seconds
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error(`Timeout: Tool call '${name}' on '${server.name}' exceeded 20 seconds`));
+        }, 20000);
+      });
+
+      // Race the actual tool call against the timeout
+      const result = await Promise.race([
+        client.callTool({ name, arguments: args }),
+        timeoutPromise
+      ]);
+      
+      return result;
     } catch (error) {
       console.error(`[MCP] Error calling tool ${name} on ${server.name}:`, error)
       throw error

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, ReactNode } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Image from "next/image";
 import Link from 'next/link';
 import clsx from 'clsx';
@@ -42,7 +42,7 @@ const ChatList = () => {
     const nonBotChats = chatList.filter(chat => !chat.isWithBot);
     const top8 = nonBotChats.slice(0, 8);
     const isOver = nonBotChats.length > 8;
-    
+
     const sortedBotChats = chatList
       .filter(chat => chat.isWithBot)
       .sort((a, b) => {
@@ -57,9 +57,9 @@ const ChatList = () => {
         }
         return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       });
-    
-    return { 
-      top8ChatsWithoutBot: top8, 
+
+    return {
+      top8ChatsWithoutBot: top8,
       isOver8: isOver,
       botChats: sortedBotChats
     };
@@ -81,10 +81,7 @@ const ChatList = () => {
         setChatListStatus('done');
       }
     };
-    
-    if (status === 'authenticated') {
-      fetchAllChats();
-    }
+    fetchAllChats();
   }, [status, setChatList, t]);
 
   const handleOpenChange = (isOpen: boolean, chatId: string) => {
@@ -196,7 +193,7 @@ const ChatList = () => {
           </div>
         </Link>
       </div>
-      
+
       <div className="rounded-xl overflow-hidden mt-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         {/* 最近聊天部分 */}
         <MenuSection
@@ -215,7 +212,7 @@ const ChatList = () => {
                   <span className='my-2 text-xs text-gray-400 ml-8'>{t('historyNotice')}</span>
                 </div>
               )}
-              
+
               <ul className="pr-4">
                 {top8ChatsWithoutBot.map((chat) => (
                   <Link key={chat.id} href={`/chat/${chat.id}`}>
@@ -234,7 +231,7 @@ const ChatList = () => {
                     </ChatItem>
                   </Link>
                 ))}
-                
+
                 {isOver8 && (
                   <Link href='/chat/thread/list'>
                     <li
@@ -256,9 +253,9 @@ const ChatList = () => {
           )}
         </MenuSection>
 
-        <MenuSection 
-          title={t('myBots')} 
-          icon={<Spark width={20} height={20} alt='spark' />} 
+        <MenuSection
+          title={t('myBots')}
+          icon={<Spark width={20} height={20} alt='spark' />}
           defaultExpanded={false}
         >
           <ul className="pr-4">
@@ -279,7 +276,7 @@ const ChatList = () => {
                 </div>
               </li>
             </Link>
-            
+
             {botChats.map((chat) => (
               <Link key={chat.id} href={`/chat/${chat.id}`}>
                 <ChatItem
@@ -316,9 +313,9 @@ const ChatList = () => {
           </ul>
         </MenuSection>
       </div>
-      
+
       {/* 编辑聊天名称的弹窗 */}
-      <Modal 
+      <Modal
         title={t('editChatName')}
         open={isEditModalOpen}
         onOk={handleSaveTitle}

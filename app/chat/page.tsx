@@ -31,12 +31,12 @@ const Home = () => {
   }, [status, showLogin]);
 
   useEffect(() => {
-    if (!isPending && modelList.length === 0) {
+    if (!isPending && modelList.length === 0 && status === 'authenticated') {
       setShowGuideAlert(true);
     } else {
       setShowGuideAlert(false);
     }
-  }, [isPending, modelList]);
+  }, [isPending, modelList, status]);
 
   useEffect(() => {
     const fetchDefaultChatModel = async () => {

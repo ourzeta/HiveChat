@@ -90,7 +90,7 @@ const AccountPage = () => {
     <div>
       <div className='flex flex-row justify-between mt-6 p-6 border border-gray-200 rounded-md'>
         <div className='flex items-center w-32'>
-          <span className='text-sm font-medium'>用量信息:</span>
+          <span className='text-sm font-medium'>{t('usage')}:</span>
         </div>
         {
           loading ? <div className='flex items-center w-full'></div>
@@ -103,20 +103,20 @@ const AccountPage = () => {
                   status="normal"
                   format={() => {
                     return <div className='flex flex-col items-center'>
-                      <span className='text-xs'>{usageInfo.currentMonthTotalTokens} / 不限 Tokens</span>
-                      <span className='text-xs text-gray-500'>(本月已用 / 本月上限)</span>
+                      <span className='text-xs'>{usageInfo.currentMonthTotalTokens} / {t('unlimitedTokens')}</span>
+                      <span className='text-xs text-gray-500'>({t('usedThisMonth')} / {t('monthlyLimit')}) </span>
                     </div>
                   }}
                 />
               }
-              {usageInfo?.tokenLimitType === 'limited' &&  usageInfo?.monthlyTokenLimit &&
+              {usageInfo?.tokenLimitType === 'limited' && usageInfo?.monthlyTokenLimit &&
                 <Progress
                   percent={Math.round(usageInfo.currentMonthTotalTokens * 100 / usageInfo.monthlyTokenLimit)}
                   status="normal"
                   format={() => {
                     return <div className='flex flex-col items-center'>
                       <span className='text-xs'>{usageInfo.currentMonthTotalTokens} / {usageInfo.monthlyTokenLimit} Tokens</span>
-                      <span className='text-xs text-gray-500'>(本月已用 / 本月上限)</span>
+                      <span className='text-xs text-gray-500'>({t('usedThisMonth')} / {t('monthlyLimit')})</span>
                     </div>
                   }}
                 />

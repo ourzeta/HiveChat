@@ -68,7 +68,7 @@ export default function RootLayout({
         </div>
         <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/default-models') })}>
           <Link className='w-full flex items-center' href={"/admin/default-models"}>
-            <Assistant style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>默认模型</span>
+            <Assistant style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>{t('defaultModel')}</span>
           </Link>
         </div>
         <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/users') })}>
@@ -78,12 +78,12 @@ export default function RootLayout({
         </div>
         <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/search') })}>
           <Link className='w-full flex items-center' href={"/admin/search"}>
-            <GlobalOutlined style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>搜索设置</span>
+            <GlobalOutlined style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>{t('webSearch')}</span>
           </Link>
         </div>
         <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/mcp') })}>
           <Link className='w-full flex items-center' href={"/admin/mcp"}>
-            <Mcp style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>MCP 服务器</span>
+            <Mcp style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>{t('mcpServers')}</span>
           </Link>
         </div>
         <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/system') })}>

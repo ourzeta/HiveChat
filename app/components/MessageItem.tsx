@@ -365,11 +365,15 @@ const MessageItem = memo((props: {
                   </Button>
                 </Popconfirm>
               </Tooltip>
-              {props.item.totalTokens !== undefined && <>
+              {props.item.totalTokens ? <>
                 <span className='text-xs text-gray-500 ml-2'>Tokens:{props.item.totalTokens?.toLocaleString()}</span>
                 <span className='text-xs text-gray-500 ml-2'>↑{props.item.inputTokens?.toLocaleString()}</span>
                 <span className='text-xs text-gray-500 ml-2'>↓{props.item.outputTokens?.toLocaleString()}</span>
-              </>}
+              </> :
+              <Tooltip title={t('unknownUsage')}>
+                <span className='text-xs text-gray-500 ml-2'>Tokens: - </span>
+              </Tooltip>
+              }
             </div>
           </div>
         </div>

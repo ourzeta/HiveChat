@@ -49,9 +49,9 @@ export type Message = {
   providerId: string;
   model: string;
   type: 'text' | 'image' | 'error' | 'break';
-  inputTokens?: number;
-  outputTokens?: number;
-  totalTokens?: number;
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  totalTokens?: number | null;
   errorType?: string;
   errorMessage?: string;
   createdAt?: Date;

@@ -24,9 +24,9 @@ export default async function proxyOpenAiStream(response: Response,
       let bufferedData = '';
       let completeResponse = '';
       let completeReasonin = '';
-      let promptTokens = 0;
-      let completionTokens = 0;
-      let totalTokens = 0;
+      let promptTokens = null;
+      let completionTokens = null;
+      let totalTokens = null;
       let isThinking = false;
       while (true) {
         const { done, value } = await reader.read();

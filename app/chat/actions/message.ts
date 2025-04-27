@@ -78,9 +78,9 @@ export const addMessageInServer = async (message: {
   providerId: string,
   model: string,
   type: 'text' | 'image' | 'error' | 'break',
-  inputTokens?: number,
-  outputTokens?: number,
-  totalTokens?: number,
+  inputTokens?: number | null,
+  outputTokens?: number | null,
+  totalTokens?: number | null,
   errorType?: string,
   errorMessage?: string,
 }) => {

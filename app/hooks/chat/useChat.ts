@@ -29,7 +29,6 @@ const useChat = (chatId: string) => {
   const { setNewTitle } = useChatListStore();
   const { chatNamingModel } = useGlobalConfigStore();
   const { selectedTools } = useMcpServerStore();
-  const isFromHome = useRouteState();
   const router = useRouter();
 
   useEffect(() => {

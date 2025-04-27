@@ -23,9 +23,9 @@ export default async function proxyGeminiStream(response: Response,
     async start(controller: ReadableStreamDefaultController) {
       let bufferedData = '';
       let completeResponse: Array<{ text: string } | { inlineData: { mimeType: string, data: string } }> = [];
-      let promptTokens = 0;
-      let completionTokens = 0;
-      let totalTokens = 0;
+      let promptTokens = null;
+      let completionTokens = null;
+      let totalTokens = null;
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -74,7 +74,7 @@ export default async function proxyGeminiStream(response: Response,
             mimeType: part.inlineData.mimeType,
             data: 'data:' + part.inlineData.mimeType + ';base64,' + part.inlineData.data,
           };
-        } 
+        }
         return null;
       }).filter((item) => item !== null);
 

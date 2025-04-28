@@ -7,6 +7,7 @@ interface IGlobalMcpServerStore {
   mcpServers: Array<MCPServer & { selected?: boolean }>;
   allTools: MCPTool[];
   selectedTools: MCPTool[];
+  setHasMcpSelected: (hasMcpSelected: boolean) => void;
   setHasUseMcp: (hasUseMcp: boolean) => void;
   setMcpServers: (mcpServers: MCPServer[]) => void;
   changeMcpServerSelect: (name: string, selected: boolean) => void;
@@ -20,6 +21,9 @@ const useMcpServerStore = create<IGlobalMcpServerStore>((set) => ({
   mcpServers: [],
   allTools: [],
   selectedTools: [],
+  setHasMcpSelected: (hasMcpSelected: boolean) => {
+    set({ hasMcpSelected });
+  },
   setHasUseMcp: (hasUseMcp: boolean) => {
     set({ hasUseMcp });
   },
@@ -39,7 +43,7 @@ const useMcpServerStore = create<IGlobalMcpServerStore>((set) => ({
 
       // 从 allTools 中筛选出属于被选中服务器的工具
       const updatedSelectedTools = state.allTools.filter((tool) => {
-        return updatedServers.some((server) => 
+        return updatedServers.some((server) =>
           server.name === tool.serverName && server.selected
         );
       });

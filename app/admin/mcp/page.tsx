@@ -14,7 +14,7 @@ type FormValues = {
 }
 
 const McpPage = () => {
-  const t = useTranslations('Admin.Users');
+  const t = useTranslations('Admin.Mcp');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [toolModalLoading, setToolModalLoading] = useState(false);
@@ -123,44 +123,46 @@ const McpPage = () => {
   return (
     <div className='container max-w-4xl mb-6 px-4 md:px-0 pt-6'>
       <div className='h-4 w-full mb-10'>
-        <h2 className="text-xl font-bold mb-4 mt-6">MCP 服务器</h2>
+        <h2 className="text-xl font-bold mb-4 mt-6">{t('mcpServers')}</h2>
       </div>
       <div className='w-full mb-6 flex flex-row justify-between items-center'>
-        <Button type='primary' onClick={showAddMcpServerModal}>添加服务器</Button>
+        <Button type='primary' onClick={showAddMcpServerModal}>{t('addMcpServer')}</Button>
       </div>
       {fetchStatus ? <><Skeleton active /></> :
         <><div className="overflow-hidden rounded-lg border border-slate-300">
           <table className='border-collapse w-full'>
             <thead>
               <tr className="bg-slate-100 text-sm">
-                <th className='border-r border-slate-300 p-2 w-72'>名称</th>
-                <th className='border-r border-slate-300 p-2'>描述</th>
-                <th className='border-r border-slate-300 p-2 w-28'>状态</th>
-                <th className='border-slate-300 p-2 w-32'>{t('action')}</th>
+                <th className='border-r border-slate-300 p-2 w-72'>{t('name')}</th>
+                <th className='border-r border-slate-300 p-2'>{t('description')}</th>
+                <th className='border-r border-slate-300 p-2 w-28'>{t('status')}</th>
+                <th className='border-slate-300 p-2 w-36'>{t('action')}</th>
               </tr>
             </thead>
             <tbody>
               {mcpServerList.map((mcpServer, index) => (
                 <tr key={mcpServer.name} className="hover:bg-slate-50">
-                  <td className='border-t flex border-r text-sm border-slate-300 p-2 pl-0 justify-between'>
-                    <Button size='small' type='link' onClick={() => { handleShowToolModal(mcpServer.name) }}>{mcpServer.name}</Button>
-                    {mcpServer.type === 'streamableHttp' ?
-                      <Tag style={{ margin: 0 }}>Streamable HTTP</Tag>
-                      : <Tag style={{ margin: 0 }}>SSE</Tag>
-                    }
+                  <td className='border-t  border-r text-sm border-slate-300 p-2 pl-0'>
+                    <div className='flex justify-between'>
+                      <Button size='small' type='link' onClick={() => { handleShowToolModal(mcpServer.name) }}>{mcpServer.name}</Button>
+                      {mcpServer.type === 'streamableHttp' ?
+                        <Tag style={{ margin: 0 }}>Streamable HTTP</Tag>
+                        : <Tag style={{ margin: 0 }}>SSE</Tag>
+                      }
+                    </div>
                   </td>
                   <td className='border-t border-r text-sm border-slate-300 p-2'>{mcpServer.description}</td>
                   <td className='border-t border-r text-sm border-slate-300 p-2 text-center'>{mcpServer.isActive ?
                     <div className='flex flex-row items-center justify-center'>
                       <div className='w-2 h-2 bg-green-500 rounded-full'></div>
-                      <span className='ml-2 text-sm'>已启用</span>
+                      <span className='ml-2 text-sm'>{t('enabled')}</span>
                     </div> :
                     <div className='flex flex-row items-center justify-center'>
                       <div className='w-2 h-2 bg-gray-400 rounded-full'></div>
-                      <span className='ml-2 text-sm'>未启用</span>
+                      <span className='ml-2 text-sm'>{t('disabled')}</span>
                     </div>
                   }</td>
-                  <td className='border-t text-center text-sm w-32 border-slate-300 p-2'>
+                  <td className='border-t text-center text-sm w-36 border-slate-300 p-2'>
                     <Button
                       size='small'
                       className='text-sm'
@@ -189,7 +191,7 @@ const McpPage = () => {
         </>
       }
       <Modal
-        title="添加 MCP 服务器"
+        title={t('addMcpServer')}
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
@@ -202,41 +204,41 @@ const McpPage = () => {
           validateTrigger='onBlur'
 
         >
-          <Form.Item label={<span className='font-medium'>名称</span>} name='name'
+          <Form.Item label={<span className='font-medium'>{t('name')}</span>} name='name'
             validateTrigger='onBlur'
-            rules={[{ required: true, message: '此项为必填' }]}>
+            rules={[{ required: true, message: t('fieldRequired') }]}>
             <Input type='text' />
           </Form.Item>
-          <Form.Item label={<span className='font-medium'>描述</span>} name='description'>
+          <Form.Item label={<span className='font-medium'>{t('description')}</span>} name='description'>
             <Input.TextArea rows={2} />
           </Form.Item>
 
           <Form.Item
             name="type"
-            label={<label htmlFor="mcpType">类型</label>}
+            label={<label htmlFor="mcpType">{t('type')}</label>}
             initialValue="sse"
-            rules={[{ required: true, message: '此项为必填' }]}
+            rules={[{ required: true, message: t('fieldRequired') }]}
           >
             <Radio.Group id="mcpType">
-              <Radio value="sse">服务器发送事件(SSE)</Radio>
-              <Radio value="streamableHttp">可流式传输的 HTTP (Streamable HTTP)</Radio>
+              <Radio value="sse">{t('sse')}</Radio>
+              <Radio value="streamableHttp">{t('streamableHTTP')}</Radio>
             </Radio.Group>
           </Form.Item>
 
           <Form.Item label={<span className='font-medium'>URL</span>}
             name='baseUrl'
             validateTrigger='onBlur'
-            rules={[{ required: true, message: '此项为必填' }]}>
+            rules={[{ required: true, message: t('fieldRequired') }]}>
             <Input type='url' />
           </Form.Item>
-          <Form.Item label={<span className='font-medium'>启用</span>} name='isActive'>
+          <Form.Item label={<span className='font-medium'>{t('isEnable')}</span>} name='isActive'>
             <Switch defaultChecked={false} value={false} />
           </Form.Item>
         </Form>
       </Modal>
 
       <Modal
-        title="编辑 MCP 服务器"
+        title={t('editMcpServer')}
         open={isEditModalOpen}
         onOk={handleEditOk}
         onCancel={handleEditUserModalCancel}
@@ -248,32 +250,32 @@ const McpPage = () => {
           onFinish={onEditFinish}
           validateTrigger='onBlur'
         >
-          <Form.Item label={<span className='font-medium'>名称</span>} name='name'>
+          <Form.Item label={<span className='font-medium'>{t('name')}</span>} name='name'>
             <Input type='text' disabled />
           </Form.Item>
           <Form.Item name="id" hidden>
             <Input type="hidden" />
           </Form.Item>
-          <Form.Item label={<span className='font-medium'>描述</span>} name='description'>
+          <Form.Item label={<span className='font-medium'>{t('description')}</span>} name='description'>
             <Input.TextArea rows={2} />
           </Form.Item>
           <Form.Item
             name="type"
-            label="类型"
-            rules={[{ required: true, message: '此项为必填' }]}
+            label={t('type')}
+            rules={[{ required: true, message: t('fieldRequired') }]}
           >
             <Radio.Group>
-              <Radio value="sse">服务器发送事件(SSE)</Radio>
-              <Radio value="streamableHttp">可流式传输的 HTTP (Streamable HTTP)</Radio>
+              <Radio value="sse">{t('sse')}</Radio>
+              <Radio value="streamableHttp">{t('streamableHTTP')}</Radio>
             </Radio.Group>
           </Form.Item>
           <Form.Item label={<span className='font-medium'>URL</span>}
             name='baseUrl'
             validateTrigger='onBlur'
-            rules={[{ required: true, message: '此项为必填' }]}>
+            rules={[{ required: true, message: t('fieldRequired') }]}>
             <Input type='url' />
           </Form.Item>
-          <Form.Item label={<span className='font-medium'>启用</span>} name='isActive'>
+          <Form.Item label={<span className='font-medium'>{t('isEnable')}</span>} name='isActive'>
             <Switch defaultChecked={false} value={false} />
           </Form.Item>
         </Form>
@@ -281,7 +283,7 @@ const McpPage = () => {
 
 
       <Modal
-        title="查看工具"
+        title={t('tools')}
         open={isToolsModalOpen}
         onOk={handleOk}
         loading={toolModalLoading}
@@ -300,8 +302,8 @@ const McpPage = () => {
           <table className='border-collapse w-full'>
             <thead>
               <tr className="bg-slate-100">
-                <th className='border-b border-r border-slate-300 p-2 w-32'>名称</th>
-                <th className='border-b  border-slate-300 p-2 w-72'>描述</th>
+                <th className='border-b border-r border-slate-300 p-2 w-32'>{t('name')}</th>
+                <th className='border-b  border-slate-300 p-2 w-72'>{t('description')}</th>
               </tr>
             </thead>
             <tbody>

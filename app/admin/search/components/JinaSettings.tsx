@@ -4,6 +4,7 @@ import { Button, Input, message } from 'antd';
 import Link from 'next/link';
 import JinaSearch from '@/app/images/JinaSearch.svg';
 import { checkSearch } from '@/app/admin/search/actions';
+import { useTranslations } from 'next-intl';
 
 interface JinaSettingsProps {
   apiKey: string | null;
@@ -16,6 +17,7 @@ const JinaSettings: React.FC<JinaSettingsProps> = ({
   onApiKeyChange,
   onApiKeyBlur,
 }) => {
+  const t = useTranslations('Admin.Search');
   const [isChecking, setIsChecking] = useState(false);
   const check = async () => {
     setIsChecking(true);
@@ -33,23 +35,23 @@ const JinaSettings: React.FC<JinaSettingsProps> = ({
         <JinaSearch style={{ width: '40px', height: '20px' }} />
         <h3 className='ml-2'>Jina</h3>
       </div>
-      <span className='text-sm font-medium'>API 密钥</span>
+      <span className='text-sm font-medium'>{t('apikey')}</span>
       <div className='flex items-center my-2 w-full'>
         <Input
           name='apikey'
           value={apiKey || ''}
           onChange={onApiKeyChange}
           onBlur={onApiKeyBlur}
-          placeholder="请输入 API 密钥"
+          placeholder={t('apikeyRequiredNotice')}
         />
         <Button
           className='ml-2 w-24'
           loading={isChecking}
           onClick={() => { check() }}
-        >检查</Button>
+        >{t('check')}</Button>
       </div>
       <Link href="https://jina.ai/" target='_blank'>
-        <Button type='link' size='small' style={{ padding: 0 }}>获取密钥</Button>
+        <Button type='link' size='small' style={{ padding: 0 }}>{t('getApikey')}</Button>
       </Link>
     </div>
   );

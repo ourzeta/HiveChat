@@ -131,7 +131,7 @@ const UserListTab = () => {
     <div className='container mb-6 px-4 md:px-0 pt-6'>
       <div className='w-full mb-6 flex flex-row justify-between items-center'>
         <section>
-          分组：
+          <span className='text-sm mr-2'>{t('group')}</span>
           <Select
             className='w-40'
             defaultValue={groupsAndAllSelectOptions[0].value}

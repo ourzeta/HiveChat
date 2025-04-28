@@ -193,6 +193,7 @@
       "checkConnectivity": "API Check"
     },
     "Users": {
+      "group": "Group",
       "userList": "User List",
       "addUser": "Add User",
       "role": "Role",
@@ -222,6 +223,38 @@
       "defaultGroup": "Default Group",
       "defaultGroupCannotDelete": "Default Group cannot be deleted",
       "deleteGroupSuccess": "Deleted successfully"
+    },
+    "Search": {
+      "webSearch": "Web Search",
+      "enableWebSearch": "Enable Web Search",
+      "enableWebSearchNotice": "When enabled, the AI answers based on search engine results.",
+      "webSearchProvider": "Web SearchProvider",
+      "apikey": "API Key",
+      "getApikey": "Get API Key",
+      "general": "General",
+      "searchResult": "Number of search results",
+      "defaultCount": "default",
+      "apikeyRequiredNotice": "Please enter API key",
+      "check": "Check"
+    },
+    "Mcp": {
+      "mcpServers": "MCP Servers",
+      "addMcpServer": "Add MCP Server",
+      "name": "Name",
+      "description": "Description",
+      "status": "Status",
+      "type": "Type",
+      "action": "Action",
+      "edit": "Edit",
+      "delete": "Delete",
+      "isEnable": "Enable",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "sse": "SSE",
+      "streamableHTTP": "Streamable HTTP",
+      "tools": "Tools",
+      "fieldRequired": "Required",
+      "editMcpServer": "Edit MCP Server"
     },
     "System": {
       "system": "System Settings",

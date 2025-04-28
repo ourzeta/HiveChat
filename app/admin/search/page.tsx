@@ -5,6 +5,7 @@ import { fetchAppSettings, setAppSettings } from "@/app/admin/system/actions";
 import { getDefaultSearchEngineConfig, updateSearchEngineConfig, setSearchEngineConfig } from "./actions";
 import TavilySettings from './components/TavilySettings';
 import JinaSettings from './components/JinaSettings';
+import { useTranslations } from 'next-intl';
 
 interface SearchEngineConfig {
   id: string;
@@ -16,6 +17,7 @@ interface SearchEngineConfig {
 }
 
 const SearchPage = () => {
+  const t = useTranslations('Admin.Search');
   const [loading, setLoading] = useState(true);
   const [searchEnable, setSearchEnable] = useState(false);
   const [currentSearchEngineConfig, setCurrentSearchEngineConfig] = useState<SearchEngineConfig>();
@@ -136,13 +138,13 @@ const SearchPage = () => {
   return (
     <div className='container max-w-4xl mb-6 px-4 md:px-0 pt-6'>
       <div className='h-4 w-full mb-10'>
-        <h2 className="text-xl font-bold mb-4 mt-6">搜索设置</h2>
+        <h2 className="text-xl font-bold mb-4 mt-6">{t('webSearch')}</h2>
       </div>
 
       <div className='flex flex-row justify-between mt-6 p-6 border border-gray-200 rounded-md items-center'>
         <div className='flex flex-col items-start'>
-          <span className='text-sm font-medium'>开启网络搜索</span>
-          <span className='text-xs text-gray-500'>开启后会先通过搜索引擎搜索相关内容，大模型将基于搜索结果进行回答。</span>
+          <span className='text-sm font-medium'>{t('enableWebSearch')}</span>
+          <span className='text-xs text-gray-500'>{t('enableWebSearchNotice')}</span>
         </div>
         <Switch checked={searchEnable} onChange={handleSearchEnable} />
       </div>
@@ -151,7 +153,7 @@ const SearchPage = () => {
         <>
           <div className='flex flex-row justify-between mt-6 p-6 border border-gray-200 rounded-md'>
             <div className='flex items-center'>
-              <span className='text-sm font-medium'>搜索服务商</span>
+              <span className='text-sm font-medium'>{t('webSearchProvider')}</span>
             </div>
             <div className='flex items-center'>
               <Select
@@ -183,7 +185,7 @@ const SearchPage = () => {
           )}
 
           <div className='flex flex-col items-start mt-6 p-6 border border-gray-200 rounded-md'>
-            <h3 className='text-base font-medium border-b w-full mb-4 pb-2'>常规设置</h3>
+            <h3 className='text-base font-medium border-b w-full mb-4 pb-2'>{t('general')}</h3>
 
             {/* <div className='flex flex-row justify-between items-center my-2 w-full'>
               <span className='text-sm font-medium'>搜索增强模式</span>
@@ -193,13 +195,13 @@ const SearchPage = () => {
               />
             </div> */}
             <div className='flex flex-row justify-between items-center my-2 w-full'>
-              <span className='text-sm font-medium'>搜索结果数</span>
+              <span className='text-sm font-medium'>{t('searchResult')}</span>
               <div className='min-w-64'>
                 <Slider
                   value={currentSearchEngineConfig?.maxResults}
                   max={20}
                   min={1}
-                  marks={{ 1: '1', 20: '20', 5: '默认' }}
+                  marks={{ 1: '1', 20: '20', 5: t('defaultCount') }}
                   onChangeComplete={handleMaxResultsChangeCompleted}
                   onChange={handleMaxResultsChange}
                 />

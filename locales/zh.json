@@ -193,6 +193,7 @@
       "checkConnectivity": "检查连通性"
     },
     "Users": {
+      "group": "分组",
       "userList": "用户列表",
       "addUser": "添加用户",
       "role": "角色",
@@ -222,6 +223,38 @@
       "defaultGroup": "默认分组",
       "defaultGroupCannotDelete": "默认分组无法删除",
       "deleteGroupSuccess": "删除成功"
+    },
+    "Search": {
+      "webSearch": "搜索设置",
+      "enableWebSearch": "开启网络搜索",
+      "enableWebSearchNotice": "开启后会先通过搜索引擎搜索相关内容，大模型将基于搜索结果进行回答。",
+      "webSearchProvider": "搜索服务商",
+      "apikey": "API 密钥",
+      "getApikey": "获取密钥",
+      "general": "常规设置",
+      "searchResult": "搜索结果数",
+      "defaultCount": "默认",
+      "apikeyRequiredNotice": "请输入 API 密钥",
+      "check": "检查"
+    },
+    "Mcp": {
+      "mcpServers": "MCP 服务器",
+      "addMcpServer": "添加 MCP 服务器",
+      "name": "名称",
+      "description": "描述",
+      "status": "状态",
+      "type": "类型",
+      "action": "操作",
+      "edit": "编辑",
+      "delete": "删除",
+      "isEnable": "启用",
+      "enabled": "已启用",
+      "disabled": "未启用",
+      "sse": "服务器发送事件(SSE)",
+      "streamableHTTP": "可流式传输的 HTTP (Streamable HTTP)",
+      "tools": "查看工具",
+      "fieldRequired": "此项目为必填",
+      "editMcpServer": "编辑 MCP 服务器"
     },
     "System": {
       "system": "系统设置",

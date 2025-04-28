@@ -7,11 +7,12 @@ import useModelListStore from '@/app/store/modelList';
 import { fetchAvailableLlmModels, fetchAllProviders } from '@/app/admin/llm/actions';
 
 const AppPrepare = () => {
-  const { setHasUseMcp, setMcpServers, setAllTools } = useMcpServerStore();
+  const { setHasUseMcp, setHasMcpSelected, setMcpServers, setAllTools } = useMcpServerStore();
   const { setChatNamingModel, setSearchEnable } = useGlobalConfigStore();
   useEffect(() => {
     const initializeMcpInfo = async () => {
       const { mcpServers, tools } = await getMcpServersAndAvailableTools();
+      setHasMcpSelected(false);
       if (mcpServers.length > 0) {
         setHasUseMcp(true);
         setMcpServers(mcpServers.map(server => ({
@@ -36,7 +37,7 @@ const AppPrepare = () => {
       }
     }
     initializeMcpInfo();
-  }, [setHasUseMcp, setMcpServers, setAllTools]);
+  }, [setHasUseMcp, setMcpServers, setHasMcpSelected, setAllTools]);
 
   const { initModelList, setCurrentModel, setIsPending, initAllProviderList } = useModelListStore();
   useEffect(() => {

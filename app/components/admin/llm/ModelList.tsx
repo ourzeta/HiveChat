@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Divider, Tooltip, Button, Popconfirm, message } from 'antd';
 import { EyeInvisibleOutlined, DeleteOutlined, SettingOutlined, PictureOutlined, ToolOutlined, HolderOutlined } from '@ant-design/icons';
 import useModelListStore from '@/app/store/modelList';
 import { LLMModel } from '@/types/llm';
 import { changeSelectInServer, deleteCustomModelInServer, saveModelsOrder } from '@/app/admin/llm/actions';
 import ManageAllModelModal from '@/app/components/admin/llm/ManageAllModelModal';
-import Sortable from 'sortablejs';
+import Sortable, { SortableEvent } from 'sortablejs';
 import { useTranslations } from 'next-intl';
 
 interface ModelListProps {
@@ -25,41 +25,53 @@ const ModelList: React.FC<ModelListProps> = ({
 }) => {
   const t = useTranslations('Admin.Models');
   const [isManageAllModalOpen, setIsManageAllModalOpen] = useState(false);
+  const [isSorting, setIsSorting] = useState(false);
   const { modelList, setModelList, changeSelect, deleteCustomModel } = useModelListStore();
   const listRef = useRef<HTMLDivElement>(null);
   const sortableRef = useRef<Sortable | null>(null);
 
+  const handleSortEnd = useCallback(async (evt: SortableEvent) => {
+    if (evt.oldIndex === undefined || evt.newIndex === undefined) {
+      return;
+    }
+
+    setIsSorting(true);
+    try {
+      const newModels = [...modelList];
+      const [movedItem] = newModels.splice(evt.oldIndex, 1);
+      newModels.splice(evt.newIndex, 0, movedItem);
+
+      const newOrder = newModels.map((model, index) => ({ modelId: model.id, order: index }));
+      setModelList(newModels);
+      await saveModelsOrder(providerId, newOrder);
+      message.success(t('saveSuccess'));
+    } catch (error) {
+      console.error('Failed to update order:', error);
+      message.error(t('saveFailed'));
+      // Revert to original order if save fails
+      setModelList([...modelList]);
+    } finally {
+      setIsSorting(false);
+    }
+  }, [modelList, setModelList, providerId, t]);
+
   useEffect(() => {
-    if (listRef.current) {
+    if (listRef.current && !sortableRef.current) {
       sortableRef.current = Sortable.create(listRef.current, {
         animation: 200,
         handle: '.handle',
-        onStart: (evt) => {
-        },
-        onEnd: async (evt) => {
-          const newModels = [...modelList];
-          const [movedItem] = newModels.splice(evt.oldIndex!, 1);
-          newModels.splice(evt.newIndex!, 0, movedItem);
-
-          setModelList(newModels);
-
-          // 将新的顺序发送到服务器
-          const newOrder = newModels.map((model, index) => ({ modelId: model.id, order: index }));
-          try {
-            await saveModelsOrder(providerId, newOrder);
-          } catch (error) {
-            console.error('Failed to update order:', error);
-          }
-        },
+        onEnd: handleSortEnd,
+        disabled: isSorting,
       });
     }
 
     return () => {
       if (sortableRef.current) {
         sortableRef.current.destroy();
+        sortableRef.current = null;
       }
     };
-  }, [modelList, setModelList, providerId]);
+  }, [handleSortEnd, isSorting]);
 
   const handleChangeSelect = async (modelName: string, selected: boolean) => {
     await changeSelectInServer(modelName, selected);

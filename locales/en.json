@@ -189,6 +189,7 @@
       "cancelText": "Cancel",
       "addModelSuccess": "Added successfully",
       "saveSuccess": "Success",
+      "saveFailed": "Failed",
       "selectModelToCheck": "Select a Model",
       "checkConnectivity": "API Check"
     },

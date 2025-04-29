@@ -159,7 +159,7 @@ const Home = () => {
       }
       <div className='flex w-full grow flex-col items-center justify-center h-full'>
         <div className='container max-w-3xl mx-auto -mt-16 relative items-center justify-center'>
-          <h2 className='text-3xl font-bold text-center mb-8'>{greetingText && <>👋 {greetingText}{t('welcomeNotice')}</>}&nbsp;</h2>
+          <h2 className='text-2xl font-bold text-center mb-8'>{greetingText && <>👋 {greetingText}{t('welcomeNotice')}</>}&nbsp;</h2>
           <AdaptiveTextarea model={currentModel} submit={newChat} />
         </div>
       </div>

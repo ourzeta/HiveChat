@@ -359,7 +359,8 @@ export default class ChatGPTApi implements LLMApi {
         //------------end-of-toolCall----------
 
         const deltaContent = delta?.content;
-        const deltaReasoningContent = delta?.reasoning_content;
+        // openRouter 放在 reasoning 字段中
+        const deltaReasoningContent = delta?.reasoning_content || delta?.reasoning;
         if (deltaReasoningContent) {
           this.reasoning_content += deltaReasoningContent;
         }

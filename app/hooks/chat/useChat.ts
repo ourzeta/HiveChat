@@ -11,7 +11,6 @@ import useGlobalConfigStore from '@/app/store/globalConfig';
 import { getSearchResult } from '@/app/chat/actions/chat';
 import { searchResultType, WebSearchResponse } from '@/types/search';
 import { REFERENCE_PROMPT } from '@/app/config/prompts';
-import useRouteState from '@/app/hooks/chat/useRouteState';
 import { useRouter } from 'next/navigation'
 
 const useChat = (chatId: string) => {
@@ -23,7 +22,6 @@ const useChat = (chatId: string) => {
   const [chatBot, setChatBot] = useState<LLMApi | null>(null);
   const [responseMessage, setResponseMessage] = useState<ResponseContent>({ content: '', reasoningContent: '' });
   const [isUserScrolling, setIsUserScrolling] = useState(false);
-  const [input, setInput] = useState('');
   const [userSendCount, setUserSendCount] = useState(0);
   const { chat, initializeChat, setWebSearchEnabled, webSearchEnabled, historyType, historyCount } = useChatStore();
   const { setNewTitle } = useChatListStore();
@@ -43,11 +41,6 @@ const useChat = (chatId: string) => {
       }
     };
   }, [currentModel]);
-
-
-  const handleInputChange = (e: any) => {
-    setInput(e.target.value);
-  };
 
   const chatNamingModelStable = useMemo(() => chatNamingModel, [chatNamingModel]);
   const shouldSetNewTitle = useCallback((messages: RequestMessage[]) => {
@@ -289,7 +282,6 @@ const useChat = (chatId: string) => {
       type: 'text' as const,
     };
 
-    setInput('');
     setMessageList((m) => ([...m, { ...currentMessage, createdAt: new Date() }]));
     addMessageInServer(currentMessage);
     setUserSendCount(userSendCount + 1);
@@ -363,7 +355,6 @@ const useChat = (chatId: string) => {
     } else {
       // 单独处理重试的逻辑
       setResponseStatus("pending");
-      setInput('');
       const messages: RequestMessage[] = prepareMessageFromIndex(index);
       sendMessage(messages);
       shouldSetNewTitle(messages)
@@ -458,7 +449,6 @@ const useChat = (chatId: string) => {
   }, [messageList, chatId, selectedTools, router, sendMessage, handleWebSearch]);
 
   return {
-    input,
     chat,
     messageList,
     searchStatus,
@@ -469,7 +459,6 @@ const useChat = (chatId: string) => {
     isUserScrolling,
     currentModel,
     isPending,
-    handleInputChange,
     handleSubmit,
     sendMessage,
     shouldSetNewTitle,

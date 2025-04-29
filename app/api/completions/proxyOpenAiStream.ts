@@ -64,7 +64,8 @@ export default async function proxyOpenAiStream(response: Response,
               continue;
             }
             const { delta, finish_reason } = parsedData.choices[0];
-            const { content, reasoning_content } = delta;
+            const { content } = delta;
+            const reasoning_content = delta?.reasoning_content || delta?.reasoning;
             if (content) {
               if (!isThinking) {
                 if (content.startsWith("<think>")) {

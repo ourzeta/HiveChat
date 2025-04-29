@@ -11,6 +11,7 @@ import { ArrowUpOutlined, Loading3QuartersOutlined } from '@ant-design/icons';
 import { LLMModel } from '@/types/llm';
 import useMcpServerStore from '@/app/store/mcp';
 import useGlobalConfigStore from '@/app/store/globalConfig';
+import useChatStore from '@/app/store/chat';
 import clsx from 'clsx';
 import { useTranslations } from 'next-intl';
 import SearchButton from './SearchButton';
@@ -32,6 +33,7 @@ const AdaptiveTextarea = (props: {
   const testSpanRef = useRef<HTMLSpanElement | null>(null);
   const [mcpServerSelectOpen, SetMcpServerSelectOpen] = useState(false);
   const { searchEnable: remoteSearchEnable } = useGlobalConfigStore();
+  const { setWebSearchEnabled } = useChatStore();
   const [localSearchEnable, setLocalSearchEnable] = useState(false);
   const { hasUseMcp, hasMcpSelected } = useMcpServerStore();
   const { uploadedImages, maxImages, handleImageUpload, removeImage } = useImageUpload();
@@ -214,7 +216,10 @@ const AdaptiveTextarea = (props: {
             <SearchButton
               searchEnable={remoteSearchEnable}
               localSearchEnable={localSearchEnable}
-              onToggle={() => setLocalSearchEnable(!localSearchEnable)}
+              onToggle={() => {
+                setLocalSearchEnable(!localSearchEnable);
+                setWebSearchEnabled(!localSearchEnable);
+              }}
             />
             <div className='pr-2'>
               {hasUseMcp &&

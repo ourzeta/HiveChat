@@ -37,7 +37,7 @@ const ModelList: React.FC<ModelListProps> = ({
 
     setIsSorting(true);
     try {
-      const newModels = [...modelList];
+      const newModels = modelList.filter(i => i.selected);
       const [movedItem] = newModels.splice(evt.oldIndex, 1);
       newModels.splice(evt.newIndex, 0, movedItem);
 

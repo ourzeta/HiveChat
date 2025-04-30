@@ -5,6 +5,7 @@ import { fetchAppSettings, setAppSettings } from "@/app/admin/system/actions";
 import { getDefaultSearchEngineConfig, updateSearchEngineConfig, setSearchEngineConfig } from "./actions";
 import TavilySettings from './components/TavilySettings';
 import JinaSettings from './components/JinaSettings';
+import BochaSettings from './components/BochaSettings';
 import { useTranslations } from 'next-intl';
 
 interface SearchEngineConfig {
@@ -161,6 +162,7 @@ const SearchPage = () => {
                 value={selectedEngine}
                 onChange={handleEngineChange}
                 options={[
+                  { label: '博查', value: 'bocha' },
                   { label: 'Tavily', value: 'tavily' },
                   { label: 'Jina', value: 'jina' }
                 ]}
@@ -170,6 +172,14 @@ const SearchPage = () => {
 
           {selectedEngine === 'tavily' && (
             <TavilySettings
+              apiKey={currentSearchEngineConfig?.apiKey ?? null}
+              onApiKeyChange={handleApikeyChange}
+              onApiKeyBlur={handleApikeyChange}
+            />
+          )}
+
+          {selectedEngine === 'bocha' && (
+            <BochaSettings
               apiKey={currentSearchEngineConfig?.apiKey ?? null}
               onApiKeyChange={handleApikeyChange}
               onApiKeyBlur={handleApikeyChange}

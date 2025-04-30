@@ -13,12 +13,14 @@ import { useLoginModal } from '@/app/contexts/loginModalContext';
 import { addChatInServer } from '@/app/chat/actions/chat';
 import { addMessageInServer } from '@/app/chat/actions/message';
 import { fetchAppSettings } from '@/app/chat/actions/chat';
+import useChatStore from '@/app/store/chat';
 
 const Home = () => {
   const t = useTranslations('Chat');
   const router = useRouter();
   const { status } = useSession();
   const { visible, showLogin, hideLogin } = useLoginModal();
+  const { setWebSearchEnabled } = useChatStore();
   const { modelList, currentModel, setCurrentModelExact, isPending } = useModelListStore();
   const { chatList, setChatList } = useChatListStore();
   const [greetingText, setGreetingText] = useState('');
@@ -89,7 +91,8 @@ const Home = () => {
       }
     }
     setGreetingText(t(getGreeting()));
-  }, [t]);
+    setWebSearchEnabled(false)
+  }, [t, setWebSearchEnabled]);
 
   const newChat = async (
     text: string,

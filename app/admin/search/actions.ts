@@ -73,7 +73,7 @@ export async function setSearchEngineConfig(searchEngineId: string) {
       // If config doesn't exist, create a new one
       const newConfig = {
         id: searchEngineId,
-        name: searchEngineId === 'tavily' ? 'Tavily' : 'Jina',
+        name: searchEngineId,
         apiKey: '',
         isActive: true,
         extractKeywords: false,

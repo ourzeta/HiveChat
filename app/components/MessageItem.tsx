@@ -21,7 +21,6 @@ const MessageItem = memo((props: {
   const { allProviderListByKey } = useModelListStore();
   const [images, setImages] = useState<string[]>([]);
   const [plainText, setPlainText] = useState('');
-  const [isOpen, setIsOpen] = useState(true);
   useEffect(() => {
     if (Array.isArray(props.item.content) && props.item.content.length > 0) {
       const images = props.item.content.filter((item: any) => item.type === 'image').map((item: any) => item.data);
@@ -274,7 +273,7 @@ const MessageItem = memo((props: {
                       className='ml-auto mr-1'
                       style={{
                         color: '#999',
-                        transform: ``,
+                        transform: `rotate(0deg)`,
                         transition: 'transform 0.2s ease'
                       }}
                     />
@@ -305,27 +304,26 @@ const MessageItem = memo((props: {
                     <summary
                       className='flex text-xs flex-row items-center rounded-md p-4'
                       style={{ display: 'flex' }}
-                      onClick={() => { setIsOpen(!isOpen) }}
                     >
-                      <span className='mr-2'>调用 {mcp.tool?.serverName} 的工具： {mcp.tool?.name}</span>
+                      <span className='mr-2'>{t('mcpCall')} {mcp.tool?.serverName} {t('sTool')}： {mcp.tool?.name}</span>
                       {
                         mcp.response.isError ?
-                          <div><CloseCircleOutlined style={{ color: 'red' }} /><span className='ml-1 text-red-600'>调用失败</span></div>
-                          : <div><CheckCircleOutlined style={{ color: 'green' }} /><span className='ml-1 text-green-700'>已完成</span></div>
+                          <div><CloseCircleOutlined style={{ color: 'red' }} /><span className='ml-1 text-red-600'>{t('mcpFailed')}</span></div>
+                          : <div><CheckCircleOutlined style={{ color: 'green' }} /><span className='ml-1 text-green-700'>{t('mcpFinished')}</span></div>
                       }
                       <DownOutlined
                         className='ml-auto mr-1'
                         style={{
                           color: '#999',
-                          transform: `rotate(${isOpen ? -90 : 0}deg)`,
+                          transform: `rotate(-90deg)`,
                           transition: 'transform 0.2s ease'
                         }}
                       />
                     </summary>
                     <div className='p-4 pb-0 text-xs border-t'>
-                      <span className='mb-2 font-medium'>输入参数</span>
+                      <span className='mb-2 font-medium'>{t('mcpInput')}</span>
                       <pre className='scrollbar-thin' style={{ marginTop: '6px' }}>{JSON.stringify(mcp.tool.inputSchema, null, 2)}</pre>
-                      <span className='mb-2 font-medium'>调用返回</span>
+                      <span className='mb-2 font-medium'>{t('mcpOutput')}</span>
                       <pre className='scrollbar-thin bg-white' style={{ marginTop: '6px' }}>{JSON.stringify(mcp.response, null, 2)}</pre>
                     </div>
                   </details>
@@ -370,9 +368,9 @@ const MessageItem = memo((props: {
                 <span className='text-xs text-gray-500 ml-2'>↑{props.item.inputTokens?.toLocaleString()}</span>
                 <span className='text-xs text-gray-500 ml-2'>↓{props.item.outputTokens?.toLocaleString()}</span>
               </> :
-              <Tooltip title={t('unknownUsage')}>
-                <span className='text-xs text-gray-500 ml-2'>Tokens: - </span>
-              </Tooltip>
+                <Tooltip title={t('unknownUsage')}>
+                  <span className='text-xs text-gray-500 ml-2'>Tokens: - </span>
+                </Tooltip>
               }
             </div>
           </div>

@@ -29,6 +29,15 @@
     "setupNotice": "请设置管理员账号和密码，管理员账号设置完成后，此页面将无法访问。"
   },
   "Chat": {
+    "webSearch": "联网搜索",
+    "mcpServer": "MCP 服务器",
+    "mcpTool": "MCP 工具",
+    "mcpInput": "调用返回",
+    "mcpOutput": "MCP 工具",
+    "mcpFailed": "调用失败",
+    "mcpFinished": "已完成",
+    "mcpCall": "调用",
+    "sTool": "的工具",
     "newChat": "新对话",
     "login": "登录",
     "defaultChatName": "新的聊天",

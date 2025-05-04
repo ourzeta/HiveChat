@@ -29,6 +29,15 @@
     "setupNotice": "Please set up the administrator account and password. Once the administrator account is set up, this page will no longer be accessible."
   },
   "Chat": {
+    "webSearch": "Web Search",
+    "mcpServer": "MCP Server",
+    "mcpTool": "MCP Tool",
+    "mcpInput": "Input",
+    "mcpOutput": "Output",
+    "mcpFailed": "Failed",
+    "mcpFinished": "Finished",
+    "mcpCall": "Call",
+    "sTool": "‘s Tool",
     "newChat": "New Chat",
     "login": "Login",
     "defaultChatName": "New Chat",

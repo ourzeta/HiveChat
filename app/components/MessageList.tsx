@@ -94,7 +94,8 @@ export const MessageList = (props: { chat_id: string }) => {
     responseMessage.content,
     responseMessage.reasoningContent,
     responseMessage.mcpTools?.length,
-    isUserScrolling
+    isUserScrolling,
+    messageList.length
   ]);
 
   const handleScroll = useCallback(() => {
@@ -183,7 +184,7 @@ export const MessageList = (props: { chat_id: string }) => {
           variant="filled"
         >
           <GlobalOutlined style={{ width: '12px', height: '12px' }} />
-          <span className="text-xs -ml-1">联网搜索</span>
+          <span className="text-xs -ml-1">{t('webSearch')}</span>
         </Button>
       );
     } else {
@@ -195,7 +196,7 @@ export const MessageList = (props: { chat_id: string }) => {
           onClick={() => setWebSearchEnabled(!webSearchEnabled)}
         >
           <GlobalOutlined style={{ color: 'gray', width: '12px', height: '12px' }} />
-          <span className="text-xs -ml-1 text-gray-500">联网搜索</span>
+          <span className="text-xs -ml-1 text-gray-500">{t('webSearch')}</span>
         </Button>
       );
     }
@@ -264,6 +265,30 @@ export const MessageList = (props: { chat_id: string }) => {
     }, 10);
   };
 
+  // 使用 useMemo 优化消息列表渲染
+  const renderedMessageList = useMemo(() => {
+    return messageList.map((item, index) => {
+      let showLine = false;
+      if (index < messageList.length - 1 && item.role === 'assistant' && messageList[index + 1]?.role === 'assistant') {
+        showLine = true;
+      }
+      if (index === messageList.length - 1 && item.role === 'assistant' && responseStatus === 'pending') {
+        showLine = true;
+      }
+      return (
+        <MessageItem
+          key={index}
+          isConsecutive={showLine}
+          role={item.role as 'assistant' | 'user' | 'system'}
+          item={item}
+          index={index}
+          retryMessage={retryMessage}
+          deleteMessage={deleteMessage}
+        />
+      );
+    });
+  }, [messageList, responseStatus, retryMessage, deleteMessage]);
+
   return (
     <>
       {contextHolder}
@@ -293,26 +318,7 @@ export const MessageList = (props: { chat_id: string }) => {
             </div>
             <Skeleton avatar={{ size: 'default' }} active title={false} paragraph={{ rows: 4, width: ['60%', '60%', '100%', '100%'] }} />
           </div> :
-          messageList.map((item, index) => {
-            let showLine = false;
-            if (index < messageList.length - 1 && item.role === 'assistant' && messageList[index + 1]?.role === 'assistant') {
-              showLine = true;
-            }
-            if (index === messageList.length - 1 && item.role === 'assistant' && responseStatus === 'pending') {
-              showLine = true;
-            }
-            return (
-              <MessageItem
-                key={index}
-                isConsecutive={showLine}
-                role={item.role as 'assistant' | 'user' | 'system'}
-                item={item}
-                index={index}
-                retryMessage={retryMessage}
-                deleteMessage={deleteMessage}
-              />
-            )
-          })
+          renderedMessageList
         }
         <ResponsingMessage
           searchStatus={searchStatus}
@@ -366,16 +372,16 @@ export const MessageList = (props: { chat_id: string }) => {
                 open={mcpServerSelectOpen}
                 onOpenChange={(open) => { SetMcpServerSelectOpen(open) }}
               >
-                <Tooltip title="MCP 服务器" placement='bottom' arrow={false} >
+                <Tooltip title={t('mcpServer')} placement='bottom' arrow={false} >
                   {hasMcpSelected ? (
                     <Button type="text" size='small' color="primary" variant="filled">
                       <McpIcon style={{ width: '13px', height: '13px' }} />
-                      <span className='text-xs -ml-1'>MCP 工具</span>
+                      <span className='text-xs -ml-1'>{t('mcpTool')}</span>
                     </Button>
                   ) : (
                     <Button type="text" size='small' >
                       <McpIcon style={{ width: '13px', height: '13px' }} />
-                      <span className='text-xs -ml-1 text-gray-500'>MCP 工具</span>
+                      <span className='text-xs -ml-1 text-gray-500'>{t('mcpTool')}</span>
                     </Button>
                   )}
                 </Tooltip>

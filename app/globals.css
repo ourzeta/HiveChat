@@ -116,8 +116,8 @@ ol {
 }
 
 .balls {
-  width: 1.5em;
-  height: 1.5em;
+  width: 24px;
+  height: 24px;
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
@@ -125,9 +125,9 @@ ol {
 }
 
 .balls div {
-  width: 0.4em;
-  height: 0.4em;
-  border-radius: 0.2em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
   background-color: #333;
   transform: translateY(-100%);
   animation: wave 0.8s ease-in-out alternate infinite;

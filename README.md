@@ -286,11 +286,9 @@ DINGDING_CLIENT_SECRET="3vk9-VFCExNckqNUk_CL2F-HEgz7qGN-BimH0lZ1gUx6hWO7g_an2lnk
 按照以上方法安装部署完成后，访问 `http://localhost:3000/setup` (实际使用的域名和端口号)，即可进入管理员账号设置页面，设置完成后，即可正常使用系统。
 
 #### 附2：第三方登录配置说明
-* [企业微信登录配置说明](https://k2swpw8zgf.feishu.cn/wiki/WBH5w6mcuiYui0kNhmecdxtqnac)
-* [钉钉登录配置说明](https://k2swpw8zgf.feishu.cn/wiki/PcLVwBMcsiCm8Ikcp3pc7rVXn3f)
-* [飞书登录配置说明](https://k2swpw8zgf.feishu.cn/wiki/Fr80wA8HHi7ZN7kxb6xcU1i7nae)
+* [企业微信登录配置说明](https://www.hivechat.net/docs/auth/wecom)
+* [钉钉登录配置说明](https://www.hivechat.net/docs/auth/dingding)
+* [飞书登录配置说明](https://www.hivechat.net/docs/auth/feishu)
 
 ### 交流群
-<img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/wechat.png" width='360'>
-
-二维码如果过期，可加 wuhaoworld。
+可加微信 wuhaoworld 拉你入群。

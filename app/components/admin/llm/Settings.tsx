@@ -70,20 +70,20 @@ const Settings = (props: { providerId: string }) => {
 
   const getHelpLinks = (providerId: string) => {
     const helpLinks = {
-      'openai': 'https://k2swpw8zgf.feishu.cn/wiki/J3FtwGumMi7k0vktB41cHvjTnTg',
-      'claude': 'https://k2swpw8zgf.feishu.cn/wiki/XrMdwQlRKiOESdkdexMcQ89vn2e',
-      'gemini': 'https://k2swpw8zgf.feishu.cn/wiki/WtEnw75PfiZ9LAkRXrqck6w5nsf',
-      'moonshot': 'https://k2swpw8zgf.feishu.cn/wiki/ZqM3wCfDViRFxJkHGP4c9imsnig',
-      'qwen': 'https://k2swpw8zgf.feishu.cn/wiki/EK10wXbHliNn3mkyKc9cCVJSnlb',
-      'deepseek': 'https://k2swpw8zgf.feishu.cn/wiki/TgGqw09QNie4d1keCERcx4hBnhe',
-      'volcengine': 'https://k2swpw8zgf.feishu.cn/wiki/PRuewmqAXi0Ykjk6gIBcPW4DnBe',
-      'qianfan': 'https://k2swpw8zgf.feishu.cn/wiki/PUKvw62CgiZLoCkR9xjcWktinrc',
-      'siliconflow': 'https://k2swpw8zgf.feishu.cn/wiki/EpD4wAj0ai681hkFFqMcvQZUn8g',
-      'ollama': 'https://k2swpw8zgf.feishu.cn/wiki/MiPKw3uI7iS7ImkdAG7cRj77nuf',
-      'hunyuan': 'https://k2swpw8zgf.feishu.cn/wiki/MYt7wKmYniviwrkeULPc1yjEn0f',
-      'zhipu': 'https://k2swpw8zgf.feishu.cn/wiki/Ljyowt68vijCX0kPKhkc8fs8nS2',
-      'grok': 'https://k2swpw8zgf.feishu.cn/wiki/JWmBwLbCFiJ3YXko5ILc40xEnoy',
-      'openrouter': 'https://k2swpw8zgf.feishu.cn/wiki/LRjSwrcDVixWjzkII0icaoQQnBc',
+      'openai': 'https://www.hivechat.net/docs/providers/openai',
+      'claude': 'https://www.hivechat.net/docs/providers/claude',
+      'gemini': 'https://www.hivechat.net/docs/providers/gemini',
+      'moonshot': 'https://www.hivechat.net/docs/providers/moonshot',
+      'qwen': 'https://www.hivechat.net/docs/providers/qwen',
+      'deepseek': 'https://www.hivechat.net/docs/providers/deepseek',
+      'volcengine': 'https://www.hivechat.net/docs/providers/volcengine',
+      'qianfan': 'https://www.hivechat.net/docs/providers/qianfan',
+      'siliconflow': 'https://www.hivechat.net/docs/providers/siliconflow',
+      'ollama': 'https://www.hivechat.net/docs/providers/ollama',
+      'hunyuan': 'https://www.hivechat.net/docs/providers/hunyuan',
+      'zhipu': 'https://www.hivechat.net/docs/providers/zhipu',
+      'grok': 'https://www.hivechat.net/docs/providers/xai',
+      'openrouter': 'https://www.hivechat.net/docs/providers/openrouter',
     };
     const providers = Object.keys(helpLinks);
     if (providers.includes(providerId)) {

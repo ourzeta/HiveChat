@@ -48,7 +48,7 @@ const MessageItem = memo((props: {
 
   if (props.item.type === 'error' && props.item.errorType === 'TimeoutError') {
     return (
-      <div className="flex container mx-auto px-4 max-w-screen-md w-full flex-col justify-center items-center" >
+      <div className="flex container mx-auto px-2 max-w-screen-md w-full flex-col justify-center items-center" >
         <div className='items-start flex  max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
           {ProviderAvatar}
           <div className='flex flex-col w-0 grow group max-w-80'>
@@ -81,7 +81,7 @@ const MessageItem = memo((props: {
   }
   if (props.item.type === 'error' && props.item.errorType === 'OverQuotaError') {
     return (
-      <div className="flex container mx-auto px-4 max-w-screen-md w-full flex-col justify-center items-center" >
+      <div className="flex container mx-auto px-2 max-w-screen-md w-full flex-col justify-center items-center" >
         <div className='items-start flex  max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
           {ProviderAvatar}
           <div className='flex flex-col w-0 grow group' style={{ maxWidth: '28rem' }}>
@@ -114,7 +114,7 @@ const MessageItem = memo((props: {
   }
   if (props.item.type === 'error' && props.item.errorType === 'InvalidAPIKeyError') {
     return (
-      <div className="flex container mx-auto px-4 max-w-screen-md w-full flex-col justify-center items-center" >
+      <div className="flex container mx-auto px-2 max-w-screen-md w-full flex-col justify-center items-center" >
         <div className='items-start flex  max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
           {ProviderAvatar}
           <div className='flex flex-col w-0 grow group max-w-96'>
@@ -145,7 +145,7 @@ const MessageItem = memo((props: {
       </div>);
   }
   if (props.item.type === 'break') {
-    return <div className="flex container mx-auto px-4 max-w-screen-md w-full flex-col justify-center items-center" >
+    return <div className="flex container mx-auto px-2 max-w-screen-md w-full flex-col justify-center items-center" >
       <div className='items-start flex  max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
         <div className="relative w-full my-6">
           {/* Horizontal lines */}
@@ -237,7 +237,7 @@ const MessageItem = memo((props: {
   }
   if (props.role === 'assistant') {
     return (
-      <div className="flex container mx-auto px-4 max-w-screen-md w-full flex-col justify-center items-center" >
+      <div className="flex container mx-auto px-2 max-w-screen-md w-full flex-col justify-center items-center" >
         <div className='items-start flex max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
           <div className='flex flex-col h-full'>
             {ProviderAvatar}
@@ -246,7 +246,7 @@ const MessageItem = memo((props: {
             </div>}
           </div>
           <div className='flex flex-col w-0 grow group'>
-            <div className='px-3 py-2 ml-2  bg-gray-100  text-gray-600 w-full grow markdown-body answer-content rounded-xl'>
+            <div className='pl-3 pr-0 py-2 ml-2  bg-gray-100  text-gray-600 w-full grow markdown-body answer-content rounded-xl'>
 
               {props.item.searchStatus === "searching" && <div className='flex text-xs flex-row items-center  text-gray-800 bg-gray-100 rounded-md p-2 mb-4'>
                 <SearchOutlined style={{ marginLeft: '4px' }} /> <span className='ml-2'>正在联网搜索...</span>

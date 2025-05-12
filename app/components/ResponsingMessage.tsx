@@ -115,7 +115,7 @@ const ResponsingMessage = (props: {
   if (props.responseStatus !== "pending") return null;
 
   return (
-    <div className="flex container mx-auto px-4 max-w-screen-md w-full flex-col justify-center items-center">
+    <div className="flex container mx-auto px-2 max-w-screen-md w-full flex-col justify-center items-center">
       <div className='items-start flex max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-row'>
         {providerAvatar}
         <div className='flex flex-col w-0 grow'>

@@ -297,7 +297,7 @@ export const MessageList = (props: { chat_id: string }) => {
         visible={stableShowScrollButton}
         onClick={scrollToBottom}
       />
-      <div onScroll={throttledHandleScroll} ref={messageListRef} className='flex w-full flex-col h-0 px-2 grow py-6 relative overflow-y-auto leading-7 chat-list text-sm'>
+      <div onScroll={throttledHandleScroll} ref={messageListRef} className='flex w-full flex-col h-0 px-2 grow py-6 relative overflow-y-auto leading-7 chat-list text-sm scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-gray-300 scrollbar-track-gray-100'>
         {!isPending && chat?.prompt && <div className="flex container mx-auto max-w-screen-md mb-4 w-full flex-col justify-center items-center">
           <div className='flex max-w-3xl text-justify w-full my-0 pt-0 pb-1 flex-col pr-4 pl-4'>
             <div className='flex flex-row items-center mb-2'>
@@ -342,92 +342,93 @@ export const MessageList = (props: { chat_id: string }) => {
         uploadedImages={uploadedImages}
         removeImage={removeImage}
       />
-      <div className="h-32 flex flex-col bg-white border-t justify-center items-center pt-0 p-4">
-        <div className='flex flex-row justify-between h-10 max-w-3xl w-full relative p-2'>
-          <div className='flex flex-row'>
-            {currentModel.supportVision && (
-              <Tooltip title={t('image')} placement='bottom' arrow={false}>
-                <Button type="text" size='small' onClick={() => handleImageUpload()}>
-                  <PictureOutlined style={{ color: 'gray' }} />
-                  <span className='text-xs -ml-1 text-gray-500'>{t('image')}</span>
-                </Button>
-              </Tooltip>
-            )}
+      <div className="flex h-36 container bg-white mx-auto justify-center pt-1 px-2">
+        <div className='flex mx-2 mt-0 h-28 flex-col w-full border max-w-3xl border-gray-200 rounded-2xl'>
+          <ChatInput
+            responseStatus={responseStatus}
+            onPaste={handlePaste}
+            onSubmit={handleSubmitMessage}
+            onStop={stopChat}
+          />
+          <div className='flex flex-row justify-between h-10 max-w-3xl w-full relative p-2'>
+            <div className='flex flex-row'>
+              {currentModel.supportVision && (
+                <Tooltip title={t('image')} placement='bottom' arrow={false}>
+                  <Button type="text" size='small' onClick={() => handleImageUpload()}>
+                    <PictureOutlined style={{ color: 'gray' }} />
+                    <span className='text-xs -ml-1 text-gray-500'>{t('image')}</span>
+                  </Button>
+                </Tooltip>
+              )}
 
-            {!currentModel.supportVision && (
-              <Tooltip title={t('unsupportImage')} placement='bottom' arrow={false}>
-                <Button type="text" size='small' disabled>
-                  <PictureOutlined style={{ color: '#ddd' }} />
-                  <span className='text-xs -ml-1 text-gray-300'>{t('image')}</span>
-                </Button>
-              </Tooltip>
-            )}
+              {!currentModel.supportVision && (
+                <Tooltip title={t('unsupportImage')} placement='bottom' arrow={false}>
+                  <Button type="text" size='small' disabled>
+                    <PictureOutlined style={{ color: '#ddd' }} />
+                    <span className='text-xs -ml-1 text-gray-300'>{t('image')}</span>
+                  </Button>
+                </Tooltip>
+              )}
 
-            <WebSearchButton />
+              <WebSearchButton />
 
-            {hasUseMcp && currentModel.supportTool && (
+              {hasUseMcp && currentModel.supportTool && (
+                <Popover
+                  content={<McpServerSelect chat_id={props.chat_id} />}
+                  trigger="click"
+                  open={mcpServerSelectOpen}
+                  onOpenChange={(open) => { SetMcpServerSelectOpen(open) }}
+                >
+                  <Tooltip title={t('mcpServer')} placement='bottom' arrow={false} >
+                    {hasMcpSelected ? (
+                      <Button type="text" size='small' color="primary" variant="filled">
+                        <McpIcon style={{ width: '13px', height: '13px' }} />
+                        <span className='text-xs -ml-1'>{t('mcpTool')}</span>
+                      </Button>
+                    ) : (
+                      <Button type="text" size='small' >
+                        <McpIcon style={{ width: '13px', height: '13px' }} />
+                        <span className='text-xs -ml-1 text-gray-500'>{t('mcpTool')}</span>
+                      </Button>
+                    )}
+                  </Tooltip>
+                </Popover>
+              )}
+
               <Popover
-                content={<McpServerSelect chat_id={props.chat_id} />}
+                content={<HistorySettings chat_id={props.chat_id} changeVisible={handleHistorySettingOpenChange} />}
+                title={t('historyMessageCount')}
                 trigger="click"
-                open={mcpServerSelectOpen}
-                onOpenChange={(open) => { SetMcpServerSelectOpen(open) }}
+                open={historySettingOpen}
+                onOpenChange={handleHistorySettingOpenChange}
               >
-                <Tooltip title={t('mcpServer')} placement='bottom' arrow={false} >
-                  {hasMcpSelected ? (
-                    <Button type="text" size='small' color="primary" variant="filled">
-                      <McpIcon style={{ width: '13px', height: '13px' }} />
-                      <span className='text-xs -ml-1'>{t('mcpTool')}</span>
-                    </Button>
-                  ) : (
-                    <Button type="text" size='small' >
-                      <McpIcon style={{ width: '13px', height: '13px' }} />
-                      <span className='text-xs -ml-1 text-gray-500'>{t('mcpTool')}</span>
-                    </Button>
-                  )}
+                <Tooltip title={t('historyMessageCount')} placement='bottom' arrow={false}>
+                  <Button className='mx-1' type="text" size='small'>
+                    <FieldTimeOutlined style={{ color: 'gray' }} />
+                    <span className='text-xs -ml-1 text-gray-500'>
+                      {historyType === 'all' && <>{t('historyMessageCountAllShot')}</>}
+                      {historyType === 'none' && <>{t('historyMessageCountNone')}</>}
+                      {historyType === 'count' && <>{historyCount} {t('piece')}</>}
+                    </span>
+                  </Button>
                 </Tooltip>
               </Popover>
-            )}
 
-            <Popover
-              content={<HistorySettings chat_id={props.chat_id} changeVisible={handleHistorySettingOpenChange} />}
-              title={t('historyMessageCount')}
-              trigger="click"
-              open={historySettingOpen}
-              onOpenChange={handleHistorySettingOpenChange}
-            >
-              <Tooltip title={t('historyMessageCount')} placement='bottom' arrow={false}>
-                <Button className='mx-1' type="text" size='small'>
-                  <FieldTimeOutlined style={{ color: 'gray' }} />
-                  <span className='text-xs -ml-1 text-gray-500'>
-                    {historyType === 'all' && <>{t('historyMessageCountAllShot')}</>}
-                    {historyType === 'none' && <>{t('historyMessageCountNone')}</>}
-                    {historyType === 'count' && <>{historyCount} {t('piece')}</>}
-                  </span>
+              <Button type="text" size='small' onClick={handleClearMemory}>
+                <Eraser alt="Eraser" width="15" height="15" />
+                <span className='text-xs -ml-1 text-gray-500'>{t('clearMemory')}</span>
+              </Button>
+            </div>
+
+            <div className='flex flex-row'>
+              <Tooltip title={t('clearHistoryMessage')}>
+                <Button onClick={handleClearHistory} className='ml-2' type="text" size='small'>
+                  <ClearOutlined style={{ color: 'gray' }} />
                 </Button>
               </Tooltip>
-            </Popover>
-
-            <Button type="text" size='small' onClick={handleClearMemory}>
-              <Eraser alt="Eraser" width="15" height="15" />
-              <span className='text-xs -ml-1 text-gray-500'>{t('clearMemory')}</span>
-            </Button>
-          </div>
-
-          <div className='flex flex-row'>
-            <Tooltip title={t('clearHistoryMessage')}>
-              <Button onClick={handleClearHistory} className='ml-2' type="text" size='small'>
-                <ClearOutlined style={{ color: 'gray' }} />
-              </Button>
-            </Tooltip>
+            </div>
           </div>
         </div>
-
-        <ChatInput
-          responseStatus={responseStatus}
-          onPaste={handlePaste}
-          onSubmit={handleSubmitMessage}
-          onStop={stopChat}
-        />
       </div>
     </>
   );

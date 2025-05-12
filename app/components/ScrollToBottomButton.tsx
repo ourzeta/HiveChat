@@ -18,7 +18,7 @@ const ScrollToBottomButton: React.FC<ScrollToBottomButtonProps> = ({ visible, on
       onClick={onClick}
       style={{
         position: 'absolute',
-        right: '50%',
+        left: '50%',
         bottom: '150px',
         zIndex: '100',
         boxShadow: 'rgb(173 164 164 / 21%) 1px 1px 3px 3px',

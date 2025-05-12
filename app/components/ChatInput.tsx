@@ -56,16 +56,16 @@ const ChatInput = memo(({
   }, [inputValue, onSubmit]);
 
   return (
-    <div className='flex h-full max-w-3xl w-full relative pl-2 pr-2'>
-      <Input.TextArea
+    <div className='flex h-full max-w-3xl w-full relative pl-2 pr-2 pt-2'>
+      <textarea
         onChange={handleInputChange}
         value={inputValue}
         autoFocus={true}
         onPaste={onPaste}
         onKeyDown={handleKeyDown}
         placeholder={t('inputPlaceholder')}
-        className='scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-gray-300 scrollbar-track-gray-100 scrollbar-rou'
-        style={{ paddingRight: '5em', resize: 'none', scrollbarColor: '#eaeaea transparent' }}
+        className='m-2 w-full border-none outline-none resize-none scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-gray-300 scrollbar-track-gray-100 scrollbar-rou'
+        style={{ paddingRight: '5em', border: 'none', resize: 'none', scrollbarColor: '#eaeaea transparent' }}
       />
 
       {responseStatus === 'done' && (

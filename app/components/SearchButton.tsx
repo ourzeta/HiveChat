@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button } from 'antd';
-import { GlobalOutlined } from '@ant-design/icons';
+import SearchIcon from "@/app/images/searchIcon.svg";
+import clsx from 'clsx';
 
 interface SearchButtonProps {
   searchEnable: boolean;
@@ -18,16 +18,17 @@ const SearchButton: React.FC<SearchButtonProps> = ({
   }
 
   return (
-    <Button
-      shape="round"
-      color={localSearchEnable ? "primary" : 'default'}
-      variant={localSearchEnable ? "filled" : 'outlined'}
-      className="mr-2"
-      icon={<GlobalOutlined />}
+    <div
+      className={clsx('flex h-7 flex-row items-center pr-3 pl-2 search-button-custom py-1 cursor-pointer rounded-2xl border',
+        {
+          'bg-blue-100 border-blue-400 text-blue-700 hover:bg-blue-100': localSearchEnable,
+          'hover:bg-gray-100': !localSearchEnable
+        })}
       onClick={onToggle}
     >
-      联网搜索
-    </Button>
+      <SearchIcon style={{ fontSize: '16px'}} />
+      <span className='text-xs ml-1'>联网</span>
+    </div>
   );
 };
 

@@ -107,7 +107,7 @@ const AdaptiveTextarea = (props: {
     <div className="w-full max-w-2xl mx-auto p-4">
       <div
         ref={containerRef}
-        className={clsx({ 'bg-gray-100': pending }, 'flex border-gray-300  border rounded-3xl p-2 flex-col justify-end')}
+        className={clsx({ 'bg-gray-100': pending }, 'flex border-gray-200  border rounded-3xl p-2 flex-col justify-end')}
       >
         {uploadedImages.length > 0 && <div className="flex flex-col justify-center items-center">
           <div className='flex flex-row h-16 max-w-3xl pl-2 w-full'>

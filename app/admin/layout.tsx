@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import Image from "next/image";
 import Link from 'next/link';
 import { Popconfirm, Button } from 'antd';
-import { SettingOutlined, LogoutOutlined, RollbackOutlined, GlobalOutlined, UserOutlined } from '@ant-design/icons';
+import { SettingOutlined, LogoutOutlined, RollbackOutlined, UserOutlined } from '@ant-design/icons';
 import clsx from 'clsx';
+import SearchIcon from "@/app/images/searchIcon.svg";
 import { usePathname } from 'next/navigation';
 import logo from "@/app/images/logo.png";
 import Assistant from "@/app/images/assistant.svg";
@@ -78,7 +79,7 @@ export default function RootLayout({
         </div>
         <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/search') })}>
           <Link className='w-full flex items-center' href={"/admin/search"}>
-            <GlobalOutlined style={{ 'marginLeft': '3px' }} /><span className='ml-2 text-sm'>{t('webSearch')}</span>
+            <SearchIcon style={{ 'marginLeft': '1px', 'fontSize': '20px' }} /><span className='ml-2 text-sm'>{t('webSearch')}</span>
           </Link>
         </div>
         <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/mcp') })}>

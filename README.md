@@ -40,11 +40,11 @@
 ### 普通用户端
 登录账号，即可对话。
 
-![image](https://jiantuku.oss-cn-beijing.aliyuncs.com/share/003.png)
+![image](https://jiantuku.oss-cn-beijing.aliyuncs.com/share/hivechat/01.png)
 
 MCP 使用
 
-![image](https://jiantuku.oss-cn-beijing.aliyuncs.com/share/mcp-use.png)
+![image](https://jiantuku.oss-cn-beijing.aliyuncs.com/share/hivechat/02.png)
 
 ### 管理后台
 
@@ -52,17 +52,19 @@ MCP 使用
 * 可手动添加用户，也可开启或关闭账号注册，适用于公司/学校/组织等小型团队
 * 查看和管理全部用户
 
-![image](https://jiantuku.oss-cn-beijing.aliyuncs.com/share/model.png)
+![image](https://jiantuku.oss-cn-beijing.aliyuncs.com/share/hivechat/03.png)
 
 <details>
   <summary>更多图片</summary>
    用户管理，可以为用户设置分组，针对不同分组设置可见模型和 Token 限额
-   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/users.png" />
-   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/user-group.png" />
+   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/hivechat/04.png" />
+   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/hivechat/05.png" />
    邮箱以及第三方登录
-   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/system.png" />
+   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/hivechat/06.png" />
    MCP 配置
-   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/mcp.png" />
+   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/hivechat/07.png" />
+   搜索设置
+   <img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/hivechat/08.png" />
 </details>
 
 

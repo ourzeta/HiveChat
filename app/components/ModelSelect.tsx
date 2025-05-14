@@ -27,7 +27,7 @@ const ModelSelect = ({ chatId }: { chatId: string | null }) => {
               :
               <Avatar
                 size={20}
-                style={{ backgroundColor: '#1c78fa' }}
+                style={{ backgroundColor: '#1c78fa', fontSize: '14px' }}
               >{allProviderListByKey && allProviderListByKey[provider.id].providerName.charAt(0)}</Avatar>
             }
 
@@ -73,7 +73,7 @@ const ModelSelect = ({ chatId }: { chatId: string | null }) => {
           :
           <Avatar
             size={20}
-            style={{ backgroundColor: '#1c78fa' }}
+            style={{ backgroundColor: '#1c78fa', fontSize: '14px' }}
           >{allProviderListByKey && allProviderListByKey[providerId].providerName.charAt(0)}</Avatar>
         }
         <span className='ml-1'>{model?.displayName || modelId}</span>

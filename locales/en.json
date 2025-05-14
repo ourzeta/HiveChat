@@ -80,6 +80,7 @@
     "mustBeImage": "Please select image file.",
     "imageSizeLimit": "The image size cannot exceed 5MB.",
     "clearHistoryMessage": "Clear current session messages",
+    "clearHistoryMessageShort": "Clear Messages",
     "confirmClearHistoryMessage": "Confirm to clear all messages?",
     "clearHistoryMessageNotice": "All messages of the current chat will be deleted.",
     "startNewChat": "New chat",

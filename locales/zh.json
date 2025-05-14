@@ -80,6 +80,7 @@
     "mustBeImage": "请上传图片文件",
     "imageSizeLimit": "图片大小不能超过 5MB",
     "clearHistoryMessage": "清空历史消息",
+    "clearHistoryMessageShort": "清空消息",
     "confirmClearHistoryMessage": "确认要清除所有记录吗",
     "clearHistoryMessageNotice": "当前对话的所有记录将被删除",
     "startNewChat": "开启新对话",

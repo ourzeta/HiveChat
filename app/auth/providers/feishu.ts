@@ -26,7 +26,7 @@ export default function Feishu(options: {
     id: "feishu",
     name: "Feishu",
     type: "oauth",
-    checks: ["pkce"],
+    checks: ["state"],
     authorization: {
       url: apiAuthUrl,
       params: {

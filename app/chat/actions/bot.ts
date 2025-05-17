@@ -98,6 +98,7 @@ export const getBotListInServer = async () => {
   if (!session?.user.id) {
     return {
       status: 'fail',
+      data: [],
       message: 'please login first.'
     }
   }

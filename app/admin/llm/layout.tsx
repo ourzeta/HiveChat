@@ -87,7 +87,7 @@ export default function LLMLayout({
           />
         </div>}
       <div className='w-full flex flex-row' >
-        <div className='w-72 bg-slate-50 p-4 pt-2 border-l h-dvh overflow-y-auto'>
+        <div className='w-72 bg-slate-50 p-4 pt-2 border-l h-dvh overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent'>
           {isPending ? <>
             <Skeleton.Node active style={{ width: 250, height: '3rem', marginTop: '0.5rem' }} />
             <Skeleton.Node active style={{ width: 250, height: '3rem', marginTop: '0.5rem' }} />

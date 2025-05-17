@@ -8,7 +8,7 @@ import useChatListStore from '@/app/store/chatList';
 import { Button, message, Popconfirm, Divider, PopconfirmProps } from 'antd';
 import { LeftOutlined } from '@ant-design/icons';
 import MarkdownRender from '@/app/components/Markdown';
-import { getBotInfoInServer, deleteBotInServer } from '@/app/chat/actions/bot';
+import { getBotInfoInServer, deleteBotInServer } from '@/app/admin/bot/action';
 import { useTranslations } from 'next-intl';
 
 const BotInfo = ({ params }: { params: { bot_id: string } }) => {
@@ -16,37 +16,25 @@ const BotInfo = ({ params }: { params: { bot_id: string } }) => {
   const router = useRouter();
   const { chatList, addBot } = useChatListStore();
   const [botInfo, setBotInfo] = useState<BotType>();
-  const [botChatId, setBotChatId] = useState('');
   const [isPending, setIsPending] = useState(true);
-  const [isAdded, setIsAdded] = useState(false);
   useEffect(() => {
     const initBotData = async () => {
       const bot = await getBotInfoInServer(Number(params.bot_id));
       if (bot.status === 'success') {
         setBotInfo(bot.data as BotType);
         setIsPending(false);
-        const botChat = chatList.filter(item => item.botId === Number(params.bot_id));
-        if (botChat.length > 0) {
-          setBotChatId(botChat[0].id);
-          setIsAdded(true);
-        } else {
-          setIsAdded(false);
-        }
       }
     };
 
     initBotData();
   }, [chatList, params.bot_id]);
 
-  const addToChat = (botId: number) => {
-    addBot(botId);
-  }
   const removeCurrentBot: PopconfirmProps['onConfirm'] = async (e) => {
     if (botInfo?.id) {
       const result = await deleteBotInServer(botInfo.id);
       if (result.status === 'success') {
         message.success(t('deleteSuccess'));
-        router.push(`/chat/bot/discover`);
+        router.push(`/admin/bot/list`);
       } else {
         message.error(t('deleteFail'));
       }
@@ -54,8 +42,8 @@ const BotInfo = ({ params }: { params: { bot_id: string } }) => {
   };
 
   return (
-    <div className="container max-w-4xl mx-auto p-4">
-      <Link href='/chat/bot/discover'>
+    <div className="container max-w-4xl mx-auto py-4 h-fit">
+      <Link href='/admin/bot/list'>
         <Button type='link' size='small' icon={<LeftOutlined />}>{t('back')}</Button>
       </Link>
       <div className='w-full flex flex-row justify-between items-center'>
@@ -93,23 +81,16 @@ const BotInfo = ({ params }: { params: { bot_id: string } }) => {
                       <Button type='text' size='small' style={{ color: '#6b7280' }}>{t('source')}</Button>
                     </Link></>}
                 </div>
-                {isAdded ?
-                  <Link href={`/chat/${botChatId}`}><Button type='primary' shape='round'>{t('chat')}</Button></Link>
-                  : <Button type='primary'
-                    shape='round'
-                    onClick={() => { addToChat(botInfo.id!) }}>{t('addToChats')}</Button>}
-                {botInfo.creator !== 'public' &&
-                  <Popconfirm
-                    title="删除智能体"
-                    description="确认要删除当前智能体吗？"
-                    onConfirm={removeCurrentBot}
-                    okText="确认"
-                    cancelText="取消"
-                  >
-                    <Button type='text' className='ml-2' style={{ color: '#999' }} shape='round'>{t('remove')}</Button>
-                  </Popconfirm>
-                }
-
+                <Link href={`/chat/bot/${botInfo.id}`}><Button type='primary' shape='round'>查看</Button></Link>
+                <Popconfirm
+                  title="删除智能体"
+                  description="删除后已添加的用户还可以继续使用，未添加智能体的用户无法添加"
+                  onConfirm={removeCurrentBot}
+                  okText="确认"
+                  cancelText="取消"
+                >
+                  <Button type='text' className='ml-2' style={{ color: '#999' }} shape='round'>删除</Button>
+                </Popconfirm>
               </div>
             </>
           )}

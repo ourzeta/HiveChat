@@ -12,6 +12,7 @@ import Assistant from "@/app/images/assistant.svg";
 import ToggleSidebar from "@/app/images/hideSidebar.svg";
 import useAdminSidebarCollapsed from '@/app/store/adminSidebarCollapsed';
 import Spark from "@/app/images/spark.svg";
+import Sparkle from "@/app/images/sparkle.svg";
 import Mcp from "@/app/images/mcp.svg";
 import { useSession, signOut } from 'next-auth/react';
 import SpinLoading from '@/app/components/loading/SpinLoading';
@@ -80,6 +81,11 @@ export default function RootLayout({
         <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/search') })}>
           <Link className='w-full flex items-center' href={"/admin/search"}>
             <SearchIcon style={{ 'marginLeft': '1px', 'fontSize': '20px' }} /><span className='ml-2 text-sm'>{t('webSearch')}</span>
+          </Link>
+        </div>
+        <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/bot') })}>
+          <Link className='w-full flex' href={"/admin/bot/list"}>
+            <Sparkle style={{ 'marginLeft': '2px' }} width={18} height={18} alt='spark'/><span className='ml-2 text-sm'>智能体管理</span>
           </Link>
         </div>
         <div className={clsx('hover:bg-gray-200 rounded-lg p-2 mt-1', { 'bg-gray-200': pathname.startsWith('/admin/mcp') })}>

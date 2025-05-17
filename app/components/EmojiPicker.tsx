@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
+import i18nZh from '@emoji-mart/data/i18n/zh.json';
+import i18nEn from '@emoji-mart/data/i18n/en.json';
 import { EditOutlined } from '@ant-design/icons';
 import { useLocale } from 'next-intl';
 
@@ -64,6 +66,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ onEmojiSelect, current
               onEmojiSelect={handleEmojiSelect}
               theme="light"
               set="native"
+              i18n={locale === 'zh' ? i18nZh : i18nEn}
               previewPosition='none'
               locale={locale}
             />

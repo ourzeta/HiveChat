@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from 'antd';
 import { useRouter } from 'next/navigation';
 import { LeftOutlined } from '@ant-design/icons';
-import { addBotInServer } from '@/app/chat/actions/bot';
+import { addBotInServer } from '@/app/admin/bot/action';
 import { useTranslations } from 'next-intl';
 
 const CreateBot = () => {
@@ -31,22 +31,21 @@ const CreateBot = () => {
       avatarType: 'emoji',
     });
     if (result.status === 'success') {
-      router.push(`/chat/bot/${result.data?.id}`)
+      router.push(`/admin/bot/${result.data?.id}`)
     } else {
       message.error('创建失败，请稍后重试');
     }
     setIsPending(false);
   };
   return (
-    <div className="container max-w-4xl mx-auto items-center flex flex-col p-4">
+    <div className="container max-w-3xl mx-auto flex flex-col items-center px-16 py-4 h-fit">
       <div className='w-full'>
         <Link href='/chat/bot/discover'>
           <Button type='link' size='small' icon={<LeftOutlined />}>{t('back')}</Button>
         </Link>
       </div>
 
-      <h1 className='text-xl mt-4'>{t('createBot')}</h1>
-      <p className='text-gray-400 mb-8'>创建的智能体仅自己查看和使用</p>
+      <h1 className='text-xl mb-8 mt-4'>{t('createBot')}</h1>
       <EmojiPicker
         currentEmoji={selectedEmoji}
         onEmojiSelect={(emoji) => setSelectedEmoji(emoji)}

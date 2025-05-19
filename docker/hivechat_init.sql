@@ -207,8 +207,8 @@ ALTER TABLE public.authenticator OWNER TO postgres;
 CREATE TABLE public.bots (
     id integer NOT NULL,
     title character varying(255) NOT NULL,
-    "desc" character varying(255),
-    prompt character varying(10000),
+    "desc" text,
+    prompt text,
     avatar_type public.avatar_type DEFAULT 'none'::public.avatar_type NOT NULL,
     avatar character varying,
     source_url character varying,

@@ -43,10 +43,19 @@ export default async function proxyGeminiStream(response: Response,
 
           try {
             const parsedData = JSON.parse(cleanedLine);
+            
+            // Add null checks to handle missing data safely
+            if (!parsedData.candidates || parsedData.candidates.length === 0) {
+              console.error("No candidates in response:", cleanedLine);
+              continue;
+            }
+            
             const { content, finishReason } = parsedData.candidates[0];
             const usage = parsedData.usageMetadata;
-            const parts = content.parts;
-            completeResponse = completeResponse.concat(parts);
+            
+            if (content && content.parts) {
+              completeResponse = completeResponse.concat(content.parts);
+            }
 
             if (finishReason && usage) {
               promptTokens = usage.promptTokenCount || 0;

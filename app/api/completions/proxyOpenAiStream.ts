@@ -54,13 +54,21 @@ export default async function proxyOpenAiStream(response: Response,
               completeResponse = ["```json", JSON.stringify(parsedData, null, "  "), "```"].join("\n");
               continue;
             }
-            const usage = parsedData.usage || parsedData.choices[0].usage; // 兼容 Moonshot
+            // Safely extract usage data with null checks
+            let usage = null;
+            if (parsedData.usage) {
+              usage = parsedData.usage;
+            } else if (parsedData.choices && parsedData.choices.length > 0 && parsedData.choices[0].usage) {
+              usage = parsedData.choices[0].usage;
+            }
+            
             if (usage) {
               promptTokens = usage.prompt_tokens;
               completionTokens = usage.completion_tokens;
               totalTokens = usage.total_tokens;
             }
-            if (parsedData.choices.length === 0) {
+            
+            if (!parsedData.choices || parsedData.choices.length === 0) {
               continue;
             }
             const { delta, finish_reason } = parsedData.choices[0];

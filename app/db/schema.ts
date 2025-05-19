@@ -227,8 +227,8 @@ export const messages = pgTable("messages", {
 export const bots = pgTable("bots", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   title: varchar({ length: 255 }).notNull(),
-  desc: varchar({ length: 255 }),
-  prompt: varchar({ length: 10000 }),
+  desc: text('desc'),
+  prompt: text('prompt'),
   avatarType: avatarType('avatar_type').notNull().default('none'),
   avatar: varchar('avatar'),
   sourceUrl: varchar('source_url'),

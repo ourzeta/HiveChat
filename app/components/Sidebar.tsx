@@ -36,7 +36,7 @@ export const Sidebar = () => {
       )}
       <div
         className={clsx(
-          "flex flex-col w-72 bg-gray-100 h-full p-4 pr-0 box-border transition-transform duration-300 ease-in-out z-50",
+          "flex flex-shrink-0 flex-col w-72 bg-gray-100 h-full p-4 pr-0 box-border transition-transform duration-300 ease-in-out z-50",
           "fixed md:relative", // 添加这一行，移动端下使用 fixed 定位
           isSidebarCollapsed ? "md:-translate-x-full -translate-x-72" : "" // PC 端使用 transform，移动端使用 margin
         )}

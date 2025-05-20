@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
+import useSvgPreviewSidebarStore from '@/app/store/svgPreviewSidebar';
 
 interface ScrollToBottomButtonProps {
   visible: boolean;
@@ -9,6 +10,8 @@ interface ScrollToBottomButtonProps {
 }
 
 const ScrollToBottomButton: React.FC<ScrollToBottomButtonProps> = ({ visible, onClick }) => {
+  const { isOpen: isSvgSidebarOpen } = useSvgPreviewSidebarStore();
+  
   if (!visible) return null;
   
   return (
@@ -18,10 +21,10 @@ const ScrollToBottomButton: React.FC<ScrollToBottomButtonProps> = ({ visible, on
       onClick={onClick}
       style={{
         position: 'absolute',
-        left: '50%',
         bottom: '150px',
         zIndex: '100',
         boxShadow: 'rgb(173 164 164 / 21%) 1px 1px 3px 3px',
+        left: isSvgSidebarOpen ? 'calc(25% - 18px)' : '50%',
         transform: 'translateX(-50%)'
       }}
     />

@@ -6,8 +6,8 @@ import RemarkBreaks from "remark-breaks";
 import RehypeKatex from "rehype-katex";
 import rehypeHighlight from 'rehype-highlight';
 import CodeBlock from '@/app/components/CodeBlock';
-import SvgFileCard from '@/app/components/artifact/SvgFileCard';
-import HtmlFileCard from '@/app/components/artifact/HtmlFileCard';
+import FileCard from '@/app/components/artifact/FileCard';
+import { ContentType } from '@/app/store/previewSidebar';
 import 'highlight.js/styles/github.css';
 import "katex/dist/katex.min.css";
 import 'github-markdown-css/github-markdown-light.css';
@@ -120,9 +120,10 @@ const MarkdownRender = (props: {
               // 查找对应的 SVG 块
               const svgBlock = svgBlocks.find(block => block.id === id);
               if (svgBlock) {
-                return <SvgFileCard
-                  svgContent={svgBlock.content}
+                return <FileCard
+                  content={svgBlock.content}
                   cardId={svgBlock.id}
+                  contentType="svg"
                 />;
               }
             }
@@ -134,9 +135,10 @@ const MarkdownRender = (props: {
               // 查找对应的 HTML 块
               const htmlBlock = htmlBlocks.find(block => block.id === id);
               if (htmlBlock) {
-                return <HtmlFileCard
-                  htmlContent={htmlBlock.content}
+                return <FileCard
+                  content={htmlBlock.content}
                   cardId={htmlBlock.id}
+                  contentType="html"
                 />;
               }
             }

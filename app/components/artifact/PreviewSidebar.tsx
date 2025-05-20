@@ -2,27 +2,28 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Segmented, Button, message } from 'antd';
 import { CloseOutlined, CodeOutlined, EyeOutlined, DownloadOutlined, CopyOutlined } from '@ant-design/icons';
-import useHtmlPreviewSidebarStore from '@/app/store/htmlPreviewSidebar';
+import usePreviewSidebarStore from '@/app/store/previewSidebar';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import clsx from 'clsx';
 
-const HtmlPreviewSidebar: React.FC = () => {
+const PreviewSidebar: React.FC = () => {
   const {
     isOpen,
-    htmlContent,
+    content,
+    contentType,
     activeTab,
     setIsOpen,
     setActiveTab,
     resetActiveCard
-  } = useHtmlPreviewSidebarStore();
-  const [renderedHtml, setRenderedHtml] = useState<string>('');
+  } = usePreviewSidebarStore();
+  const [renderedContent, setRenderedContent] = useState<string>('');
   const [messageApi, contextHolder] = message.useMessage();
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // 添加自适应 iframe 高度的函数，使用 useCallback 避免不必要的重新创建
   const resizeIframeToContent = useCallback(() => {
-    if (!iframeRef.current || !iframeRef.current.contentWindow) return;
+    if (!iframeRef.current || !iframeRef.current.contentWindow || contentType !== 'html') return;
 
     try {
       // 获取 iframe 内容的高度
@@ -41,26 +42,26 @@ const HtmlPreviewSidebar: React.FC = () => {
         iframeRef.current.style.height = '300px';
       }
     }
-  }, []);
+  }, [contentType]);
 
   useEffect(() => {
-    // 当 htmlContent 变化时，更新渲染的 HTML
-    if (htmlContent) {
-      setRenderedHtml(htmlContent);
+    // 当 content 变化时，更新渲染的内容
+    if (content) {
+      setRenderedContent(content);
 
       // 当内容更新时，如果当前是预览模式且侧边栏打开，确保在下一个渲染周期后调整 iframe 大小
-      if (activeTab === 'preview' && isOpen) {
+      if (activeTab === 'preview' && isOpen && contentType === 'html') {
         // 使用两层 setTimeout 确保 DOM 完全更新后再调整大小
         setTimeout(() => {
           setTimeout(resizeIframeToContent, 50);
         }, 0);
       }
     }
-  }, [htmlContent, activeTab, isOpen, resizeIframeToContent]);
+  }, [content, activeTab, isOpen, contentType, resizeIframeToContent]);
 
   // 监听窗口大小变化，重新调整 iframe 大小
   useEffect(() => {
-    if (!isOpen || activeTab !== 'preview') return;
+    if (!isOpen || activeTab !== 'preview' || contentType !== 'html') return;
 
     const handleResize = () => {
       // 延迟执行以确保 DOM 已更新
@@ -75,20 +76,20 @@ const HtmlPreviewSidebar: React.FC = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [isOpen, activeTab, resizeIframeToContent]);
+  }, [isOpen, activeTab, contentType, resizeIframeToContent]);
 
   // 当切换到预览标签时，调整 iframe 大小
   useEffect(() => {
-    if (activeTab === 'preview' && isOpen) {
+    if (activeTab === 'preview' && isOpen && contentType === 'html') {
       // 延迟执行以确保 DOM 已更新
       setTimeout(resizeIframeToContent, 100);
     }
-  }, [activeTab, isOpen, resizeIframeToContent]);
+  }, [activeTab, isOpen, contentType, resizeIframeToContent]);
 
   // 监听 iframe 发送的消息，确保内容加载完成后调整大小
   useEffect(() => {
     const handleIframeMessage = (event: MessageEvent) => {
-      if (event.data === 'iframe-loaded' && activeTab === 'preview' && isOpen) {
+      if (event.data === 'iframe-loaded' && activeTab === 'preview' && isOpen && contentType === 'html') {
         // 确保在 iframe 内容完全加载后调整大小
         setTimeout(resizeIframeToContent, 50);
       }
@@ -99,7 +100,7 @@ const HtmlPreviewSidebar: React.FC = () => {
     return () => {
       window.removeEventListener('message', handleIframeMessage);
     };
-  }, [activeTab, isOpen, resizeIframeToContent]);
+  }, [activeTab, isOpen, contentType, resizeIframeToContent]);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -107,31 +108,39 @@ const HtmlPreviewSidebar: React.FC = () => {
   };
 
   const handleDownload = () => {
-    if (!htmlContent) return;
-
-    const blob = new Blob([htmlContent], { type: 'text/html' });
+    if (!content) return;
+    
+    const fileType = contentType === 'svg' ? 'image/svg+xml' : 'text/html';
+    const fileExt = contentType === 'svg' ? 'svg' : 'html';
+    
+    const blob = new Blob([content], { type: fileType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'download.html';
+    a.download = `download.${fileExt}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
-    messageApi.success('HTML 已下载');
+    
+    messageApi.success(`${contentType?.toUpperCase()} 已下载`);
   };
 
   const handleCopy = async () => {
-    if (!htmlContent) return;
-
+    if (!content) return;
+    
     try {
-      await navigator.clipboard.writeText(htmlContent);
-      messageApi.success('HTML 代码已复制到剪贴板');
+      await navigator.clipboard.writeText(content);
+      messageApi.success(`${contentType?.toUpperCase()} 代码已复制到剪贴板`);
     } catch (err) {
       messageApi.error('复制失败，请重试');
       console.error('复制失败:', err);
     }
+  };
+
+  // 根据内容类型确定语言
+  const getLanguage = () => {
+    return contentType === 'svg' ? 'xml' : 'html';
   };
 
   return (
@@ -178,13 +187,13 @@ const HtmlPreviewSidebar: React.FC = () => {
                 type="text"
                 icon={<DownloadOutlined />}
                 onClick={handleDownload}
-                aria-label="下载 HTML"
+                aria-label={`下载 ${contentType?.toUpperCase()}`}
               >下载</Button>
               <Button
                 type="text"
                 icon={<CopyOutlined />}
                 onClick={handleCopy}
-                aria-label="复制 HTML 代码"
+                aria-label={`复制 ${contentType?.toUpperCase()} 代码`}
               >复制</Button>
               <Button
                 type="text"
@@ -197,13 +206,19 @@ const HtmlPreviewSidebar: React.FC = () => {
           <div className="flex-grow overflow-hidden">
             {activeTab === 'preview' ? (
               <div className="flex justify-center items-center h-full p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                {renderedHtml && (
+                {renderedContent && contentType === 'svg' && (
+                  <div
+                    className="w-full h-full flex justify-center items-center p-4"
+                    dangerouslySetInnerHTML={{ __html: renderedContent }}
+                  />
+                )}
+                {renderedContent && contentType === 'html' && (
                   <iframe
                     ref={iframeRef}
                     className="w-full h-full border-0"
                     title="HTML Preview"
                     sandbox="allow-same-origin allow-scripts"
-                    srcDoc={renderedHtml}
+                    srcDoc={renderedContent}
                     onLoad={resizeIframeToContent}
                   />
                 )}
@@ -211,13 +226,13 @@ const HtmlPreviewSidebar: React.FC = () => {
             ) : (
               <div className="h-full overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                 <div className="p-4">
-                  <SyntaxHighlighter
-                    language="html"
-                    style={tomorrow}
+                  <SyntaxHighlighter 
+                    language={getLanguage()} 
+                    style={tomorrow} 
                     customStyle={{ backgroundColor: '#f9fafb', borderRadius: '0.375rem' }}
                     showLineNumbers={true}
                   >
-                    {htmlContent || ''}
+                    {content || ''}
                   </SyntaxHighlighter>
                 </div>
               </div>
@@ -229,4 +244,4 @@ const HtmlPreviewSidebar: React.FC = () => {
   );
 };
 
-export default HtmlPreviewSidebar;
+export default PreviewSidebar;

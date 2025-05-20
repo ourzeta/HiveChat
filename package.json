@@ -44,6 +44,7 @@
     "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "^18",
     "react-markdown": "^8.0.7",
+    "react-syntax-highlighter": "^15.6.1",
     "rehype-highlight": "^6.0.0",
     "rehype-katex": "^6.0.3",
     "remark-breaks": "^3.0.3",
@@ -52,6 +53,7 @@
     "sharp": "^0.33.5",
     "sortablejs": "^1.15.6",
     "tsx": "^4.19.2",
+    "unified": "^11.0.5",
     "uuid": "^11.1.0",
     "zod": "^3.24.1",
     "zustand": "^5.0.0-rc.2"
@@ -66,6 +68,7 @@
     "@types/react-copy-to-clipboard": "^5.0.7",
     "@types/react-dom": "^18",
     "@types/sortablejs": "^1.15.8",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "drizzle-kit": "^0.30.6",
     "eslint": "^8",
     "eslint-config-next": "14.2.14",

@@ -20,7 +20,6 @@ const MarkdownRender = (props: {
   const pathname = usePathname();
   const {
     setIsOpen,
-    isOpen,
     resetActiveCard
   } = useSvgPreviewSidebarStore();
   const [processedContent, setProcessedContent] = useState(props.content);
@@ -48,14 +47,19 @@ const MarkdownRender = (props: {
 
   // 监听路径变化，当对话切换时关闭侧边栏并清除高亮
   useEffect(() => {
-    if (pathname !== currentPath) {
+    // 提取当前路径中的聊天ID
+    const currentChatId = pathname.split("/").pop() || '';
+    // 提取之前路径中的聊天ID
+    const previousChatId = currentPath.split("/").pop() || '';
+
+    // 检查聊天ID是否发生变化（对话切换）
+    if (currentChatId !== previousChatId) {
       setCurrentPath(pathname);
-      if (isOpen) {
-        setIsOpen(false);
-        resetActiveCard();
-      }
+      // 无论侧边栏是否打开，都重置状态
+      setIsOpen(false);
+      resetActiveCard();
     }
-  }, [pathname, currentPath, isOpen, setIsOpen, resetActiveCard]);
+  }, [pathname, currentPath, setIsOpen, resetActiveCard]);
 
   // 预处理内容，提取 SVG 代码块
   useEffect(() => {
@@ -90,9 +94,9 @@ const MarkdownRender = (props: {
       <Markdown
         remarkPlugins={[RemarkMath, remarkGfm, RemarkBreaks]}
         rehypePlugins={[
-          RehypeKatex,
+          RehypeKatex as any,
           [
-            rehypeHighlight,
+            rehypeHighlight as any,
             {
               detect: false,
               ignoreMissing: true,

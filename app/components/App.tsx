@@ -6,7 +6,7 @@ import { LoginModalProvider } from '@/app/contexts/loginModalContext';
 import LoginModal from '@/app/components/loginModal';
 import useSidebarCollapsedStore from '@/app/store/sidebarCollapsed';
 import useSvgPreviewSidebarStore from '@/app/store/svgPreviewSidebar';
-import SvgPreviewSidebar from '@/app/components/SvgPreviewSidebar';
+import SvgPreviewSidebar from '@/app/components/artifact/SvgPreviewSidebar';
 import SpinLoading from '@/app/components/loading/SpinLoading';
 import clsx from 'clsx';
 

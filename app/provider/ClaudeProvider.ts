@@ -289,8 +289,8 @@ export default class ClaudeApi implements LLMApi {
 
           if (type === 'message_stop') {
             const usage = json.usage || json['amazon-bedrock-invocationMetrics'];
-            this.inputTokens = usage.inputTokenCount;
-            this.outputTokens = usage.outputTokenCount;
+            this.inputTokens = usage?.inputTokenCount || null;
+            this.outputTokens = usage?.outputTokenCount || null;
             this.totalTokens = usage.inputTokenCount + usage.outputTokenCount;
           }
 

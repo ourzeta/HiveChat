@@ -7,11 +7,12 @@ import RehypeKatex from "rehype-katex";
 import rehypeHighlight from 'rehype-highlight';
 import { usePathname } from 'next/navigation';
 import CodeBlock from '@/app/components/CodeBlock';
-import SvgFileCard from '@/app/components/SvgFileCard';
+import SvgFileCard from '@/app/components/artifact/SvgFileCard';
 import useSvgPreviewSidebarStore from '@/app/store/svgPreviewSidebar';
 import 'highlight.js/styles/github.css';
 import "katex/dist/katex.min.css";
 import 'github-markdown-css/github-markdown-light.css';
+import crypto from 'crypto';
 
 const MarkdownRender = (props: {
   content: string,
@@ -61,6 +62,13 @@ const MarkdownRender = (props: {
     }
   }, [pathname, currentPath, setIsOpen, resetActiveCard]);
 
+  // 生成基于内容的哈希 ID
+  const generateContentBasedId = (content: string): string => {
+    // 使用 MD5 哈希算法生成基于内容的哈希值
+    // MD5 足够快速且碰撞概率低，适合此用例
+    return `svg-${crypto.createHash('md5').update(content).digest('hex').substring(0, 10)}`;
+  };
+
   // 预处理内容，提取 SVG 代码块
   useEffect(() => {
     const escaped = escapeBrackets(props.content);
@@ -69,10 +77,11 @@ const MarkdownRender = (props: {
     const svgBlockRegex = /```(?:xml|svg|html)?\s*(<svg[\s\S]*?<\/svg>)\s*```/g;
     const matches = [...escaped.matchAll(svgBlockRegex)];
 
-    // 提取 SVG 内容并生成唯一 ID
+    // 提取 SVG 内容并生成基于内容的唯一 ID
     const extractedSvgBlocks = matches.map(match => {
       const svgContent = match[1];
-      const id = `svg-${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
+      // 使用基于内容的哈希值作为 ID，确保相同内容始终获得相同的 ID
+      const id = generateContentBasedId(svgContent);
       return { id, content: svgContent };
     });
 

@@ -7,6 +7,7 @@ import RehypeKatex from "rehype-katex";
 import rehypeHighlight from 'rehype-highlight';
 import CodeBlock from '@/app/components/CodeBlock';
 import SvgFileCard from '@/app/components/artifact/SvgFileCard';
+import HtmlFileCard from '@/app/components/artifact/HtmlFileCard';
 import 'highlight.js/styles/github.css';
 import "katex/dist/katex.min.css";
 import 'github-markdown-css/github-markdown-light.css';
@@ -18,6 +19,7 @@ const MarkdownRender = (props: {
 ) => {
   const [processedContent, setProcessedContent] = useState(props.content);
   const [svgBlocks, setSvgBlocks] = useState<{ id: string, content: string }[]>([]);
+  const [htmlBlocks, setHtmlBlocks] = useState<{ id: string, content: string }[]>([]);
 
   // 处理括号转义
   function escapeBrackets(text: string) {
@@ -39,35 +41,55 @@ const MarkdownRender = (props: {
   }
 
   // 生成基于内容的哈希 ID
-  const generateContentBasedId = (content: string): string => {
+  const generateContentBasedId = (content: string, prefix: string = 'svg'): string => {
     // 使用 MD5 哈希算法生成基于内容的哈希值
     // MD5 足够快速且碰撞概率低，适合此用例
-    return `svg-${crypto.createHash('md5').update(content).digest('hex').substring(0, 10)}`;
+    return `${prefix}-${crypto.createHash('md5').update(content).digest('hex').substring(0, 10)}`;
   };
 
-  // 预处理内容，提取 SVG 代码块
+  // 预处理内容，提取 SVG 和 HTML 代码块
   useEffect(() => {
     const escaped = escapeBrackets(props.content);
 
     // 匹配 SVG 代码块
-    const svgBlockRegex = /```(?:xml|svg|html)?\s*(<svg[\s\S]*?<\/svg>)\s*```/g;
-    const matches = [...escaped.matchAll(svgBlockRegex)];
+    const svgBlockRegex = /```(?:xml|svg)?\s*(<svg[\s\S]*?<\/svg>)\s*```/g;
+    const svgMatches = [...escaped.matchAll(svgBlockRegex)];
 
     // 提取 SVG 内容并生成基于内容的唯一 ID
-    const extractedSvgBlocks = matches.map(match => {
+    const extractedSvgBlocks = svgMatches.map(match => {
       const svgContent = match[1];
       // 使用基于内容的哈希值作为 ID，确保相同内容始终获得相同的 ID
-      const id = generateContentBasedId(svgContent);
+      const id = generateContentBasedId(svgContent, 'svg');
       return { id, content: svgContent };
     });
 
     setSvgBlocks(extractedSvgBlocks);
 
+    // 匹配 HTML 代码块 (排除已经匹配的 SVG 代码块)
+    const htmlBlockRegex = /```(?:html)?\s*(<(?!svg)[\s\S]*?>[\s\S]*?<\/[\s\S]*?>)\s*```/g;
+    const htmlMatches = [...escaped.matchAll(htmlBlockRegex)];
+
+    // 提取 HTML 内容并生成基于内容的唯一 ID
+    const extractedHtmlBlocks = htmlMatches.map(match => {
+      const htmlContent = match[1];
+      // 使用基于内容的哈希值作为 ID，确保相同内容始终获得相同的 ID
+      const id = generateContentBasedId(htmlContent, 'html');
+      return { id, content: htmlContent };
+    });
+
+    setHtmlBlocks(extractedHtmlBlocks);
+
     // 替换 SVG 代码块为特殊格式的代码块
     let processed = escaped;
     extractedSvgBlocks.forEach(block => {
-      const regex = new RegExp(`\`\`\`(?:xml|svg|html)?\\s*(${block.content.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\s*\`\`\``, 'g');
+      const regex = new RegExp(`\`\`\`(?:xml|svg)?\\s*(${block.content.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\s*\`\`\``, 'g');
       processed = processed.replace(regex, `\`\`\`svg-card-${block.id}\n${block.content}\n\`\`\``);
+    });
+
+    // 替换 HTML 代码块为特殊格式的代码块
+    extractedHtmlBlocks.forEach(block => {
+      const regex = new RegExp(`\`\`\`(?:html)?\\s*(${block.content.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\s*\`\`\``, 'g');
+      processed = processed.replace(regex, `\`\`\`html-card-${block.id}\n${block.content}\n\`\`\``);
     });
 
     setProcessedContent(processed);
@@ -101,6 +123,20 @@ const MarkdownRender = (props: {
                 return <SvgFileCard
                   svgContent={svgBlock.content}
                   cardId={svgBlock.id}
+                />;
+              }
+            }
+
+            // 检查是否是 HTML 卡片代码块
+            if (!inline && match && match[1].includes('html') && className) {
+              // 从类名中提取 ID
+              const id = className.replace('hljs language-html-card-', '');
+              // 查找对应的 HTML 块
+              const htmlBlock = htmlBlocks.find(block => block.id === id);
+              if (htmlBlock) {
+                return <HtmlFileCard
+                  htmlContent={htmlBlock.content}
+                  cardId={htmlBlock.id}
                 />;
               }
             }

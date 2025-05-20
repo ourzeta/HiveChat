@@ -5,10 +5,8 @@ import RemarkMath from "remark-math";
 import RemarkBreaks from "remark-breaks";
 import RehypeKatex from "rehype-katex";
 import rehypeHighlight from 'rehype-highlight';
-import { usePathname } from 'next/navigation';
 import CodeBlock from '@/app/components/CodeBlock';
 import SvgFileCard from '@/app/components/artifact/SvgFileCard';
-import useSvgPreviewSidebarStore from '@/app/store/svgPreviewSidebar';
 import 'highlight.js/styles/github.css';
 import "katex/dist/katex.min.css";
 import 'github-markdown-css/github-markdown-light.css';
@@ -18,14 +16,8 @@ const MarkdownRender = (props: {
   content: string,
 }
 ) => {
-  const pathname = usePathname();
-  const {
-    setIsOpen,
-    resetActiveCard
-  } = useSvgPreviewSidebarStore();
   const [processedContent, setProcessedContent] = useState(props.content);
   const [svgBlocks, setSvgBlocks] = useState<{ id: string, content: string }[]>([]);
-  const [currentPath, setCurrentPath] = useState(pathname);
 
   // 处理括号转义
   function escapeBrackets(text: string) {
@@ -45,22 +37,6 @@ const MarkdownRender = (props: {
       },
     );
   }
-
-  // 监听路径变化，当对话切换时关闭侧边栏并清除高亮
-  useEffect(() => {
-    // 提取当前路径中的聊天ID
-    const currentChatId = pathname.split("/").pop() || '';
-    // 提取之前路径中的聊天ID
-    const previousChatId = currentPath.split("/").pop() || '';
-
-    // 检查聊天ID是否发生变化（对话切换）
-    if (currentChatId !== previousChatId) {
-      setCurrentPath(pathname);
-      // 无论侧边栏是否打开，都重置状态
-      setIsOpen(false);
-      resetActiveCard();
-    }
-  }, [pathname, currentPath, setIsOpen, resetActiveCard]);
 
   // 生成基于内容的哈希 ID
   const generateContentBasedId = (content: string): string => {

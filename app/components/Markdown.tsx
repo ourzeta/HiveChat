@@ -7,7 +7,6 @@ import RehypeKatex from "rehype-katex";
 import rehypeHighlight from 'rehype-highlight';
 import CodeBlock from '@/app/components/CodeBlock';
 import FileCard from '@/app/components/artifact/FileCard';
-import { ContentType } from '@/app/store/previewSidebar';
 import 'highlight.js/styles/github.css';
 import "katex/dist/katex.min.css";
 import 'github-markdown-css/github-markdown-light.css';

@@ -37,7 +37,7 @@ const CodeBlock: React.FC<{ children: React.ReactNode; language: string }> = ({ 
           </Tooltip>
         </CopyToClipboard>
       </div>
-      <pre style={{margin: '0px', padding: '0px'}}>
+      <pre style={{margin: '0px', padding: '0px'}} className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         <code className={`language-${language}`}>{children}</code>
       </pre>
     </>

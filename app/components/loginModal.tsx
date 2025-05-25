@@ -52,7 +52,6 @@ export default function LoginModal() {
     });
     setLoading(false);
     if (response?.error) {
-      console.log(response?.error);
       setError(t('passwordError'));
       return;
     }

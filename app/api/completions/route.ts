@@ -20,8 +20,8 @@ export async function POST(req: NextRequest) {
   try {
     // 获取原始请求的 headers
     const userRequestHeaders = req.headers;
-    const xProvider = userRequestHeaders.get('X-Provider')  || ''; //必填
-    const xModel = userRequestHeaders.get('X-Model')  || '';       //必填
+    const xProvider = userRequestHeaders.get('X-Provider') || ''; //必填
+    const xModel = userRequestHeaders.get('X-Model') || '';       //必填
     const xChatId = userRequestHeaders.get('x-chat-id');           //对话时必填，测试时不需要
     const xEndpoint = userRequestHeaders.get('X-Endpoint');        //选填，测试 URL 时需要
 
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
     // 检查响应是否成功
     if (!response.ok) {
       const errorData = await response.text();
-      return new Response(JSON.stringify(errorData), {
+      return new Response(errorData, {
         status: response.status,
         headers: { 'Content-Type': 'application/json' },
       });

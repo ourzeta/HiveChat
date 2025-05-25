@@ -67,10 +67,10 @@ export const addBotToChatInServer = async (botId: number) => {
     );
   if (result.length > 0) {
     const botInfo = result[0];
-
+    const safeTitle = botInfo.title.length > 255 ? botInfo.title.slice(0, 255) : botInfo.title;
     const chatResult = await db.insert(chats)
       .values({
-        title: botInfo.title,
+        title: safeTitle,
         botId: botInfo.id,
         avatar: botInfo.avatar,
         avatarType: botInfo.avatarType,
@@ -88,9 +88,6 @@ export const addBotToChatInServer = async (botId: number) => {
       status: 'fail',
     }
   }
-
-
-
 }
 
 export const getBotListInServer = async () => {

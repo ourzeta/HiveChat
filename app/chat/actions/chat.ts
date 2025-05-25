@@ -30,9 +30,11 @@ export const addChatInServer = async (
       message: 'please login first.'
     }
   }
+  const safeTitle = chatInfo.title.length > 255 ? chatInfo.title.slice(0, 255) : chatInfo.title;
   const result = await db.insert(chats)
     .values({
       ...chatInfo,
+      title: safeTitle,
       userId: session.user.id
     })
     .returning();
@@ -134,8 +136,12 @@ export const updateChatInServer = async (chatId: string, newChatInfo: {
       message: 'please login first.'
     }
   }
+  const safeChatInfo = { ...newChatInfo };
+  if (safeChatInfo.title && safeChatInfo.title.length > 255) {
+    safeChatInfo.title = safeChatInfo.title.slice(0, 255);
+  }
   const result = await db.update(chats)
-    .set(newChatInfo)
+    .set(safeChatInfo)
     .where(
       and(
         eq(chats.id, chatId),
@@ -155,9 +161,10 @@ export const updateChatTitleInServer = async (chatId: string, newTitle: string) 
     }
   }
   try {
+    const safeTitle = newTitle.length > 255 ? newTitle.slice(0, 255) : newTitle;
     await db.update(chats)
       .set({
-        title: newTitle,
+        title: safeTitle,
       })
       .where(
         and(

@@ -163,9 +163,9 @@ export default async function proxyOpenAiStream(response: Response,
         userId: messageInfo.userId,
         modelId: messageInfo.model,
         providerId: messageInfo.providerId,
-        inputTokens: promptTokens,
-        outputTokens: completionTokens,
-        totalTokens: totalTokens,
+        inputTokens: promptTokens || 0,
+        outputTokens: completionTokens || 0,
+        totalTokens: totalTokens || 0,
       });
       controller.close();
     }

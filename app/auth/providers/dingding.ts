@@ -40,38 +40,70 @@ export default function Dingding(options: {
     userinfo: {
       url: apiUserUrl,
       async request({ tokens, provider }: any) {
-        const request = await fetch(provider.userinfo?.url as URL, {
-          headers: {
-            'x-acs-dingtalk-access-token': tokens.access_token,
-          },
-        });
-        const userData = await request.json();
-        const existingUser = await db
-          .query
-          .users
-          .findFirst({
-            where: eq(users.dingdingUnionId, userData.unionId)
+        try {
+          // 添加超时控制
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+          
+          const request = await fetch(provider.userinfo?.url as URL, {
+            headers: {
+              'x-acs-dingtalk-access-token': tokens.access_token,
+            },
+            signal: controller.signal,
           });
-        if (existingUser) {
-          await db.update(users).set({
-            name: userData.nick,
-            email: userData.email || `${userData.unionId}@dingtalk.com`,
-            image: userData.avatarUrl || null,
-          }).where(eq(users.dingdingUnionId, userData.unionId));
-        } else {
-          const defaultGroup = await db.query.groups.findFirst({
-            where: eq(groups.isDefault, true)
-          });
-          const groupId = defaultGroup?.id || null;
-          await db.insert(users).values({
-            name: userData.nick,
-            email: userData.email || `${userData.unionId}@dingtalk.com`,
-            image: userData.avatarUrl || null,
-            dingdingUnionId: userData.unionId,
-            groupId: groupId,
-          });
+          
+          clearTimeout(timeoutId);
+          
+          if (!request.ok) {
+            console.error('获取钉钉用户信息失败:', request.status, request.statusText);
+            throw new Error(`获取用户信息失败: ${request.status} ${request.statusText}`);
+          }
+          
+          const userData = await request.json();
+          if (!userData.unionId) {
+            throw new Error('钉钉用户信息中缺少 unionId');
+          }
+          
+          const existingUser = await db
+            .query
+            .users
+            .findFirst({
+              where: eq(users.dingdingUnionId, userData.unionId)
+            });
+            
+          if (existingUser) {
+            await db.update(users).set({
+              name: userData.nick,
+              email: userData.email || `${userData.unionId}@dingtalk.com`,
+              image: userData.avatarUrl || null,
+            }).where(eq(users.dingdingUnionId, userData.unionId));
+          } else {
+            const defaultGroup = await db.query.groups.findFirst({
+              where: eq(groups.isDefault, true)
+            });
+            const groupId = defaultGroup?.id || null;
+            await db.insert(users).values({
+              name: userData.nick,
+              email: userData.email || `${userData.unionId}@dingtalk.com`,
+              image: userData.avatarUrl || null,
+              dingdingUnionId: userData.unionId,
+              groupId: groupId,
+            });
+          }
+          
+          return userData;
+        } catch (error: any) {
+          console.error('钉钉用户信息请求失败:', error);
+          
+          // 根据错误类型抛出更具体的错误
+          if (error.name === 'AbortError') {
+            throw new Error('获取用户信息超时，请重试');
+          } else if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+            throw new Error('无法连接到钉钉服务器，请检查网络连接');
+          } else {
+            throw new Error(`获取用户信息失败: ${error.message}`);
+          }
         }
-        return userData;
       },
     },
     profile(profile: DingdingProfile) {

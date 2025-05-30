@@ -75,6 +75,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
 
   ],
+  pages: {
+    error: '/auth/error', // 自定义错误页面
+  },
   callbacks: {
     async jwt({ token, user, account }) {
       if (user) {

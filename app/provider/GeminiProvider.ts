@@ -172,7 +172,7 @@ export default class GeminiApi implements LLMApi {
                 headers: {
                   'Content-Type': 'application/json',
                   'X-Provider': 'gemini',
-                  'X-Model': options.config.model,
+                  'X-Model': encodeURIComponent(options.config.model),
                   'X-Chat-Id': options.chatId!,
                 },
                 body: JSON.stringify({
@@ -331,7 +331,7 @@ export default class GeminiApi implements LLMApi {
         headers: {
           'Content-Type': 'application/json',
           'X-Provider': 'gemini',
-          'X-Model': options.config.model,
+          'X-Model': encodeURIComponent(options.config.model),
           'X-Chat-Id': options.chatId!,
         },
         body: JSON.stringify({
@@ -411,7 +411,7 @@ export default class GeminiApi implements LLMApi {
       'Content-Type': 'application/json',
       'X-Provider': 'gemini',
       'X-Apikey': `${apikey}`,
-      'X-Model': modelId
+      'X-Model': encodeURIComponent(modelId)
     };
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);

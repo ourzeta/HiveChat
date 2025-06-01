@@ -253,7 +253,7 @@ export default class ChatGPTApi implements LLMApi {
                 headers: {
                   'Content-Type': 'application/json',
                   'X-Provider': this.providerId,
-                  'X-Model': options.config.model,
+                  'X-Model': encodeURIComponent(options.config.model),
                   'X-Chat-Id': options.chatId!,
                 },
                 body: JSON.stringify({
@@ -438,7 +438,7 @@ export default class ChatGPTApi implements LLMApi {
         headers: {
           'Content-Type': 'application/json',
           'X-Provider': this.providerId,
-          'X-Model': options.config.model,
+          'X-Model': encodeURIComponent(options.config.model),
           'X-Chat-Id': options.chatId!,
         },
         body: JSON.stringify({
@@ -524,7 +524,7 @@ export default class ChatGPTApi implements LLMApi {
       'Content-Type': 'application/json',
       'X-Apikey': `${apikey}`,
       'X-Provider': this.providerId,
-      'X-Model': modelId,
+      'X-Model': encodeURIComponent(modelId),
       'X-Endpoint': apiUrl
     };
     const controller = new AbortController();

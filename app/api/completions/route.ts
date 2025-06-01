@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     // 获取原始请求的 headers
     const userRequestHeaders = req.headers;
     const xProvider = userRequestHeaders.get('X-Provider') || ''; //必填
-    const xModel = userRequestHeaders.get('X-Model') || '';       //必填
+    const xModel = decodeURIComponent(userRequestHeaders.get('X-Model') || '');       //必填
     const xChatId = userRequestHeaders.get('x-chat-id');           //对话时必填，测试时不需要
     const xEndpoint = userRequestHeaders.get('X-Endpoint');        //选填，测试 URL 时需要
 

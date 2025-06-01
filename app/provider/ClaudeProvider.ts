@@ -182,7 +182,7 @@ export default class ClaudeApi implements LLMApi {
                   headers: {
                     'Content-Type': 'application/json',
                     'X-Provider': 'claude',
-                    'X-Model': options.config.model,
+                    'X-Model': encodeURIComponent(options.config.model),
                     'X-Chat-Id': options.chatId!,
                   },
                   body: JSON.stringify({
@@ -317,7 +317,7 @@ export default class ClaudeApi implements LLMApi {
         headers: {
           'Content-Type': 'application/json',
           'X-Provider': 'claude',
-          'X-Model': options.config.model,
+          'X-Model': encodeURIComponent(options.config.model),
           'X-Chat-Id': options.chatId!,
         },
         body: JSON.stringify({
@@ -401,7 +401,7 @@ export default class ClaudeApi implements LLMApi {
       'Content-Type': 'application/json',
       'x-api-key': `${apikey}`,
       'X-Provider': 'claude',
-      'X-Model': modelId,
+      'X-Model': encodeURIComponent(modelId),
       'X-Endpoint': apiUrl
     };
     const controller = new AbortController();

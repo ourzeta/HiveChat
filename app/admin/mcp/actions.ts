@@ -50,8 +50,9 @@ export async function addMcpServer(mcpServerInfo: {
     // 连接测试
     if (mcpServerInfo.isActive) {
       try {
-        try {
-          const tools = await mcpService.listTools(mcpServerInfo);
+        const tools = await mcpService.listTools(mcpServerInfo);
+        // 工具数量大于 0 才支持添加
+        if (tools.length > 0) {
           const serverResult = await db.insert(mcpServers).values(mcpServerInfo).returning();
           const insertedServer = serverResult[0];
           await db.insert(mcpTools).values(tools.map(tool => ({
@@ -60,10 +61,10 @@ export async function addMcpServer(mcpServerInfo: {
             description: tool.description,
             inputSchema: JSON.stringify(tool.inputSchema),
           })));
-        } catch (e) {
+        } else {
           return {
             success: false,
-            message: `添加失败`
+            message: `MCP Server 未提供 Tool， 暂不支持添加`
           }
         }
       } catch (error) {

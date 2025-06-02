@@ -119,7 +119,7 @@ class MCPService {
       })
       return serverTools
     } catch (error) {
-      console.error(`[MCP] Failed to list tools for server: ${server.name}`, error)
+      console.log(`[MCP] Failed to list tools for server: ${server.name}`, error)
       return []
     }
   }
@@ -131,11 +131,11 @@ class MCPService {
       console.info('[MCP] Calling:', server.name, name, args)
       const client = await this.initClient(server)
       
-      // Create a timeout promise that rejects after 20 seconds
+      // Create a timeout promise that rejects after 60 seconds
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => {
-          reject(new Error(`Timeout: Tool call '${name}' on '${server.name}' exceeded 20 seconds`));
-        }, 20000);
+          reject(new Error(`Timeout: Tool call '${name}' on '${server.name}' exceeded 60 seconds`));
+        }, 60000);
       });
 
       // Race the actual tool call against the timeout

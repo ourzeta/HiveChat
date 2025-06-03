@@ -369,7 +369,11 @@ const useChat = (chatId: string) => {
   useEffect(() => {
     const initializeChatData = async () => {
       try {
-        setIsPending(true);
+        const urlParams = new URLSearchParams(window.location.search);
+        const fromHome = urlParams.get('f') === 'home';
+        if (!fromHome) {
+          setIsPending(true);  
+        };
         const { status, data } = await getChatInfoInServer(chatId);
         if (status === 'success') {
           initializeChat(data!);
@@ -388,10 +392,9 @@ const useChat = (chatId: string) => {
         // 计算用户消息数量
         const userMessageCount = messageList.filter(item => item.role === "user").length;
         setUserSendCount(userMessageCount);
-        
-        setIsPending(false);
       } catch (error) {
         console.error('Error in chat initialization:', error);
+      } finally {
         setIsPending(false);
       }
     };

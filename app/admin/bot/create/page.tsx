@@ -40,7 +40,7 @@ const CreateBot = () => {
   return (
     <div className="container max-w-3xl mx-auto flex flex-col items-center px-16 py-4 h-fit">
       <div className='w-full'>
-        <Link href='/chat/bot/discover'>
+        <Link href='/admin/bot/list'>
           <Button type='link' size='small' icon={<LeftOutlined />}>{t('back')}</Button>
         </Link>
       </div>

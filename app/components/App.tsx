@@ -13,7 +13,7 @@ import clsx from 'clsx';
 const App: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [hasInstalled, setHasInstalled] = useState(false);
   const { isSidebarCollapsed, setIsSidebarCollapsed } = useSidebarCollapsedStore();
-  const { isOpen: isPreviewSidebarOpen, setIsOpen: setPreviewSidebarOpen, resetActiveCard } = usePreviewSidebarStore();
+  const { isOpen: isPreviewSidebarOpen, width: previewSidebarWidth, setIsOpen: setPreviewSidebarOpen, resetActiveCard } = usePreviewSidebarStore();
   const pathname = usePathname();
   const [previousPath, setPreviousPath] = useState(pathname);
 
@@ -84,7 +84,8 @@ const App: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           )}
           style={{
             width: '100%',
-            paddingRight: isPreviewSidebarOpen ? 'calc(40% - 18px)' : '0',
+            paddingRight: isPreviewSidebarOpen ? `${previewSidebarWidth}px` : '0',
+            transition: 'padding-right 0.1s ease-out', // 添加平滑过渡
           }}
         >
           {children}

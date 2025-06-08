@@ -10,28 +10,40 @@ interface IPreviewSidebarStore {
   content: string;
   activeTab: 'code' | 'preview';
   activeCardId: string | null;
+  width: number; // 侧边栏宽度（像素值）
   setIsOpen: (value: boolean) => void;
   setContent: (content: string, type: ContentType) => void;
   setActiveTab: (tab: 'code' | 'preview') => void;
   setActiveCardId: (id: string | null) => void;
+  setWidth: (width: number) => void;
   toggleSidebar: () => void;
   resetActiveCard: () => void;
 }
 
 // 创建通用预览侧边栏状态管理
-const usePreviewSidebarStore = create<IPreviewSidebarStore>((set) => ({
+const usePreviewSidebarStore = create<IPreviewSidebarStore>((set, get) => ({
   isOpen: false,
   contentType: null,
   content: '',
   activeTab: 'preview',
   activeCardId: null,
+  width: 0, // 初始宽度为0，打开时会计算默认宽度
   
   setIsOpen: (value: boolean) => {
-    set({ isOpen: value });
-    // 如果侧边栏关闭，清除活动卡片
-    if (!value) {
-      set({ activeCardId: null });
-    }
+    set((state) => {
+      const newState: Partial<IPreviewSidebarStore> = { isOpen: value };
+      
+      // 如果侧边栏关闭，清除活动卡片
+      if (!value) {
+        newState.activeCardId = null;
+      } else {
+        // 如果侧边栏打开，设置默认宽度为窗口宽度的40%
+        const defaultWidth = Math.floor(window.innerWidth * 0.4);
+        newState.width = defaultWidth;
+      }
+      
+      return newState;
+    });
   },
   
   setContent: (content: string, type: ContentType) => {
@@ -47,6 +59,14 @@ const usePreviewSidebarStore = create<IPreviewSidebarStore>((set) => ({
   
   setActiveCardId: (id: string | null) => {
     set({ activeCardId: id });
+  },
+  
+  setWidth: (width: number) => {
+    // 限制最小宽度为300px，最大宽度为窗口宽度的80%
+    const minWidth = 300;
+    const maxWidth = Math.floor(window.innerWidth * 0.8);
+    const clampedWidth = Math.max(minWidth, Math.min(width, maxWidth));
+    set({ width: clampedWidth });
   },
   
   toggleSidebar: () => {

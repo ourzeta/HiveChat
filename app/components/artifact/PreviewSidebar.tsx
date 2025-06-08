@@ -13,13 +13,18 @@ const PreviewSidebar: React.FC = () => {
     content,
     contentType,
     activeTab,
+    width,
     setIsOpen,
     setActiveTab,
+    setWidth,
     resetActiveCard
   } = usePreviewSidebarStore();
   const [renderedContent, setRenderedContent] = useState<string>('');
   const [messageApi, contextHolder] = message.useMessage();
+  const [isDragging, setIsDragging] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const dragStartXRef = useRef<number>(0);
+  const dragStartWidthRef = useRef<number>(0);
 
   // 添加自适应 iframe 高度的函数，使用 useCallback 避免不必要的重新创建
   const resizeIframeToContent = useCallback(() => {
@@ -138,6 +143,40 @@ const PreviewSidebar: React.FC = () => {
     }
   };
 
+  // 拖拽处理函数
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    dragStartXRef.current = e.clientX;
+    dragStartWidthRef.current = width;
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = dragStartXRef.current - e.clientX; // 向左拖拽为正值
+      const newWidth = dragStartWidthRef.current + deltaX;
+      setWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      
+      // 移除全局事件监听器
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      
+      // 恢复默认样式
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    };
+    
+    // 添加全局鼠标事件监听器
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    
+    // 防止文本选择
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+  }, [width, setWidth]);
+
   // 根据内容类型确定语言
   const getLanguage = () => {
     return contentType === 'svg' ? 'xml' : 'html';
@@ -148,21 +187,34 @@ const PreviewSidebar: React.FC = () => {
       {contextHolder}
       <div
         className={clsx(
-          'fixed top-0 right-0 h-full bg-white border-l border-gray-200 shadow-lg z-40',
-          'transition-all duration-500 ease-in-out', // 增加过渡动画时间
+          'fixed top-0 right-0 h-full bg-white border-l border-gray-200 shadow-lg z-40 flex',
           {
-            'w-0 opacity-0 pointer-events-none translate-x-full': !isOpen, // 添加平移动画
-            'opacity-100 translate-x-0': isOpen, // 设置为主内容区域的 40%
+            'opacity-0 pointer-events-none translate-x-full': !isOpen,
+            'opacity-100 translate-x-0': isOpen,
           }
         )}
         style={{
-          // 计算宽度为主内容区域的 40%
-          width: isOpen ? 'calc(40% - 18px)' : '0',
-          // 固定在右侧
-          right: '0',
+          width: isOpen ? `${width}px` : '0',
+          transition: isDragging ? 'none' : 'all 0.3s ease-in-out',
         }}
       >
-        <div className="h-full flex flex-col">
+        {/* 拖拽手柄 */}
+        {isOpen && (
+          <div
+            className={clsx(
+              'absolute left-0 top-0 w-1 h-full cursor-col-resize bg-transparent hover:bg-blue-500 transition-colors duration-200',
+              'flex items-center justify-center group',
+              {
+                'bg-blue-500': isDragging,
+              }
+            )}
+            onMouseDown={handleMouseDown}
+            style={{ left: '-2px' }}
+          >
+            <div className="w-0.5 h-8 bg-gray-400 group-hover:bg-white transition-colors duration-200" />
+          </div>
+        )}
+        <div className="h-full flex flex-col flex-1">
           <div className="flex justify-between items-center p-2 border-b">
             <div className="flex-grow">
               <Segmented

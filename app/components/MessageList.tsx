@@ -166,27 +166,29 @@ export const MessageList = (props: { chat_id: string }) => {
     <>
       {contextHolder}
       <ChatHeader />
-      <ScrollToBottomButton
-        visible={stableShowScrollButton}
-        onClick={scrollToBottom}
-      />
-      <div 
-        onScroll={throttledHandleScroll} 
-        ref={messageListRef} 
-        className='flex w-full flex-col h-0 px-2 grow py-6 relative overflow-y-auto leading-7 chat-list text-sm scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-gray-300 scrollbar-track-gray-100'
-      >
-        {!isPending && chat?.prompt && <PromptSection prompt={chat.prompt} />}
-        
-        {isPending ? <LoadingSkeleton /> : renderedMessageList}
-        
-        <ResponsingMessage
-          searchStatus={searchStatus}
-          responseStatus={responseStatus}
-          responseMessage={responseMessage}
-          currentProvider={currentModel.provider.id}
+      <div className="relative flex flex-col grow">
+        <ScrollToBottomButton
+          visible={stableShowScrollButton}
+          onClick={scrollToBottom}
         />
-        
-        {responseStatus === 'done' && !isPending && <NewChatButton onClick={handleNewChat} />}
+        <div
+          onScroll={throttledHandleScroll}
+          ref={messageListRef}
+          className='flex w-full flex-col h-0 px-2 grow py-6 relative overflow-y-auto leading-7 chat-list text-sm scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-gray-300 scrollbar-track-gray-100'
+        >
+          {!isPending && chat?.prompt && <PromptSection prompt={chat.prompt} />}
+
+          {isPending ? <LoadingSkeleton /> : renderedMessageList}
+
+          <ResponsingMessage
+            searchStatus={searchStatus}
+            responseStatus={responseStatus}
+            responseMessage={responseMessage}
+            currentProvider={currentModel.provider.id}
+          />
+
+          {responseStatus === 'done' && !isPending && <NewChatButton onClick={handleNewChat} />}
+        </div>
       </div>
       
       <ChatProvider

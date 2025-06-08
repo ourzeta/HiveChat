@@ -62,9 +62,8 @@ const usePreviewSidebarStore = create<IPreviewSidebarStore>((set, get) => ({
   },
   
   setWidth: (width: number) => {
-    // 限制最小宽度为300px，最大宽度为窗口宽度的80%
-    const minWidth = 300;
-    const maxWidth = Math.floor(window.innerWidth * 0.8);
+    const minWidth = 320;
+    const maxWidth = Math.floor(window.innerWidth * 0.68);
     const clampedWidth = Math.max(minWidth, Math.min(width, maxWidth));
     set({ width: clampedWidth });
   },

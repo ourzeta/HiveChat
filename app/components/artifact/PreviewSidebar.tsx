@@ -107,6 +107,27 @@ const PreviewSidebar: React.FC = () => {
     };
   }, [activeTab, isOpen, contentType, resizeIframeToContent]);
 
+  // 确保iframe在拖拽状态变化时正确更新样式
+  useEffect(() => {
+    if (iframeRef.current) {
+      if (isDragging && activeTab === 'preview' && contentType === 'html') {
+        iframeRef.current.style.pointerEvents = 'none';
+      } else {
+        iframeRef.current.style.pointerEvents = 'auto';
+      }
+    }
+  }, [isDragging, activeTab, contentType]);
+
+  // 组件卸载时清理iframe样式
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    return () => {
+      if (iframe) {
+        iframe.style.pointerEvents = 'auto';
+      }
+    };
+  }, []);
+
   const handleClose = () => {
     setIsOpen(false);
     resetActiveCard(); // 关闭侧边栏时清除高亮状态
@@ -143,7 +164,7 @@ const PreviewSidebar: React.FC = () => {
     }
   };
 
-  // 拖拽处理函数
+  // 拖拽处理函数 - iframe兼容优化版本
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -152,10 +173,18 @@ const PreviewSidebar: React.FC = () => {
     dragStartWidthRef.current = width;
 
     let animationFrameId: number | null = null;
+    let lastUpdateTime = 0;
+    const throttleDelay = 16; // 约60fps
 
     const handleMouseMove = (e: MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
+
+      const now = Date.now();
+      if (now - lastUpdateTime < throttleDelay) {
+        return;
+      }
+      lastUpdateTime = now;
 
       // 使用 requestAnimationFrame 来优化性能
       if (animationFrameId) {
@@ -165,7 +194,13 @@ const PreviewSidebar: React.FC = () => {
       animationFrameId = requestAnimationFrame(() => {
         const deltaX = dragStartXRef.current - e.clientX; // 向左拖拽为正值
         const newWidth = dragStartWidthRef.current + deltaX;
-        setWidth(newWidth);
+
+        // 提前计算限制，避免在 store 中重复计算
+        const minWidth = 320; // 增加最小宽度以确保按钮可见
+        const maxWidth = Math.floor(window.innerWidth * 0.8);
+        const clampedWidth = Math.max(minWidth, Math.min(newWidth, maxWidth));
+
+        setWidth(clampedWidth);
       });
     };
 
@@ -173,6 +208,7 @@ const PreviewSidebar: React.FC = () => {
       e.preventDefault();
       e.stopPropagation();
 
+      // 立即设置 isDragging 为 false，恢复iframe交互
       setIsDragging(false);
 
       // 取消待处理的动画帧
@@ -187,6 +223,11 @@ const PreviewSidebar: React.FC = () => {
       // 恢复默认样式
       document.body.style.userSelect = '';
       document.body.style.cursor = '';
+
+      // 确保iframe恢复正常交互
+      if (iframeRef.current) {
+        iframeRef.current.style.pointerEvents = 'auto';
+      }
     };
 
     // 添加全局鼠标事件监听器，使用 capture 模式确保优先捕获
@@ -196,7 +237,12 @@ const PreviewSidebar: React.FC = () => {
     // 防止文本选择
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'col-resize';
-  }, [width, setWidth]);
+
+    // 立即禁用iframe的鼠标事件，防止干扰拖拽
+    if (iframeRef.current && activeTab === 'preview' && contentType === 'html') {
+      iframeRef.current.style.pointerEvents = 'none';
+    }
+  }, [width, setWidth, activeTab, contentType]);
 
   // 根据内容类型确定语言
   const getLanguage = () => {
@@ -216,14 +262,15 @@ const PreviewSidebar: React.FC = () => {
         )}
         style={{
           width: isOpen ? `${width}px` : '0',
-          transition: isDragging ? 'none' : 'all 0.3s ease-in-out',
+          minWidth: isOpen ? '320px' : '0',
+          transition: isDragging ? 'none' : 'width 0.2s ease-out, opacity 0.3s ease-in-out, transform 0.3s ease-in-out',
         }}
       >
         {/* 拖拽手柄 */}
         {isOpen && (
           <div
             className={clsx(
-              'absolute left-0 top-0 w-1 h-full cursor-col-resize bg-transparent hover:bg-blue-500 transition-colors duration-200',
+              'absolute left-0 top-0 w-1 h-full cursor-col-resize bg-transparent hover:bg-blue-500 transition-colors duration-200 z-10',
               'flex items-center justify-center group',
               {
                 'bg-blue-500': isDragging,
@@ -235,13 +282,38 @@ const PreviewSidebar: React.FC = () => {
             <div className="w-0.5 h-8 bg-gray-400 group-hover:bg-white transition-colors duration-200" />
           </div>
         )}
-        {/* 拖拽时的覆盖层，防止 iframe 捕获鼠标事件 */}
+        {/* 拖拽时的全局覆盖层，防止iframe捕获鼠标事件 */}
         {isDragging && (
-          <div className="absolute inset-0 z-50 cursor-col-resize" />
+          <div
+            className="absolute inset-0 cursor-col-resize"
+            style={{
+              zIndex: 50,
+              left: '4px', // 避免覆盖拖拽手柄
+              backgroundColor: 'transparent',
+              pointerEvents: 'all', // 关键：确保能够捕获鼠标事件
+            }}
+            onMouseMove={(e) => {
+              // 防止事件冒泡，确保拖拽事件正常工作
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onMouseUp={(e) => {
+              // 防止事件冒泡
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          />
         )}
-        <div className="h-full flex flex-col flex-1">
-          <div className="flex justify-between items-center p-2 border-b min-w-0">
-            <div className="flex-shrink-0 mr-2">
+        <div className="h-full flex flex-col flex-1 relative" style={{ minWidth: 0 }}>
+          {/* 固定头部 */}
+          <div
+            className="flex justify-between items-center p-2 border-b bg-white relative z-20"
+            style={{
+              minWidth: '320px',
+              flexShrink: 0,
+            }}
+          >
+            <div className="flex-shrink-0 mr-2 overflow-hidden">
               <Segmented
                 value={activeTab}
                 onChange={(value) => setActiveTab(value as 'code' | 'preview')}
@@ -249,41 +321,56 @@ const PreviewSidebar: React.FC = () => {
                   {
                     value: 'preview',
                     icon: <EyeOutlined />,
-                    label: <span>预览</span>
+                    label: <span className="hidden sm:inline">预览</span>
                   },
                   {
                     value: 'code',
                     icon: <CodeOutlined />,
-                    label: <span>代码</span>
+                    label: <span className="hidden sm:inline">代码</span>
                   }
                 ]}
               />
             </div>
-            <div className="flex items-center space-x-1 flex-shrink-0">
+            <div
+              className="flex items-center space-x-1 flex-shrink-0"
+              style={{
+                minWidth: 'fit-content',
+                position: 'relative',
+                zIndex: 21,
+              }}
+            >
               <Button
                 type="text"
                 icon={<DownloadOutlined />}
                 onClick={handleDownload}
                 aria-label={`下载 ${contentType?.toUpperCase()}`}
-              >下载</Button>
+                className="flex-shrink-0"
+              >
+                <span className="hidden sm:inline">下载</span>
+              </Button>
               <Button
                 type="text"
                 icon={<CopyOutlined />}
                 onClick={handleCopy}
                 aria-label={`复制 ${contentType?.toUpperCase()} 代码`}
-                size="small"
-              >复制</Button>
+                className="flex-shrink-0"
+              >
+                <span className="hidden sm:inline">复制</span>
+              </Button>
               <Button
                 type="text"
                 icon={<CloseOutlined />}
                 onClick={handleClose}
                 aria-label="关闭预览"
+                className="flex-shrink-0"
+                style={{ minWidth: '32px' }}
               />
             </div>
           </div>
-          <div className="flex-grow overflow-hidden">
+          {/* 内容区域 */}
+          <div className="flex-grow relative" style={{ minHeight: 0 }}>
             {activeTab === 'preview' ? (
-              <div className="flex justify-center items-center h-full p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+              <div className="absolute inset-0 flex justify-center items-center p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                 {renderedContent && contentType === 'svg' && (
                   <div
                     className="w-full h-full flex justify-center items-center p-4"
@@ -291,19 +378,30 @@ const PreviewSidebar: React.FC = () => {
                   />
                 )}
                 {renderedContent && contentType === 'html' && (
-                  <iframe
-                    ref={iframeRef}
-                    className="w-full h-full border-0"
-                    title="HTML Preview"
-                    sandbox="allow-same-origin allow-scripts"
-                    srcDoc={renderedContent}
-                    onLoad={resizeIframeToContent}
-                  />
+                  <div className="relative w-full h-full">
+                    <iframe
+                      ref={iframeRef}
+                      className="w-full h-full border-0"
+                      title="HTML Preview"
+                      sandbox="allow-same-origin allow-scripts"
+                      srcDoc={renderedContent}
+                      onLoad={resizeIframeToContent}
+                      style={{
+                        pointerEvents: isDragging ? 'none' : 'auto', // 拖拽时禁用iframe的鼠标事件
+                      }}
+                    />
+                  </div>
                 )}
               </div>
             ) : (
-              <div className="h-full overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                <div className="p-4">
+              <div className="absolute inset-0 flex flex-col">
+                <div
+                  className="flex-1 p-2 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                  style={{
+                    minHeight: 0,
+                    contain: 'layout style paint',
+                  }}
+                >
                   <SyntaxHighlighter
                     language={getLanguage()}
                     style={tomorrow}

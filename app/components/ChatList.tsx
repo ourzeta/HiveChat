@@ -194,7 +194,7 @@ const ChatList = () => {
         </Link>
       </div>
 
-      <div className="rounded-xl overflow-hidden mt-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+      <div className="flex flex-col flex-grow rounded-xl h-0  mt-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         {/* 最近聊天部分 */}
         <MenuSection
           title={t('recentChat')}

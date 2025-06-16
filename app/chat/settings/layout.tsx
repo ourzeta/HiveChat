@@ -56,7 +56,7 @@ const Settings = ({
       <div className='w-full h-22 p-4'>
         <InPageCollapsed />
       </div>
-      <div className='container max-w-3xl mb-6 px-4 mx-auto md:px-0'>
+      <div className='container max-w-3xl mb-6 px-4 mx-auto'>
         <Menu onClick={onClick} selectedKeys={[current]} mode="horizontal" items={items} />
         {children}
       </div>

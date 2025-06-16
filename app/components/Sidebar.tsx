@@ -40,6 +40,7 @@ export const Sidebar = () => {
           "fixed md:relative", // 添加这一行，移动端下使用 fixed 定位
           isSidebarCollapsed ? "md:-translate-x-full -translate-x-72" : "" // PC 端使用 transform，移动端使用 margin
         )}
+        onClick={handleLinkClick}
       >
         <div className="flex items-center flex-row flex-grow-0 mb-2 h-10 mr-4 justify-between">
           <Link href="/" className='flex items-center'>
@@ -52,9 +53,7 @@ export const Sidebar = () => {
             onClick={toggleSidebar}
           />
         </div>
-        <div onClick={handleLinkClick}>
-          <ChatList />
-        </div>
+        <ChatList />
         {status !== 'loading' &&
           <div className='mt-auto'>
             {session ? <div className="flex items-center flex-grow-0 h-10 mr-4 border-t border-gray-200">

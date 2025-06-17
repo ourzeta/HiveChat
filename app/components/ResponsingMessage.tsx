@@ -51,10 +51,10 @@ const ToolInvocationDetails = React.memo(({
         }}
       >
         <span className='mr-2'>调用 {mcp.tool.serverName} 的工具： {mcp.tool.name}</span>
-        {mcp.status === 'done' && mcp.response.isError &&
+        {mcp.status === 'done' && mcp.response?.isError &&
           <div><CloseCircleOutlined style={{ color: 'red' }} /><span className='ml-1 text-red-600'>调用失败</span></div>
         }
-        {mcp.status === 'done' && !mcp.response.isError &&
+        {mcp.status === 'done' && !mcp.response?.isError &&
           <div><CheckCircleOutlined style={{ color: 'green' }} /><span className='ml-1 text-green-700'>已完成</span></div>
         }
         {mcp.status === 'invoking' &&

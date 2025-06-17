@@ -307,7 +307,7 @@ const MessageItem = memo((props: {
                     >
                       <span className='mr-2'>{t('mcpCall')} {mcp.tool?.serverName} {t('sTool')}： {mcp.tool?.name}</span>
                       {
-                        mcp.response.isError ?
+                        mcp.response?.isError ?
                           <div><CloseCircleOutlined style={{ color: 'red' }} /><span className='ml-1 text-red-600'>{t('mcpFailed')}</span></div>
                           : <div><CheckCircleOutlined style={{ color: 'green' }} /><span className='ml-1 text-green-700'>{t('mcpFinished')}</span></div>
                       }

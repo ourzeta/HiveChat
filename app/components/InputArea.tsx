@@ -264,12 +264,12 @@ const InputArea = () => {
                 >
                   <Tooltip title={t('mcpServer')} placement='bottom' arrow={false} >
                     {hasMcpSelected ? (
-                      <Button type="text" size='small' color="primary" variant="filled">
+                      <Button type="text" size='small' color="primary" className='ml-1' variant="filled">
                         <McpIcon style={{ width: '13px', height: '13px' }} />
                         <span className='text-xs -ml-1 hidden sm:inline'>{t('mcpTool')}</span>
                       </Button>
                     ) : (
-                      <Button type="text" size='small' >
+                      <Button type="text" size='small' className='ml-1'>
                         <McpIcon style={{ width: '13px', height: '13px' }} />
                         <span className='text-xs -ml-1 text-gray-500 hidden sm:inline'>{t('mcpTool')}</span>
                       </Button>

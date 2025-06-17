@@ -2,7 +2,7 @@ import { fetchEventSource, EventStreamContentType, EventSourceMessage } from '@m
 import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse } from '@/types/llm';
 import { prettyObject } from '@/app/utils';
 import { callMCPTool } from '@/app/utils/mcpToolsServer';
-import { InvalidAPIKeyError, TimeoutError } from '@/types/errorTypes';
+import { InvalidAPIKeyError, TimeoutError, MCPErrorHandler } from '@/types/errorTypes';
 import { mcpToolsToAnthropicTools, anthropicToolUseToMcpTool } from '@/app/utils/mcpToolsClient';
 import { syncMcpTools } from '@/app/chat/actions/chat';
 import {
@@ -111,49 +111,89 @@ export default class ClaudeApi implements LLMApi {
                     reasoningContent: this.reasoning_content,
                     mcpTools: this.mcpTools,
                   });
-                  const toolCallResponse = await callMCPTool(mcpTool);
-                  const toolIndex = this.mcpTools.findIndex(t => t.id === toolCall.id);
-                  if (toolIndex !== -1) {
-                    this.mcpTools[toolIndex] = {
-                      ...this.mcpTools[toolIndex],
-                      status: 'done',
-                      response: toolCallResponse
-                    };
+
+                  let toolCallResponse: any = null;
+                  try {
+                    toolCallResponse = await callMCPTool(mcpTool);
+                    const toolIndex = this.mcpTools.findIndex(t => t.id === toolCall.id);
+                    if (toolIndex !== -1) {
+                      this.mcpTools[toolIndex] = {
+                        ...this.mcpTools[toolIndex],
+                        status: 'done',
+                        response: toolCallResponse
+                      };
+                    }
+                  } catch (error) {
+                    // 处理MCP工具调用错误
+                    const toolIndex = this.mcpTools.findIndex(t => t.id === toolCall.id);
+                    if (toolIndex !== -1) {
+                      let errorMessage = 'Tool call failed';
+
+                      if (MCPErrorHandler.isMCPError(error)) {
+                        errorMessage = error.toUserMessage();
+                        MCPErrorHandler.logError(error);
+                      } else {
+                        console.error(`[Claude Provider] MCP tool call error:`, error);
+                        errorMessage = `工具调用失败: ${(error as Error).message}`;
+                      }
+
+                      const errorResponse = {
+                        isError: true,
+                        content: [
+                          {
+                            type: 'text',
+                            text: errorMessage
+                          }
+                        ]
+                      };
+
+                      this.mcpTools[toolIndex] = {
+                        ...this.mcpTools[toolIndex],
+                        status: 'error',
+                        response: errorResponse
+                      };
+
+                      // 设置错误响应用于后续处理
+                      toolCallResponse = errorResponse;
+                    }
                   }
+
                   // 这里已经为空了
                   options.onUpdate({
                     content: this.answer,
                     reasoningContent: this.reasoning_content,
                     mcpTools: this.mcpTools,
                   });
-                  const toolResponsContent: ToolResultBlockParam[] = [];
-                  for (const content of toolCallResponse.content) {
-                    let toolResponseMessage: ToolResultBlockParam;
-                    if (content.type === 'text') {
-                      toolResponseMessage = {
-                        tool_use_id: toolCall.id,
-                        type: 'tool_result',
-                        content: content.text,
-                      };
 
-                    }
-                    else {
-                      console.warn('Unsupported content type:', content.type)
-                      toolResponseMessage = {
-                        tool_use_id: toolCall.id,
-                        type: 'tool_result',
-                        content: 'unsupported content type: ' + content.type
+                  const toolResponsContent: ToolResultBlockParam[] = [];
+                  if (toolCallResponse && toolCallResponse.content) {
+                    for (const content of toolCallResponse.content) {
+                      let toolResponseMessage: ToolResultBlockParam;
+                      if (content.type === 'text') {
+                        toolResponseMessage = {
+                          tool_use_id: toolCall.id,
+                          type: 'tool_result',
+                          content: content.text,
+                        };
                       }
+                      else {
+                        console.warn('Unsupported content type:', content.type)
+                        toolResponseMessage = {
+                          tool_use_id: toolCall.id,
+                          type: 'tool_result',
+                          content: 'unsupported content type: ' + content.type
+                        }
+                      }
+                      toolResponsContent.push(toolResponseMessage);
+                      messages.push({
+                        role: 'assistant',
+                        content: [{ ...toolCall, input: JSON.parse(toolCall.input as string) }]
+                      });
+                      messages.push({
+                        role: 'user',
+                        content: [toolResponseMessage]
+                      });
                     }
-                    toolResponsContent.push(toolResponseMessage);
-                    messages.push({
-                      role: 'assistant',
-                      content: [{ ...toolCall, input: JSON.parse(toolCall.input as string) }]
-                    });
-                    messages.push({
-                      role: 'user',
-                      content: [toolResponseMessage]
-                    });
                   }
                 }
               }

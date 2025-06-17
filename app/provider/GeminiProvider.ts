@@ -2,7 +2,7 @@
 import { fetchEventSource, EventStreamContentType, EventSourceMessage } from '@microsoft/fetch-event-source';
 import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse, MessageContent } from '@/types/llm';
 import { prettyObject } from '@/app/utils';
-import { InvalidAPIKeyError, OverQuotaError, TimeoutError } from '@/types/errorTypes';
+import { InvalidAPIKeyError, OverQuotaError, TimeoutError, MCPErrorHandler } from '@/types/errorTypes';
 import { FunctionCallPart, FunctionResponsePart } from '@google/generative-ai';
 import { syncMcpTools } from '@/app/chat/actions/chat';
 import { callMCPTool } from '@/app/utils/mcpToolsServer';
@@ -111,18 +111,55 @@ export default class GeminiApi implements LLMApi {
                 mcpTools: this.mcpTools,
               });
               const _mcpTools = this.mcpTools;
-              // fcallParts.push(fcallPart)
-              const toolCallResponse = await callMCPTool(mcpTool);
-              // 还需要更新工具执行状态
-              const toolIndex = _mcpTools.findIndex(t => {
-                return t.id === fcallPart.functionCall.name;
-              });
-              if (toolIndex !== -1) {
-                _mcpTools[toolIndex] = {
-                  ...this.mcpTools[toolIndex],
-                  status: 'done',
-                  response: toolCallResponse
-                };
+
+              let toolCallResponse: any = null;
+              try {
+                // fcallParts.push(fcallPart)
+                toolCallResponse = await callMCPTool(mcpTool);
+                // 还需要更新工具执行状态
+                const toolIndex = _mcpTools.findIndex(t => {
+                  return t.id === fcallPart.functionCall.name;
+                });
+                if (toolIndex !== -1) {
+                  _mcpTools[toolIndex] = {
+                    ...this.mcpTools[toolIndex],
+                    status: 'done',
+                    response: toolCallResponse
+                  };
+                }
+              } catch (error) {
+                // 处理MCP工具调用错误
+                const toolIndex = _mcpTools.findIndex(t => t.id === fcallPart.functionCall.name);
+                if (toolIndex !== -1) {
+                  let errorMessage = 'Tool call failed';
+
+                  if (MCPErrorHandler.isMCPError(error)) {
+                    errorMessage = error.toUserMessage();
+                    MCPErrorHandler.logError(error);
+                  } else {
+                    console.error(`[Gemini Provider] MCP tool call error:`, error);
+                    errorMessage = `工具调用失败: ${(error as Error).message}`;
+                  }
+
+                  const errorResponse = {
+                    isError: true,
+                    content: [
+                      {
+                        type: 'text',
+                        text: errorMessage
+                      }
+                    ]
+                  };
+
+                  _mcpTools[toolIndex] = {
+                    ...this.mcpTools[toolIndex],
+                    status: 'error',
+                    response: errorResponse
+                  };
+
+                  // 设置错误响应用于后续处理
+                  toolCallResponse = errorResponse;
+                }
               }
 
               options.onUpdate({
@@ -131,12 +168,15 @@ export default class GeminiApi implements LLMApi {
                 mcpTools: _mcpTools,
               });
 
-              fcRespParts.push({
-                functionResponse: {
-                  name: mcpTool.id,
-                  response: toolCallResponse
-                }
-              })
+              // 只有在有有效响应时才添加到fcRespParts
+              if (toolCallResponse) {
+                fcRespParts.push({
+                  functionResponse: {
+                    name: mcpTool.id,
+                    response: toolCallResponse
+                  }
+                });
+              }
             }
 
             messages.push({

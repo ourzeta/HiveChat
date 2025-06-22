@@ -63,6 +63,7 @@ export async function completeEndpoint(providerId: string, inputUrl?: string | n
     'moonshot': 'https://api.moonshot.cn/v1/chat/completions',
     'ollama': 'http://127.0.0.1:11434/v1/chat/completions',
     'openai': 'https://api.openai.com/v1/chat/completions',
+    'openai_response': 'https://api.openai.com/v1/responses',
     'qwen': 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
     'qianfan': 'https://qianfan.baidubce.com/v2/chat/completions',
     'siliconflow': 'https://api.siliconflow.cn/v1/chat/completions',
@@ -84,6 +85,18 @@ export async function completeEndpoint(providerId: string, inputUrl?: string | n
       apiUrl = inputUrl + 'v1/messages';
     } else {
       apiUrl = inputUrl + '/messages';
+    }
+    return apiUrl;
+  }
+  if (providerId === 'openai_response') {
+    if (inputUrl.endsWith('/responses')) {
+      apiUrl = inputUrl;
+    } else if (inputUrl?.endsWith('/v1')) {
+      apiUrl = inputUrl + '/responses';
+    } else if (inputUrl?.endsWith('/')) {
+      apiUrl = inputUrl + 'v1/responses';
+    } else {
+      apiUrl = inputUrl + '/responses';
     }
     return apiUrl;
   }

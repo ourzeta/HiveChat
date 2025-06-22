@@ -1,6 +1,7 @@
 import { ChatOptions, RequestMessage } from '@/types/llm';
 import { ResponseContent } from '@/types/llm';
 import ChatGPTApi from '@/app/provider/OpenAIProvider';
+import OpenAIResponseApi from '@/app/provider/OpenAIResponseProvider';
 import Claude from '@/app/provider/ClaudeProvider';
 import GeminiApi from '@/app/provider/GeminiProvider';
 
@@ -75,6 +76,9 @@ export const getLLMInstance = (providerId: string) => {
       break;
     case 'gemini':
       llmApi = new GeminiApi();
+      break;
+    case 'openai_response':
+      llmApi = new OpenAIResponseApi();
       break;
     default:
       llmApi = new ChatGPTApi(providerId);

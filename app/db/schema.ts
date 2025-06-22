@@ -107,7 +107,7 @@ export const authenticators = pgTable("authenticator", {
   ]
 )
 
-export const APIStyle = pgEnum('api_style', ['openai', 'claude', 'gemini']);
+export const APIStyle = pgEnum('api_style', ['openai', 'openai_response','claude', 'gemini']);
 export const providerType = pgEnum('provider_type', ['default', 'custom']);
 export const llmSettingsTable = pgTable("llm_settings", {
   provider: varchar({ length: 255 }).primaryKey().notNull(),

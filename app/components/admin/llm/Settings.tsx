@@ -57,6 +57,7 @@ const Settings = (props: { providerId: string }) => {
       'moonshot': 'https://api.moonshot.cn/v1',
       'ollama': 'http://127.0.0.1:11434/v1',
       'openai': 'https://api.openai.com/v1',
+      'openai_response': 'https://api.openai.com/v1',
       'qwen': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
       'qianfan': 'https://qianfan.baidubce.com/v2',
       'siliconflow': 'https://api.siliconflow.cn/v1',
@@ -161,6 +162,8 @@ const Settings = (props: { providerId: string }) => {
     switch (providerId) {
       case 'claude':
         return <span className='ml-3'>{inputEndpoint + '/messages'}</span>
+      case 'openai_response':
+        return <span className='ml-3'>{inputEndpoint + '/responses'}</span>
       case 'gemini':
         return <span className='ml-3'>{inputEndpoint + '/v1beta/models/${model}:streamGenerateContent?alt=sse'}</span>
       default:

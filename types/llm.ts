@@ -134,9 +134,12 @@ export interface LLMModelRealId {
   type?: 'default' | 'custom';
 }
 
+export type apiStyle = 'openai' | 'claude' | 'gemini' | 'opeanai_response';
+
 export interface LLMModelProvider {
   id: string;
   providerName: string;
+  apiStyle?: apiStyle;
   providerLogo?: string;
   status?: boolean;
   type?: 'default' | 'custom';

@@ -40,6 +40,7 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
     provider: {
       id: 'openai',
       providerName: 'Open AI',
+      apiStyle: 'openai'
     }
   },
   providerList: [],

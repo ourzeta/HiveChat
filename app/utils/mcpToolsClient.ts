@@ -3,6 +3,7 @@ import { MCPTool } from '@/types/llm';
 import { Tool, ToolUnion, ToolUseBlock } from '@anthropic-ai/sdk/resources'
 import { ChatCompletionTool, ChatCompletionMessageToolCall } from 'openai/resources';
 import { FunctionCall, FunctionDeclaration, SchemaType, FunctionDeclarationSchema, Tool as geminiTool } from '@google/generative-ai'
+import { ResponseFunctionToolCall, FunctionTool } from 'openai/resources/responses/responses';
 
 const supportedAttributes = [
   'type',
@@ -53,6 +54,19 @@ function filterPropertieAttributes(tool: MCPTool, filterNestedObj = false) {
   return properties
 }
 
+export function mcpToolsToOpenAIResponseTools(mcpTools: MCPTool[]): FunctionTool[] {
+  return mcpTools.map((tool) => ({
+    type: 'function',
+    name: tool.name,
+    description: tool.description,
+    strict: null,
+    parameters: {
+      type: 'object',
+      properties: filterPropertieAttributes(tool)
+    }
+  }))
+}
+
 export function mcpToolsToOpenAITools(mcpTools: MCPTool[]): ChatCompletionTool[] {
   return mcpTools.map((tool) => ({
     type: 'function',
@@ -94,6 +108,32 @@ export function anthropicToolUseToMcpTool(mcpTools: MCPTool[] | undefined, toolU
     console.error('Error parsing arguments', e)
   }
   return tool
+}
+
+export function openAIResponseToolsToMcpTool(
+  mcpTools: MCPTool[] | undefined,
+  llmTool: ResponseFunctionToolCall
+): MCPTool | undefined {
+  if (!mcpTools) return undefined
+  const tool = mcpTools.find((tool) => tool.name === llmTool.name)
+  if (!tool) {
+    return undefined
+  }
+  // use this to parse the arguments and avoid parsing errors
+  let args: any = {}
+  try {
+    args = JSON.parse(llmTool.arguments)
+  } catch (e) {
+    console.error('Error parsing arguments', e)
+  }
+
+  return {
+    id: tool.id,
+    serverName: tool.serverName,
+    name: tool.name,
+    description: tool.description,
+    inputSchema: args
+  }
 }
 
 export function openAIToolsToMcpTool(

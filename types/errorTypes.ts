@@ -18,3 +18,6 @@ export class TimeoutError extends Error {
     this.name = 'TimeoutError';
   }
 }
+
+// 导出MCP相关错误类型
+export * from './mcpErrors';

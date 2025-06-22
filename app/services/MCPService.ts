@@ -2,6 +2,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { SSEClientTransport, SSEClientTransportOptions } from '@modelcontextprotocol/sdk/client/sse.js'
 import { StreamableHTTPClientTransport, StreamableHTTPClientTransportOptions } from "@modelcontextprotocol/sdk/client/streamableHttp.js"
 import { MCPServer, MCPTool } from '@/types/llm';
+import { MCPErrorFactory, MCPErrorHandler } from '@/types/errorTypes';
 
 class MCPService {
   private clients: Map<string, Client> = new Map()
@@ -48,8 +49,10 @@ class MCPService {
       console.info(`[MCP] Activated server: ${server.name}`)
       return client;
     } catch (error: any) {
-      console.error(`[MCP] Error activating server ${server.name}:`, error)
-      throw new Error(`[MCP] Error activating server ${server.name}: ${error.message}`)
+      // 使用统一的错误处理
+      const mcpError = MCPErrorFactory.connectionFailed(server.name, error);
+      MCPErrorHandler.logError(mcpError);
+      throw mcpError;
     }
   }
 
@@ -93,21 +96,26 @@ class MCPService {
 
   async listTools(server: MCPServer): Promise<MCPTool[]> {
     console.info(`[MCP] Listing tools for server: ${server.name}`)
-    const client = await this.initClient(server)
+
     try {
-      // Create a timeout promise that rejects after 20 seconds
-      const timeoutPromise = new Promise<{tools: any[]}>((_, reject) => {
+      const client = await this.initClient(server);
+
+      // 使用Promise.race()实现超时控制
+      // 由于MCP SDK不支持AbortSignal，这是目前最佳的超时实现方案
+      const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
-          reject(new Error(`Timeout: Listing tools on '${server.name}' exceeded 20 seconds`));
-        }, 20000);
+          reject(MCPErrorFactory.connectionTimeout(server.name));
+        }, 20000); // 20秒超时
       });
 
-      // Race the actual tool listing against the timeout
+      const listToolsPromise = client.listTools();
+
+      // 竞争执行：工具列表获取 vs 超时
       const { tools } = await Promise.race([
-        client.listTools(),
+        listToolsPromise,
         timeoutPromise
       ]);
-      
+
       const serverTools: MCPTool[] = []
       tools.map((tool: any) => {
         const serverTool: MCPTool = {
@@ -119,8 +127,17 @@ class MCPService {
       })
       return serverTools
     } catch (error) {
-      console.log(`[MCP] Failed to list tools for server: ${server.name}`, error)
-      return []
+      // 使用统一的错误处理
+      if (MCPErrorHandler.isMCPError(error)) {
+        MCPErrorHandler.logError(error);
+        console.log(`[MCP] Failed to list tools for server: ${server.name} - ${error.toUserMessage()}`);
+        return [];
+      }
+
+      const mcpError = MCPErrorHandler.fromError(error as Error, { serverName: server.name });
+      MCPErrorHandler.logError(mcpError);
+      console.log(`[MCP] Failed to list tools for server: ${server.name}`, error);
+      return [];
     }
   }
   /**
@@ -128,26 +145,41 @@ class MCPService {
    */
   public async callTool({ server, name, args }: { server: MCPServer; name: string; args: any }): Promise<any> {
     try {
-      console.info('[MCP] Calling:', server.name, name, args)
-      const client = await this.initClient(server)
-      
-      // Create a timeout promise that rejects after 60 seconds
-      const timeoutPromise = new Promise((_, reject) => {
+      console.info('[MCP] Calling:', server.name, name, args);
+      const client = await this.initClient(server);
+
+      // 使用Promise.race()实现真正的超时控制
+      // 由于MCP SDK不支持AbortSignal，这是目前最佳的超时实现方案
+      const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
-          reject(new Error(`Timeout: Tool call '${name}' on '${server.name}' exceeded 60 seconds`));
-        }, 60000);
+          reject(MCPErrorFactory.toolCallTimeout(name, server.name));
+        }, 60000); // 60秒超时
       });
 
-      // Race the actual tool call against the timeout
+      const callToolPromise = client.callTool({ name, arguments: args });
+
+      // 竞争执行：工具调用 vs 超时
       const result = await Promise.race([
-        client.callTool({ name, arguments: args }),
+        callToolPromise,
         timeoutPromise
       ]);
-      
+
       return result;
     } catch (error) {
-      console.error(`[MCP] Error calling tool ${name} on ${server.name}:`, error)
-      throw error
+      // 使用统一的错误处理
+      if (MCPErrorHandler.isMCPError(error)) {
+        MCPErrorHandler.logError(error);
+        throw error;
+      }
+
+      // 处理其他类型的错误
+      const mcpError = MCPErrorHandler.fromError(error as Error, {
+        serverName: server.name,
+        toolName: name,
+        args
+      });
+      MCPErrorHandler.logError(mcpError);
+      throw mcpError;
     }
   }
 }

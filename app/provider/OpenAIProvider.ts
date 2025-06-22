@@ -2,7 +2,7 @@
 import { fetchEventSource, EventStreamContentType, EventSourceMessage } from '@microsoft/fetch-event-source';
 import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse } from '@/types/llm';
 import { prettyObject } from '@/app/utils';
-import { InvalidAPIKeyError, OverQuotaError, TimeoutError } from '@/types/errorTypes';
+import { InvalidAPIKeyError, OverQuotaError, TimeoutError, MCPErrorHandler } from '@/types/errorTypes';
 import { callMCPTool } from '@/app/utils/mcpToolsServer';
 import { syncMcpTools } from '@/app/chat/actions/chat';
 import { mcpToolsToOpenAITools, openAIToolsToMcpTool } from '@/app/utils/mcpToolsClient';
@@ -179,53 +179,94 @@ export default class ChatGPTApi implements LLMApi {
                 mcpTools: this.mcpTools,
               });
               const _mcpTools = this.mcpTools;
-              const toolCallResponse = await callMCPTool(mcpTool);
-              // 还需要更新工具执行状态
-              const toolIndex = _mcpTools.findIndex(t => {
-                return t.id === toolCall.id;
-              });
-              if (toolIndex !== -1) {
-                _mcpTools[toolIndex] = {
-                  ...this.mcpTools[toolIndex],
-                  status: 'done',
-                  response: toolCallResponse
-                };
+
+              let toolCallResponse: any = null;
+              try {
+                toolCallResponse = await callMCPTool(mcpTool);
+                // 还需要更新工具执行状态
+                const toolIndex = _mcpTools.findIndex(t => {
+                  return t.id === toolCall.id;
+                });
+                if (toolIndex !== -1) {
+                  _mcpTools[toolIndex] = {
+                    ...this.mcpTools[toolIndex],
+                    status: 'done',
+                    response: toolCallResponse
+                  };
+                }
+              } catch (error) {
+                // 处理MCP工具调用错误
+                const toolIndex = _mcpTools.findIndex(t => t.id === toolCall.id);
+                if (toolIndex !== -1) {
+                  let errorMessage = 'Tool call failed';
+
+                  if (MCPErrorHandler.isMCPError(error)) {
+                    errorMessage = error.toUserMessage();
+                    MCPErrorHandler.logError(error);
+                  } else {
+                    console.error(`[OpenAI Provider] MCP tool call error:`, error);
+                    errorMessage = `工具调用失败: ${(error as Error).message}`;
+                  }
+
+                  const errorResponse = {
+                    isError: true,
+                    content: [
+                      {
+                        type: 'text',
+                        text: errorMessage
+                      }
+                    ]
+                  };
+
+                  _mcpTools[toolIndex] = {
+                    ...this.mcpTools[toolIndex],
+                    status: 'error',
+                    response: errorResponse
+                  };
+
+                  // 设置错误响应用于后续处理
+                  toolCallResponse = errorResponse;
+                }
               }
+
               options.onUpdate({
                 content: this.answer,
                 reasoningContent: this.reasoning_content,
                 mcpTools: _mcpTools,
               });
 
+              // 只有在有响应时才处理内容
               const toolResponsContent: Array<ChatCompletionContentPartText | string> = [];
-              for (const content of toolCallResponse.content) {
-                if (content.type === 'text') {
-                  toolResponsContent.push({
-                    type: 'text',
-                    text: content.text
-                  })
+              if (toolCallResponse && toolCallResponse.content) {
+                for (const content of toolCallResponse.content) {
+                  if (content.type === 'text') {
+                    toolResponsContent.push({
+                      type: 'text',
+                      text: content.text
+                    })
+                  }
+                  else {
+                    console.warn('Unsupported content type:', content.type)
+                    toolResponsContent.push({
+                      type: 'text',
+                      text: 'unsupported content type: ' + content.type
+                    })
+                  }
                 }
-                else {
-                  console.warn('Unsupported content type:', content.type)
-                  toolResponsContent.push({
-                    type: 'text',
-                    text: 'unsupported content type: ' + content.type
-                  })
-                }
-              }
 
-              if (options.config.model.toLocaleLowerCase().includes('gpt')) {
-                messages.push({
-                  role: 'tool',
-                  content: toolResponsContent,
-                  tool_call_id: toolCall.id
-                } as ChatCompletionToolMessageParam)
-              } else {
-                messages.push({
-                  role: 'tool',
-                  content: JSON.stringify(toolResponsContent),
-                  tool_call_id: toolCall.id
-                } as ChatCompletionToolMessageParam)
+                if (options.config.model.toLocaleLowerCase().includes('gpt')) {
+                  messages.push({
+                    role: 'tool',
+                    content: toolResponsContent,
+                    tool_call_id: toolCall.id
+                  } as ChatCompletionToolMessageParam)
+                } else {
+                  messages.push({
+                    role: 'tool',
+                    content: JSON.stringify(toolResponsContent),
+                    tool_call_id: toolCall.id
+                  } as ChatCompletionToolMessageParam)
+                }
               }
             }
             const shouldContinue: boolean = this.finishReason === 'tool_calls';

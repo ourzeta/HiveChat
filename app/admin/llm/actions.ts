@@ -295,7 +295,7 @@ export const addCustomProviderInServer = async (providerInfo: {
   provider: string,
   providerName: string,
   endpoint: string,
-  api_style: string,
+  apiStyle: 'openai' | 'openai_response' | 'claude' | 'gemini',
   apikey: string,
 }) => {
   const session = await auth();

@@ -24,14 +24,14 @@ const AddCustomProvider: React.FC<AddCustomProviderModalProps> = ({
     provider: string;
     providerName: string;
     endpoint: string;
-    api_style: string
+    apiStyle: 'openai' | 'openai_response' | 'claude' | 'gemini'
     apikey: string
   }) => {
     addCustomProvider({
       id: values.provider,
       providerName: values.providerName,
       status: true,
-      apiStyle: 'openai',
+      apiStyle: values.apiStyle,
       type: 'custom',
     })
     const result = await addCustomProviderInServer(values);
@@ -64,7 +64,7 @@ const AddCustomProvider: React.FC<AddCustomProviderModalProps> = ({
           form={addCustomProviderForm}
           onFinish={onModelFormSubmit}
           initialValues={{
-            api_style: 'openai',
+            apiStyle: 'openai',
           }}
         >
           <Form.Item
@@ -93,7 +93,7 @@ const AddCustomProvider: React.FC<AddCustomProviderModalProps> = ({
           </Form.Item>
 
           <Form.Item
-            name='api_style'
+            name='apiStyle'
             label={<span className='font-medium'>API 请求格式</span>}
           >
             <Select
@@ -101,7 +101,16 @@ const AddCustomProvider: React.FC<AddCustomProviderModalProps> = ({
                 [{
                   value: 'openai',
                   label: 'Open AI',
-                }]
+                },
+                {
+                  value: 'openai_response',
+                  label: 'Open AI Response',
+                },
+                {
+                  value: 'claude',
+                  label: 'Anthropic',
+                }
+                ]
               }
             />
           </Form.Item>

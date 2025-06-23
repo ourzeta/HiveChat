@@ -158,8 +158,8 @@ const Settings = (props: { providerId: string }) => {
     }
   };
 
-  const getEndpointExtraNotice = (providerId: string, inputEndpoint: string) => {
-    switch (providerId) {
+  const getEndpointExtraNotice = (apiStyle: string, inputEndpoint: string) => {
+    switch (apiStyle) {
       case 'claude':
         return <span className='ml-3'>{inputEndpoint + '/messages'}</span>
       case 'openai_response':
@@ -234,39 +234,21 @@ const Settings = (props: { providerId: string }) => {
               </Button>
             </Link>
           </div>
-          {
-            props.providerId === 'ollama' || provider?.type === 'custom' ?
-              <Form.Item
-                label={<span className='font-medium'>{t('serviceEndpoint')}</span>}
-                name='endpoint'
-                extra={<span className='ml-3'>{inputEndpoint + '/chat/completions'}</span>}
-              >
-                <Input
-                  type='url'
-                  value={inputEndpoint}
-                  onChange={(e) => setInputEndpoint(e.target.value)}
-                  onBlur={() => {
-                    form.submit();
-                  }
-                  }
-                />
-              </Form.Item> :
-              <Form.Item
-                label={<span className='font-medium'>{t('endpoint')} ({t('optional')})</span>}
-                name='endpoint'
-                extra={getEndpointExtraNotice(props.providerId, inputEndpoint)}
-              >
-                <Input
-                  type='url'
-                  value={inputEndpoint}
-                  onChange={(e) => setInputEndpoint(e.target.value)}
-                  onBlur={() => {
-                    form.submit();
-                  }
-                  }
-                />
-              </Form.Item>
-          }
+          <Form.Item
+            label={<span className='font-medium'>{t('endpoint')} ({t('optional')})</span>}
+            name='endpoint'
+            extra={getEndpointExtraNotice(provider.apiStyle, inputEndpoint)}
+          >
+            <Input
+              type='url'
+              value={inputEndpoint}
+              onChange={(e) => setInputEndpoint(e.target.value)}
+              onBlur={() => {
+                form.submit();
+              }
+              }
+            />
+          </Form.Item>
         </Form>
         <div className='flex flex-col -mt-2 mb-2'>
           <div className='font-medium'>{t('testConnect')}</div>

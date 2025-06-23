@@ -49,6 +49,7 @@ const AppPrepare = () => {
         const processedList = allProviderSettings.map(item => ({
           id: item.provider,
           providerName: item.providerName,
+          apiStyle: item.apiStyle,
           providerLogo: item.logo || '',
           status: item.isActive || false,
         }));

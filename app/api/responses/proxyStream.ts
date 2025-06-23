@@ -75,8 +75,6 @@ export default async function proxyOpenAiStream(response: Response,
           providerId: messageInfo.providerId,
         }
         const id = await addMessageInServer(toAddMessage);
-        console.log('--------------id------------------');
-        console.log(id);
         // 发送一个自定义的消息，包含消息ID
         const metadataEvent = {
           isDone: true,

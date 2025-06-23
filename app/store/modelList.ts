@@ -26,7 +26,7 @@ interface IModelListStore {
   updateCustomModel: (modelId: string, model: LLMModel) => Promise<void>;
   deleteCustomModel: (modelId: string) => Promise<void>;
   setCurrentModel: (model: string) => void;
-  setCurrentModelExact: (providerId: string, modelId: string,) => void
+  setCurrentModelExact: (providerId: string, modelId: string,) => void;
 }
 
 const useModelListStore = create<IModelListStore>((set, get) => ({
@@ -80,6 +80,7 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
       provider: {
         id: model.providerId,
         providerName: model.providerName,
+        apiStyle: model.apiStyle,
       }
     }));
 
@@ -91,6 +92,7 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
             id: model.providerId,
             providerName: model.providerName,
             providerLogo: model.providerLogo,
+            apiStyle: model.apiStyle,
             status: true,
           }
         ])
@@ -117,6 +119,7 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
       provider: {
         id: model.providerId,
         providerName: model.providerName,
+        apiStyle: model.apiStyle,
         providerLogo: model.providerLogo,
       }
     }));
@@ -129,6 +132,7 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
             id: model.providerId,
             providerName: model.providerName,
             providerLogo: model.providerLogo,
+            apiStyle: model.apiStyle,
             status: true,
           }
         ])
@@ -283,7 +287,7 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
       ...state,
       modelList: state.modelList.filter((model) => model.id !== modelId),
     }));
-  }
+  },
 }));
 
 export default useModelListStore;

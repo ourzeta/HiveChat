@@ -14,7 +14,7 @@ import {
 } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 import { customAlphabet } from 'nanoid';
-import { MCPToolResponse } from '@/types/llm'
+import { apiStyle, MCPToolResponse } from '@/types/llm'
 import { WebSearchResponse } from '@/types/search'
 const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 10)
 
@@ -107,7 +107,7 @@ export const authenticators = pgTable("authenticator", {
   ]
 )
 
-export const APIStyle = pgEnum('api_style', ['openai', 'openai_response','claude', 'gemini']);
+export const APIStyle = pgEnum('api_style', ['openai', 'openai_response', 'claude', 'gemini']);
 export const providerType = pgEnum('provider_type', ['default', 'custom']);
 export const llmSettingsTable = pgTable("llm_settings", {
   provider: varchar({ length: 255 }).primaryKey().notNull(),
@@ -115,7 +115,7 @@ export const llmSettingsTable = pgTable("llm_settings", {
   apikey: varchar({ length: 255 }),
   endpoint: varchar({ length: 1024 }),
   isActive: boolean('is_active').default(false),
-  apiStyle: APIStyle('api_style').default('openai'),
+  apiStyle: APIStyle('api_style').notNull().default('openai'),
   type: providerType('type').notNull().default('default'),
   logo: varchar({ length: 2048 }),
   order: integer('order'),
@@ -254,6 +254,7 @@ export type UserType = typeof users.$inferSelect;
 
 export type llmModelType = typeof llmModels.$inferSelect & {
   providerLogo?: string;
+  apiStyle: apiStyle;
 };
 
 export type llmSettingsType = typeof llmSettingsTable.$inferSelect;

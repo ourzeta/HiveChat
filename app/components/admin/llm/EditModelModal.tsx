@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Input, InputNumber, Switch } from 'antd';
 import useModelListStore from '@/app/store/modelList';
-import { LLMModel } from '@/types/llm';
+import { LLMModel, LLMModelProvider } from '@/types/llm';
 import { updateCustomModelInServer } from '@/app/admin/llm/actions';
 
 
@@ -9,16 +9,14 @@ type EditModelModalProps = {
   model?: LLMModel;
   isEditModelModalOpen: boolean;
   setIsEditModelModalOpen: (open: boolean) => void;
-  providerId: string;
-  providerName: string;
+  provider: LLMModelProvider;
 };
 
 const EditModelModalProps: React.FC<EditModelModalProps> = ({
   model,
   isEditModelModalOpen,
   setIsEditModelModalOpen,
-  providerId,
-  providerName,
+  provider,
 }) => {
   const [customModelForm] = Form.useForm();
   useEffect(() => {
@@ -53,8 +51,9 @@ const EditModelModalProps: React.FC<EditModelModalProps> = ({
       selected: true,
       type: 'custom',
       provider: {
-        id: providerId,
-        providerName: providerName
+        id: provider.id,
+        apiStyle: provider.apiStyle,
+        providerName: provider.providerName
       }
     });
 
@@ -66,8 +65,8 @@ const EditModelModalProps: React.FC<EditModelModalProps> = ({
       selected: true,
       type: 'custom',
       name: values.modelId,
-      providerId: providerId,
-      providerName: providerName
+      providerId: provider.id,
+      providerName: provider.providerName
     });
 
     customModelForm.resetFields();

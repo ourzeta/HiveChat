@@ -3,7 +3,7 @@ import { Message, ResponseContent, ChatOptions, LLMApi, RequestMessage, MessageC
 import useChatStore from '@/app/store/chat';
 import useChatListStore from '@/app/store/chatList';
 import useMcpServerStore from '@/app/store/mcp';
-import { generateTitle, getLLMInstance } from '@/app/utils';
+import { generateTitle, getProviderInstance } from '@/app/utils';
 import useModelListStore from '@/app/store/modelList';
 import { getChatInfoInServer } from '@/app/chat/actions/chat';
 import { addMessageInServer, getMessagesInServer, deleteMessageInServer, clearMessageInServer, updateMessageWebSearchInServer } from '@/app/chat/actions/message';
@@ -14,7 +14,7 @@ import { REFERENCE_PROMPT } from '@/app/config/prompts';
 import { useRouter } from 'next/navigation'
 
 const useChat = (chatId: string) => {
-  const { currentModel, setCurrentModelExact } = useModelListStore();
+  const { currentModel, setCurrentModelExact, modelList } = useModelListStore();
   const [messageList, setMessageList] = useState<Message[]>([]);
   const [isPending, setIsPending] = useState(false);
   const [responseStatus, setResponseStatus] = useState<"done" | "pending">("done");
@@ -30,7 +30,7 @@ const useChat = (chatId: string) => {
   const router = useRouter();
 
   useEffect(() => {
-    const llmApi = getLLMInstance(currentModel.provider.id);
+    const llmApi = getProviderInstance(currentModel.provider.id, currentModel.provider.apiStyle);
     setChatBot(llmApi);
 
     return () => {
@@ -46,14 +46,15 @@ const useChat = (chatId: string) => {
   const shouldSetNewTitle = useCallback((messages: RequestMessage[]) => {
     if (userSendCount === 0 && !chat?.isWithBot) {
       if (chatNamingModelStable !== 'none') {
-        let renameModel = currentModel.id;
-        let renameProvider = currentModel.provider.id;
+        let renameModel = currentModel;
         if (chatNamingModelStable !== 'current') {
           const [providerId, modelId] = chatNamingModelStable.split('|');
-          renameModel = modelId;
-          renameProvider = providerId;
+          const foundModel = modelList.find(m => m.id === modelId && m.provider.id === providerId);
+          if (foundModel) {
+            renameModel = foundModel;
+          }
         }
-        generateTitle(messages, renameModel, renameProvider, (message: string) => {
+        generateTitle(messages, renameModel, (message: string) => {
           setNewTitle(chatId, message);
         }, () => { })
       }
@@ -64,6 +65,7 @@ const useChat = (chatId: string) => {
     currentModel,
     userSendCount,
     chatNamingModelStable,
+    modelList,
     setNewTitle,
   ]);
 
@@ -245,7 +247,7 @@ const useChat = (chatId: string) => {
       const textContent = typeof message === 'string' ? message : '';
       if (textContent) {
         const searchResult = await getSearchResult(textContent);
-        
+
         if (searchResult.status === 'success') {
           searchResponse = searchResult.data || undefined;
           const referenceContent = `\`\`\`json\n${JSON.stringify(searchResult, null, 2)}\n\`\`\``;
@@ -372,7 +374,7 @@ const useChat = (chatId: string) => {
         const urlParams = new URLSearchParams(window.location.search);
         const fromHome = urlParams.get('f') === 'home';
         if (!fromHome) {
-          setIsPending(true);  
+          setIsPending(true);
         };
         const { status, data } = await getChatInfoInServer(chatId);
         if (status === 'success') {
@@ -381,14 +383,14 @@ const useChat = (chatId: string) => {
             setCurrentModelExact(data.defaultProvider, data.defaultModel);
           }
         }
-        
+
         let messageList: Message[] = [];
         const result = await getMessagesInServer(chatId);
         if (result.status === 'success') {
           messageList = result.data as Message[];
         }
         setMessageList(messageList);
-        
+
         // 计算用户消息数量
         const userMessageCount = messageList.filter(item => item.role === "user").length;
         setUserSendCount(userMessageCount);
@@ -417,33 +419,33 @@ const useChat = (chatId: string) => {
         const urlParams = new URLSearchParams(window.location.search);
         const fromHome = urlParams.get('f') === 'home';
         if (!fromHome) return;
-        
+
         // 清除URL参数
         router.replace(`/chat/${chatId}`);
-        
+
         // 检查是否有未回复的用户消息
         if (messageList.length === 1 && messageList[0].role === 'user') {
           const userMessage = messageList[0];
           // 创建一个消息标识符
           const messageId = `${userMessage.id || '-'}`;
-          
+
           // 检查是否已处理过这条消息
           if (processedMessageIds.current.has(messageId)) {
             return;
           }
-          
+
           // 标记消息为已处理
           processedMessageIds.current.add(messageId);
           hasInitialized.current = true;
-          
+
           const _searchEnabled = userMessage.searchEnabled || false;
           const question = userMessage.content;
-          
+
           // 处理请求发送
           let realSendMessage = question;
           let searchStatus: searchResultType = 'none';
           let searchResponse = undefined;
-          
+
           if (_searchEnabled) {
             setResponseStatus('pending');
             try {
@@ -456,7 +458,7 @@ const useChat = (chatId: string) => {
               searchStatus = 'error';
             }
           }
-          
+
           const messages = [{ role: 'user' as const, content: realSendMessage }];
           await sendMessage(messages, searchStatus, searchResponse, selectedTools);
           shouldSetNewTitleRef.current([{ role: 'user' as const, content: question }]);
@@ -465,7 +467,7 @@ const useChat = (chatId: string) => {
         console.error('handleInitialResponse - error:', error);
       }
     };
-    
+
     if (messageList.length > 0) {
       handleInitialResponse();
     }

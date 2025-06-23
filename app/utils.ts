@@ -1,4 +1,4 @@
-import { ChatOptions, RequestMessage } from '@/types/llm';
+import { ChatOptions, RequestMessage, LLMModel } from '@/types/llm';
 import { ResponseContent } from '@/types/llm';
 import ChatGPTApi from '@/app/provider/OpenAIProvider';
 import OpenAIResponseApi from '@/app/provider/OpenAIResponseProvider';
@@ -19,20 +19,20 @@ export function prettyObject(msg: any) {
   return ["```json", msg, "```"].join("\n");
 }
 
-export function generateTitle(messages: RequestMessage[],
-  model: string,
-  providerId: string,
+export function generateTitle(
+  messages: RequestMessage[],
+  model: LLMModel,
   onFinish: (message: string) => void,
   onError: () => void
 ) {
-  const llmApi = getLLMInstance(providerId);
+  const llmApi = getProviderInstance(model.provider.id, model.provider.apiStyle);
   const toSendMessages: RequestMessage[] = [...messages, {
     role: "user",
     content: "使用4到8个字直接返回这句话的简要主题，在 8 个字以内，不要解释、不要标点、不要语气词、不要多余文本，不要加粗，如果没有主题，请直接返回“闲聊”"
   }];
   const options: ChatOptions = {
     messages: toSendMessages,
-    config: { model: model },
+    config: { model: model.id },
     onUpdate: (responseContent: ResponseContent) => {
     },
     onFinish: async (responseContent: ResponseContent) => {
@@ -68,9 +68,9 @@ export const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-export const getLLMInstance = (providerId: string) => {
+export const getProviderInstance = (providerId: string, apiStyle: string) => {
   let llmApi;
-  switch (providerId) {
+  switch (apiStyle) {
     case 'claude':
       llmApi = new Claude();
       break;

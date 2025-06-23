@@ -2,20 +2,19 @@ import React from 'react';
 import { Modal, Form, Input, InputNumber, Switch, message } from 'antd';
 import useModelListStore from '@/app/store/modelList';
 import { addCustomModelInServer } from '@/app/admin/llm/actions';
+import { LLMModelProvider } from '@/types/llm';
 import { useTranslations } from 'next-intl';
 
 type CustomModelModalProps = {
   isCustomModelModalOpen: boolean;
   setIsCustomModelModalOpen: (open: boolean) => void;
-  providerId: string;
-  providerName: string;
+  provider: LLMModelProvider;
 };
 
-const CustomModelModal: React.FC<CustomModelModalProps> = ({
+const AddModelModal: React.FC<CustomModelModalProps> = ({
   isCustomModelModalOpen,
   setIsCustomModelModalOpen,
-  providerId,
-  providerName,
+  provider
 }) => {
   const t = useTranslations('Admin.Models');
   const [customModelForm] = Form.useForm();
@@ -37,8 +36,8 @@ const CustomModelModal: React.FC<CustomModelModalProps> = ({
       supportTool: values.modelToolSupport,
       selected: true,
       type: 'custom',
-      providerId: providerId,
-      providerName: providerName
+      providerId: provider.id,
+      providerName: provider.providerName
     });
     if (result.status === 'success') {
       await addCustomModel({
@@ -50,8 +49,9 @@ const CustomModelModal: React.FC<CustomModelModalProps> = ({
         selected: true,
         type: 'custom',
         provider: {
-          id: providerId,
-          providerName: providerName
+          id: provider.id,
+          apiStyle: provider.apiStyle,
+          providerName: provider.providerName
         }
       });
       message.success(t('addModelSuccess'));
@@ -124,4 +124,4 @@ const CustomModelModal: React.FC<CustomModelModalProps> = ({
   );
 };
 
-export default CustomModelModal;
+export default AddModelModal;

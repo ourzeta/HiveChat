@@ -37,6 +37,7 @@ export default function LLMLayout({
         id: item.provider,
         providerName: item.providerName,
         providerLogo: item.logo || '',
+        apiStyle: item.apiStyle,
         type: item.type,
         status: item.isActive || false,
       }));
@@ -129,7 +130,7 @@ export default function LLMLayout({
           {
             isPending ? <>Loading</>
               :
-              <div className={clsx('container mx-auto max-w-2xl p-6 h-dvh',{ 'pt-12': isSidebarCollapsed })}>
+              <div className={clsx('container mx-auto max-w-2xl p-6 h-dvh', { 'pt-12': isSidebarCollapsed })}>
                 {children}
               </div>
           }

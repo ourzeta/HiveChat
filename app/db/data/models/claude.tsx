@@ -2,6 +2,7 @@ import { LLMModel, LLMModelProvider } from "@/types/llm"
 export const provider: LLMModelProvider = {
   id: 'claude',
   providerName: 'Claude',
+  apiStyle: 'claude',
 }
 
 export const modelList: LLMModel[] = [

@@ -1,7 +1,8 @@
-import { LLMModel } from "@/types/llm"
-export const provider = {
+import { LLMModel, LLMModelProvider } from "@/types/llm"
+export const provider: LLMModelProvider = {
   id: 'gemini',
   providerName: 'Gemini',
+  apiStyle: 'gemini',
 }
 
 export const modelList: LLMModel[] = [

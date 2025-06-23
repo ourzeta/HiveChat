@@ -31,6 +31,7 @@ const AddCustomProvider: React.FC<AddCustomProviderModalProps> = ({
       id: values.provider,
       providerName: values.providerName,
       status: true,
+      apiStyle: 'openai',
       type: 'custom',
     })
     const result = await addCustomProviderInServer(values);

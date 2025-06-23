@@ -1,5 +1,5 @@
 'use server';
-import { llmSettingsTable } from '@/app/db/schema';
+import { APIStyle, llmSettingsTable } from '@/app/db/schema';
 import { db } from '@/app/db';
 import { eq } from 'drizzle-orm';
 
@@ -13,6 +13,7 @@ export async function getLlmOriginConfigByProvider(providerId: string) {
         endpoint: result.endpoint,
         isActive: result.isActive,
         apikey: result.apikey,
+        apiStyle: result.apiStyle,
         type: result.type,
       };
     } else {
@@ -20,6 +21,7 @@ export async function getLlmOriginConfigByProvider(providerId: string) {
         endpoint: '',
         isActive: false,
         apikey: null,
+        apiStyle: 'openai',
         type: 'default',
       };
     }

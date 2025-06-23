@@ -36,6 +36,7 @@ const ManageAllModelModal: React.FC<ManageAllModelModalProps> = ({
         displayName: i.id,
         provider: {
           id: providerId,
+          apiStyle: 'openai',
           providerName: providerId
         },
       }
@@ -55,6 +56,7 @@ const ManageAllModelModal: React.FC<ManageAllModelModalProps> = ({
       displayName: modelId,
       provider: {
         id: providerId,
+        apiStyle: 'openai',
         providerName: providerName,
       }
     }, selected);

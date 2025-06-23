@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 import React, { useState, useEffect } from 'react';
 import { Button, Form, Input, Switch, Skeleton, Avatar, message, Popconfirm, Modal } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, EditOutlined } from '@ant-design/icons';
-import { getLLMInstance } from '@/app/utils';
+import { getProviderInstance } from '@/app/utils';
 import { useTranslations } from 'next-intl';
 import { saveToServer } from '@/app/admin/llm/actions';
 import { fetchLlmModels } from '@/app/admin/llm/actions';
@@ -93,7 +93,7 @@ const Settings = (props: { providerId: string }) => {
       return 'https://k2swpw8zgf.feishu.cn/wiki/J3FtwGumMi7k0vktB41cHvjTnTg';
     }
   }
-  const chatbot = getLLMInstance(props.providerId)
+  const chatbot = getProviderInstance(props.providerId, provider.apiStyle);
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -345,15 +345,13 @@ const Settings = (props: { providerId: string }) => {
         <AddModelModal
           isCustomModelModalOpen={isCustomModelModalOpen}
           setIsCustomModelModalOpen={setIsCustomModelModalOpen}
-          providerId={provider?.id}
-          providerName={provider?.providerName}
+          provider={provider}
         />
         <EditModelModal
           model={curretEditModal}
           isEditModelModalOpen={isEditModelModalOpen}
           setIsEditModelModalOpen={setIsEditModelModalOpen}
-          providerId={provider?.id}
-          providerName={provider?.providerName}
+          provider={provider}
         />
         <RenameProviderModal
           isModalOpen={isRenameProviderModalOpen}

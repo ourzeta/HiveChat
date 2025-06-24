@@ -56,7 +56,7 @@ const EditModelModalProps: React.FC<EditModelModalProps> = ({
         providerName: provider.providerName
       }
     });
-
+  
     await updateCustomModelInServer(values.oldModelId, {
       displayName: values.modelDisplayName,
       maxTokens: values.modelMaxTokens * 1024,

@@ -1,7 +1,7 @@
 'use server';
 import { db } from '@/app/db';
 import { eq, and, asc } from 'drizzle-orm';
-import { LLMModel } from '@/types/llm';
+import { LLMModel, LLMModelProvider } from '@/types/llm';
 import { llmSettingsTable, llmModels, groupModels, groups, users, messages } from '@/app/db/schema';
 import { llmModelType } from '@/app/db/schema';
 import { getLlmConfigByProvider } from '@/app/utils/llms';
@@ -110,6 +110,35 @@ export const fetchLlmModels = async (providerId?: string): Promise<llmModelType[
       apiStyle: item.apiStyle,
     }));
   }
+}
+
+export const getProviderById = async (providerId: string): Promise<LLMModelProvider> => {
+  const session = await auth();
+  if (!session?.user.isAdmin) {
+    throw new Error('not allowed');
+  }
+
+  const result = await db.select().from(llmSettingsTable).where(
+    eq(llmSettingsTable.provider, providerId),
+  );
+
+  if (!result || result.length === 0) {
+    const error = new Error(`Provider with ID '${providerId}' not found`);
+    (error as any).status = 404;
+    throw error;
+  }
+
+  const dbProvider = result[0];
+
+  // 将数据库字段映射到 LLMModelProvider 类型
+  return {
+    id: dbProvider.provider,
+    providerName: dbProvider.providerName,
+    apiStyle: dbProvider.apiStyle,
+    providerLogo: dbProvider.logo || undefined,
+    status: dbProvider.isActive || false,
+    type: dbProvider.type || 'default'
+  };
 }
 
 export const fetchAvailableProviders = async () => {

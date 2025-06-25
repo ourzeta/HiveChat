@@ -81,7 +81,6 @@ export default async function proxyOpenAiStream(response: Response,
           messageId: id
         };
         const metadataString = `data: ${JSON.stringify({ metadata: metadataEvent })}\n\n`;
-        console.log(metadataString);
         controller.enqueue(new TextEncoder().encode(metadataString));
       }
       updateUsage(messageInfo.userId, {

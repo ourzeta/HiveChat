@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const { endpoint, apikey } = await getLlmConfigByProvider(xProvider || 'openai');
+    const { endpoint, apikey, apiStyle } = await getLlmConfigByProvider(xProvider || 'openai');
     // 测试连接下，会传 X-apikey，优先使用
     const realApikey = userRequestHeaders.get('X-Apikey') || apikey;
     let realEndpoint = '';
@@ -52,9 +52,9 @@ export async function POST(req: NextRequest) {
       }
     } else if (xEndpoint) {
       // 如有有自定义，优先用传过来的自定义，用户测试
-      realEndpoint = await completeEndpoint(xProvider as string, xEndpoint);
+      realEndpoint = await completeEndpoint(xProvider as string, apiStyle, xEndpoint);
     } else {
-      realEndpoint = await completeEndpoint(xProvider as string, endpoint);
+      realEndpoint = await completeEndpoint(xProvider as string, apiStyle, endpoint);
     }
     const headers = new Headers({
       'Content-Type': 'application/json',

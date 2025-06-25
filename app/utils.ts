@@ -78,7 +78,7 @@ export const getProviderInstance = (providerId: string, apiStyle: string) => {
       llmApi = new GeminiApi();
       break;
     case 'openai_response':
-      llmApi = new OpenAIResponseApi();
+      llmApi = new OpenAIResponseApi(providerId);
       break;
     default:
       llmApi = new ChatGPTApi(providerId);

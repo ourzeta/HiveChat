@@ -76,7 +76,6 @@ export default class BochaProvider extends BaseWebSearchProvider {
         url: item.url,
       }));
 
-      console.log(resultDataFormatted)
       return {
         query: query,
         results: resultDataFormatted

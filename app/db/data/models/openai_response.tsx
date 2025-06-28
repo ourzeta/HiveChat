@@ -1,8 +1,8 @@
 import { LLMModel, LLMModelProvider } from "@/types/llm"
 export const provider: LLMModelProvider = {
-  id: 'openai',
+  id: 'openai_response',
   providerName: 'OpenAI',
-  apiStyle: 'openai',
+  apiStyle: 'openai_response',
 }
 
 export const modelList: LLMModel[] = [
@@ -20,6 +20,8 @@ export const modelList: LLMModel[] = [
     'displayName': 'GPT 4.1 mini',
     'supportVision': true,
     'supportTool': true,
+    'builtInImageGen': true,
+    'builtInWebSearch': false,
     'maxTokens': 1024000,
     'selected': true,
     provider

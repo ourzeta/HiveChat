@@ -38,7 +38,7 @@ const MessageItem = memo((props: {
         style={{ marginTop: '0.2rem', 'fontSize': '24px', 'border': '1px solid #eee', 'padding': '2px' }}
         src={allProviderListByKey![props.item.providerId].providerLogo}
       /> : <div className='bg-blue-500 flex mt-1 text-cyan-50 items-center justify-center rounded-full w-8 h-8'>
-        {allProviderListByKey && allProviderListByKey[props.item.providerId].providerName.charAt(0)}</div>
+        {allProviderListByKey && allProviderListByKey[props.item.providerId]?.providerName.charAt(0)}</div>
     }
     else {
       return <div className='bg-blue-500 flex mt-1 text-cyan-50 items-center justify-center rounded-full w-8 h-8'>

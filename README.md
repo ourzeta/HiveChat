@@ -92,7 +92,7 @@ MCP 使用
 ### 方法 1：本地部署
 
 >注意：
->旧版本升级可能会有数据库结构变化，手动执行一下 `npm run initdb`, 进行更新，及时没有更新，也没有副作用
+>旧版本升级可能会有数据库结构变化，手动执行一下 `npm run initdb`, 进行更新，即使没有更新，也没有副作用
 
 1. 克隆本项目到本地
 ```
@@ -275,6 +275,24 @@ DINGDING_AUTH_STATUS=OFF
 DINGDING_CLIENT_ID="dingpcfi2kpuplXXXXXX"
 DINGDING_CLIENT_SECRET="3vk9-VFCExNckqNUk_CL2F-HEgz7qGN-BimH0lZ1gUx6hWO7g_an2lnkk6XXXXXX"
 ```
+
+## 版本升级
+* 正常通过 npm 在服务器安装或更新时，先手动执行 `npm run initdb`, 检查数据库的更新，即使没有更新，也没有副作用
+* Docker 方式升级到 0.0.25 镜像（2025-06-28 发布版本）时，需要手动更新数据库，手动执行以下 SQL
+
+```sql
+-- models 表新增内置工具的能力标识
+ALTER TABLE models 
+ADD COLUMN built_in_image_gen boolean DEFAULT false,
+ADD COLUMN built_in_web_search boolean DEFAULT false;
+
+-- API 风格新增枚举类型 openai_response
+ALTER TYPE public.api_style ADD VALUE 'openai_response';
+-- 设置 api_style 字段 not null
+ALTER TABLE public.llm_settings 
+ALTER COLUMN api_style SET NOT NULL;
+```
+
 #### 附1：Vercel（Neon）PostgreSQL 配置
 
 1. 在 Vercel 平台顶部导航，选择「Storage」标签，点击 Create Databse
@@ -294,6 +312,5 @@ DINGDING_CLIENT_SECRET="3vk9-VFCExNckqNUk_CL2F-HEgz7qGN-BimH0lZ1gUx6hWO7g_an2lnk
 * [飞书登录配置说明](https://www.hivechat.net/docs/auth/feishu)
 
 ### 交流群
-<img src="https://jiantuku.oss-cn-beijing.aliyuncs.com/share/hivechat/qrcode.JPG" width="300"/>
 
 群聊过期可加微信 wuhaoworld 拉你入群。

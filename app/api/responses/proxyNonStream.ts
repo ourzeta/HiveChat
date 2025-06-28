@@ -25,25 +25,31 @@ export default async function handleNonStreamResponse(response: Response, messag
     let promptTokens = null;
     let completionTokens = null;
     let totalTokens = null;
-    let content = '';
 
-    // 处理不同 API 格式的响应
     if (responseData.usage) {
-      // OpenAI 格式
       promptTokens = responseData.usage.input_tokens || null;
       completionTokens = responseData.usage.output_tokens || null;
       totalTokens = responseData.usage.total_tokens || null;
-
-      if (responseData.choices && responseData.choices[0]) {
-        content = responseData.choices[0].message?.content || '';
+    }
+    const outputs = responseData.output;
+    // 提取所有 output_text 类型的内容
+    let contentArr: Array<{ type: 'text'; text: string }> = [];
+    if (Array.isArray(outputs)) {
+      for (const output of outputs) {
+        if (Array.isArray(output.content)) {
+          for (const item of output.content) {
+            if (item.type === 'output_text' && typeof item.text === 'string') {
+              contentArr.push({ type: 'text', text: item.text });
+            }
+          }
+        }
       }
     }
-
     // 如果有 ChatId，存储消息到数据库
-    if (messageInfo.chatId && content) {
+    if (messageInfo.chatId && contentArr) {
       const toAddMessage = {
         chatId: messageInfo.chatId,
-        content: content,
+        content: contentArr,
         role: 'assistant',
         type: 'text' as const,
         inputTokens: promptTokens,
@@ -52,8 +58,11 @@ export default async function handleNonStreamResponse(response: Response, messag
         model: messageInfo.model,
         providerId: messageInfo.providerId,
       };
-
       const messageId = await addMessageInServer(toAddMessage);
+      responseData.metadata = {
+        isDone: true,
+        messageId: messageId
+      };
     }
 
     // 更新使用量统计
@@ -67,8 +76,7 @@ export default async function handleNonStreamResponse(response: Response, messag
       outputTokens: completionTokens || 0,
       totalTokens: totalTokens || 0,
     });
-
-    return new Response(responseText, {
+    return new Response(JSON.stringify(responseData), {
       status: response.status,
       headers: { 'Content-Type': 'application/json' },
     });

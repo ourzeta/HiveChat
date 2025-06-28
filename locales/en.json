@@ -32,6 +32,7 @@
     "webSearch": "Web Search",
     "mcpServer": "MCP Server",
     "mcpTool": "MCP Tool",
+    "builtInImageGen": "Image Generation",
     "mcpInput": "Input",
     "mcpOutput": "Output",
     "mcpFailed": "Failed",

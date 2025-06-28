@@ -31,15 +31,15 @@ interface IModelListStore {
 
 const useModelListStore = create<IModelListStore>((set, get) => ({
   currentModel: {
-    id: 'gpt-4o',
-    displayName: 'GPT 4o',
+    id: 'deepseek-chat',
+    displayName: 'Deepseek V3',
     supportVision: true,
     supportTool: true,
     maxTokens: 131072,
     selected: true,
     provider: {
-      id: 'openai',
-      providerName: 'Open AI',
+      id: 'Deepseek',
+      providerName: 'Deepseek',
       apiStyle: 'openai'
     }
   },
@@ -75,6 +75,8 @@ const useModelListStore = create<IModelListStore>((set, get) => ({
       maxTokens: model.maxTokens || undefined,
       supportVision: model.supportVision || undefined,
       supportTool: model.supportTool || undefined,
+      builtInImageGen: model.builtInImageGen || false,
+      builtInWebSearch: model.builtInWebSearch || false,
       selected: model.selected || false,
       type: model.type ?? 'default',
       provider: {

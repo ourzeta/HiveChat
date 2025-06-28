@@ -23,7 +23,7 @@ const useChat = (chatId: string) => {
   const [responseMessage, setResponseMessage] = useState<ResponseContent>({ content: '', reasoningContent: '' });
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [userSendCount, setUserSendCount] = useState(0);
-  const { chat, initializeChat, setWebSearchEnabled, webSearchEnabled, historyType, historyCount } = useChatStore();
+  const { chat, initializeChat, setWebSearchEnabled, builtInImageGen, webSearchEnabled, historyType, historyCount } = useChatStore();
   const { setNewTitle } = useChatListStore();
   const { chatNamingModel } = useGlobalConfigStore();
   const { selectedTools } = useMcpServerStore();
@@ -73,6 +73,7 @@ const useChat = (chatId: string) => {
     messages: RequestMessage[],
     searchResultStatus?: searchResultType,
     searchResponse?: WebSearchResponse,
+    buildinTools?: any[],
     mcpTools?: MCPTool[]
   ) => {
     setResponseStatus("pending");
@@ -80,6 +81,7 @@ const useChat = (chatId: string) => {
       messages: messages,
       config: { model: currentModel.id },
       chatId: chatId,
+      buildinTools,
       mcpTools,
       onUpdate: (responseContent: ResponseContent) => {
         setResponseMessage(responseContent);
@@ -306,7 +308,11 @@ const useChat = (chatId: string) => {
       role: "user",
       content: realSendMessage,
     })
-    sendMessage(messages, searchStatus, searchResponse, selectedTools);
+    let buildinTools: any[] = [];
+    if (builtInImageGen) {
+      buildinTools = [{ type: "image_generation", quality: 'low' }];
+    }
+    sendMessage(messages, searchStatus, searchResponse, buildinTools, selectedTools);
   }, [
     chatId,
     responseStatus,
@@ -314,6 +320,7 @@ const useChat = (chatId: string) => {
     userSendCount,
     selectedTools,
     webSearchEnabled,
+    builtInImageGen,
     prepareMessage,
     sendMessage,
     handleWebSearch,
@@ -460,7 +467,7 @@ const useChat = (chatId: string) => {
           }
 
           const messages = [{ role: 'user' as const, content: realSendMessage }];
-          await sendMessage(messages, searchStatus, searchResponse, selectedTools);
+          await sendMessage(messages, searchStatus, searchResponse, [], selectedTools);
           shouldSetNewTitleRef.current([{ role: 'user' as const, content: question }]);
         }
       } catch (error) {

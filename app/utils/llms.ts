@@ -1,5 +1,5 @@
 'use server';
-import { APIStyle, llmSettingsTable } from '@/app/db/schema';
+import { llmSettingsTable } from '@/app/db/schema';
 import { db } from '@/app/db';
 import { eq } from 'drizzle-orm';
 

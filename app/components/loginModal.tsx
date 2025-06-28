@@ -31,7 +31,7 @@ export default function LoginModal() {
   const [isPending, setIsPending] = useState(true);
   const [authProviders, setAuthProviders] = useState<string[]>([]);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
-  const { initModelList, setCurrentModel, initAllProviderList } = useModelListStore();
+  const { initModelList, setCurrentModel } = useModelListStore();
   useEffect(() => {
     const fetchSettings = async () => {
       const resultValue = await fetchAppSettings('isRegistrationOpen');

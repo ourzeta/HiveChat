@@ -1,6 +1,6 @@
 'use client'
 import { fetchEventSource, EventStreamContentType, EventSourceMessage } from '@microsoft/fetch-event-source';
-import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse } from '@/types/llm';
+import { ChatOptions, LLMApi, LLMModel, LLMUsage, RequestMessage, ResponseContent, MCPToolResponse, MessageContent } from '@/types/llm';
 import { prettyObject } from '@/app/utils';
 import { InvalidAPIKeyError, OverQuotaError, TimeoutError } from '@/types/errorTypes';
 import { callMCPTool } from '@/app/utils/mcpToolsServer';
@@ -14,7 +14,7 @@ export default class OpenAIResponseApi implements LLMApi {
     this.providerId = providerId;
   }
   private controller: AbortController | null = null;
-  private answer = '';
+  private answer: MessageContent = '';
   private reasoning_content = '';
   private finishReason = '';
   private inputTokens = 0;
@@ -28,10 +28,16 @@ export default class OpenAIResponseApi implements LLMApi {
     return messages
       .map(msg => {
         let contentArr: any[] = [];
+        let contentType = 'input_text';
+        if (msg.role === 'user' || msg.role === 'system') {
+          contentType = 'input_text';
+        } else {
+          contentType = 'output_text';
+        }
         if (typeof msg.content === 'string') {
           // 文本消息
           contentArr.push({
-            type: 'input_text',
+            type: contentType,
             text: msg.content,
           });
         } else if (Array.isArray(msg.content)) {
@@ -39,7 +45,7 @@ export default class OpenAIResponseApi implements LLMApi {
           for (const item of msg.content) {
             if (item.type === 'text') {
               contentArr.push({
-                type: 'input_text',
+                type: contentType,
                 text: item.text,
               });
             } else if (item.type === 'image') {
@@ -82,14 +88,82 @@ export default class OpenAIResponseApi implements LLMApi {
     const timeoutId = setTimeout(() => {
       this.controller?.abort('timeout');
       options.onError?.(new TimeoutError('Timeout'));
-    }, 30000);
+    }, 60000);
 
     const messages: ResponseInputItem[] = this.prepareMessage<ResponseInputItem>(options.messages)
     let toolsParameter = {};
+    const processOnOpen = async (res: Response) => {
+      clearTimeout(timeoutId);
+      this.finished = false;
+      if (
+        !res.ok ||
+        !res.headers.get("content-type")?.startsWith(EventStreamContentType) ||
+        res.status !== 200
+      ) {
+
+        let resTextRaw = '';
+        try {
+          const resTextJson = await res.clone().json();
+          // 正常没有开 stream 时的处理逻辑
+          if (res.ok && resTextJson?.status === 'completed') {
+            const outputs = resTextJson.output;
+            const outputMessage = outputs
+              .filter((item: any) => (item.type === 'message' || item.type === 'image_generation_call'))
+              .map((item: any) => {
+                if (item.type === 'message') {
+                  const text = (item.content || [])
+                    .filter((c: any) => c.type === 'output_text')
+                    .map((c: any) => c.text)
+                    .join('');
+                  return {
+                    type: 'text',
+                    text: text
+                  };
+                }
+                if (item.type === 'image_generation_call') {
+                  return {
+                    type: 'image',
+                    mimeType: `image/${item.output_format}`,
+                    data: `data:image/${item.output_format}` + ';base64,' + item.result,
+                  };
+                }
+              });
+            this.answer = outputMessage;
+            this.outputTokens = resTextJson.usage.input_tokens;
+            this.outputTokens = resTextJson.usage.output_tokens;
+            this.totalTokens = resTextJson.usage.total_tokens;
+            options.onFinish({
+              id: resTextJson?.metadata.messageId,
+              content: this.answer,
+              reasoningContent: this.reasoning_content,
+              inputTokens: this.inputTokens,
+              outputTokens: this.outputTokens,
+              totalTokens: this.totalTokens,
+              mcpTools: this.mcpTools,
+            });
+            clear();
+            return;
+          } else {
+            resTextRaw = prettyObject(resTextJson);
+          }
+        } catch {
+          resTextRaw = await res.clone().text();
+        }
+        const responseTexts = [resTextRaw];
+        if (res.status === 401) {
+          options.onError?.(new InvalidAPIKeyError('Invalid API Key'));
+        } else if (res.status === 459) {
+          options.onError?.(new OverQuotaError('Over Quota'));
+        } else {
+          this.answer = responseTexts.join("\n\n");
+          options.onError?.(new Error(this.answer));
+        }
+        clear();
+      }
+    }
 
     const processOnMessage = async (event: EventSourceMessage) => {
       const text = event.data;
-
       if (text === "") {
         return;
       }
@@ -119,20 +193,6 @@ export default class OpenAIResponseApi implements LLMApi {
             this.outputTokens = usage.outputTokens;
             this.totalTokens = usage.total_tokens;
           }
-          /*
-          options.onFinish({
-            // id: json.metadata.messageId,
-            content: this.answer,
-            reasoningContent: this.reasoning_content,
-            inputTokens: this.inputTokens,
-            outputTokens: this.outputTokens,
-            totalTokens: this.totalTokens,
-            mcpTools: this.mcpTools,
-          }, false);
-          // syncMcpTools(json.metadata.messageId, this.mcpTools);
-          this.mcpTools = [];
-          clear();
-          return;*/
         }
 
         if (json?.metadata && json?.metadata.isDone) {
@@ -227,33 +287,7 @@ export default class OpenAIResponseApi implements LLMApi {
                   ...toolsParameter
                 }),
                 signal: this.controller?.signal,
-                onopen: async (res) => {
-                  clearTimeout(timeoutId);
-                  this.finished = false;
-                  if (
-                    !res.ok ||
-                    !res.headers.get("content-type")?.startsWith(EventStreamContentType) ||
-                    res.status !== 200
-                  ) {
-                    let resTextRaw = '';
-                    try {
-                      const resTextJson = await res.clone().json();
-                      resTextRaw = prettyObject(resTextJson);
-                    } catch {
-                      resTextRaw = await res.clone().text();
-                    }
-                    const responseTexts = [resTextRaw];
-                    if (res.status === 401) {
-                      options.onError?.(new InvalidAPIKeyError('Invalid API Key'));
-                    } else if (res.status === 459) {
-                      options.onError?.(new OverQuotaError('Over Quota'));
-                    } else {
-                      this.answer = responseTexts.join("\n\n");
-                      options.onError?.(new Error(this.answer));
-                    }
-                    clear();
-                  }
-                },
+                onopen: processOnOpen,
                 onmessage: processOnMessage,
                 onclose: () => {
                   clear();
@@ -311,16 +345,21 @@ export default class OpenAIResponseApi implements LLMApi {
       }
     }
 
+    const tools: any = [];
+    if (options.buildinTools && options.buildinTools.length > 0) {
+      tools.push(...options.buildinTools);
+    }
     if (options.mcpTools) {
-      const tools = mcpToolsToOpenAIResponseTools(options.mcpTools);
-      if (tools.length > 0) {
-        toolsParameter = {
-          tools,
-          tool_choice: "auto",
-        }
+      const mcpTools = mcpToolsToOpenAIResponseTools(options.mcpTools);
+      tools.push(...mcpTools);
+    }
+    if (tools.length > 0) {
+      toolsParameter = {
+        tools,
+        tool_choice: "auto",
       }
     }
-    let final_tool_calls: ResponseFunctionToolCall[] = []
+    let final_tool_calls: ResponseFunctionToolCall[] = [];
     try {
       await fetchEventSource('/api/responses', {
         method: 'POST',
@@ -337,34 +376,7 @@ export default class OpenAIResponseApi implements LLMApi {
           ...toolsParameter
         }),
         signal: this.controller.signal,
-        onopen: async (res) => {
-          clearTimeout(timeoutId);
-          this.finished = false;
-          if (
-            !res.ok ||
-            !res.headers.get("content-type")?.startsWith(EventStreamContentType) ||
-            res.status !== 200
-          ) {
-
-            let resTextRaw = '';
-            try {
-              const resTextJson = await res.clone().json();
-              resTextRaw = prettyObject(resTextJson);
-            } catch {
-              resTextRaw = await res.clone().text();
-            }
-            const responseTexts = [resTextRaw];
-            if (res.status === 401) {
-              options.onError?.(new InvalidAPIKeyError('Invalid API Key'));
-            } else if (res.status === 459) {
-              options.onError?.(new OverQuotaError('Over Quota'));
-            } else {
-              this.answer = responseTexts.join("\n\n");
-              options.onError?.(new Error(this.answer));
-            }
-            clear();
-          }
-        },
+        onopen: processOnOpen,
         onmessage: processOnMessage,
         onclose: () => {
           clear();

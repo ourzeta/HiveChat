@@ -40,6 +40,8 @@ export async function initializeModels() {
     maxTokens: model.maxTokens,
     supportVision: model.supportVision,
     supportTool: model.supportTool,
+    builtInImageGen: model.builtInImageGen,
+    builtInWebSearch: model.builtInWebSearch,
     selected: model.selected,
     providerId: model.provider.id,
     providerName: model.provider.providerName,

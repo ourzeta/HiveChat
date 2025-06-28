@@ -32,6 +32,7 @@
     "webSearch": "联网搜索",
     "mcpServer": "MCP 服务器",
     "mcpTool": "MCP 工具",
+    "builtInImageGen": "图像生成",
     "mcpInput": "调用返回",
     "mcpOutput": "MCP 工具",
     "mcpFailed": "调用失败",

@@ -2,7 +2,7 @@ import { llmSettingsType } from '@/app/db/schema';
 const providers: llmSettingsType[] = [
   {
     provider: 'openai',
-    providerName: 'Open AI',
+    providerName: 'OpenAI',
     apikey: null,
     endpoint: null,
     isActive: null,

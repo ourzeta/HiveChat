@@ -5,6 +5,7 @@ import { PictureOutlined, ClearOutlined, FieldTimeOutlined, GlobalOutlined, Arro
 import { Square } from '@icon-park/react';
 import Eraser from '@/app/images/eraser.svg';
 import McpIcon from "@/app/images/mcp.svg";
+import ImageGeneration from "@/app/images/imageGeneration.svg";
 import HistorySettings from '@/app/components/HistorySettings';
 import McpServerSelect from '@/app/components/McpServerSelect';
 import ImagePreviewArea from '@/app/components/ImagePreviewArea';
@@ -92,7 +93,7 @@ ChatInput.displayName = 'ChatInput';
 
 const InputArea = () => {
   const t = useTranslations('Chat');
-  const { 
+  const {
     chat_id,
     responseStatus,
     historyType,
@@ -103,12 +104,12 @@ const InputArea = () => {
     stopChat,
     clearHistory
   } = useChatContext();
-  
+
   const [historySettingOpen, setHistorySettingOpen] = useState(false);
   const [mcpServerSelectOpen, setMcpServerSelectOpen] = useState(false);
   const { hasUseMcp, hasMcpSelected } = useMcpServerStore();
   const { searchEnable: remoteSearchEnable } = useGlobalConfigStore();
-  const { webSearchEnabled, setWebSearchEnabled } = useChatStore();
+  const { webSearchEnabled, setWebSearchEnabled, builtInImageGen, setBuiltInImageGen } = useChatStore();
   const { uploadedImages, maxImages, handleImageUpload, removeImage, setUploadedImages } = useImageUpload();
 
   const inputRef = useRef<HTMLTextAreaElement & { clearInputValue?: () => void }>(null);

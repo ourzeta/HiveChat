@@ -139,6 +139,8 @@ export const llmModels = pgTable("models", {
   maxTokens: integer(),
   supportVision: boolean('support_vision').default(false),
   supportTool: boolean('support_tool').default(false),
+  builtInImageGen: boolean('built_in_image_gen').default(false),
+  builtInWebSearch: boolean('built_in_web_search').default(false),
   selected: boolean('selected').default(true),
   providerId: varchar({ length: 255 }).notNull().references(() => llmSettingsTable.provider, {
     onDelete: 'cascade',

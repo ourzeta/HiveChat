@@ -71,6 +71,7 @@ export type ChatOptions = {
   messages: RequestMessage[];
   config: LLMConfig;
   chatId?: string;
+  buildinTools?: any[];
   mcpTools?: MCPTool[];
   onUpdate: (update: ResponseContent) => void;
   onFinish: (message: ResponseContent, shouldContinue?: boolean) => void;
@@ -117,6 +118,8 @@ export interface LLMModel {
   maxTokens?: number;
   supportVision?: boolean;
   supportTool?: boolean;
+  builtInImageGen?: boolean;
+  builtInWebSearch?: boolean;
   selected?: boolean;
   provider: LLMModelProvider;
   type?: 'default' | 'custom';

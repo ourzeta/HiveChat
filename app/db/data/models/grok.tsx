@@ -7,7 +7,16 @@ export const provider: LLMModelProvider = {
 
 export const modelList: LLMModel[] = [
   {
-    'id': 'grok-3-beta',
+    'id': 'grok-4-latest',
+    'displayName': 'Grok4',
+    'supportVision': true,
+    'supportTool': true,
+    "maxTokens": 262144,
+    'selected': true,
+    provider
+  },
+  {
+    'id': 'grok-3',
     'displayName': 'Grok3',
     'supportVision': false,
     'supportTool': true,
@@ -16,7 +25,7 @@ export const modelList: LLMModel[] = [
     provider
   },
   {
-    'id': 'grok-3-mini-beta',
+    'id': 'grok-3-mini',
     'displayName': 'Grok3 Mini',
     'supportVision': false,
     'supportTool': true,
@@ -24,20 +33,4 @@ export const modelList: LLMModel[] = [
     'selected': true,
     provider
   },
-  {
-    'id': 'grok-2-vision-1212',
-    'displayName': 'Grok2 Vision',
-    'supportVision': true,
-    "maxTokens": 32768,
-    'selected': true,
-    provider
-  },
-  {
-    'id': 'grok-2',
-    'displayName': 'Grok2',
-    'supportVision': false,
-    "maxTokens": 131072,
-    'selected': true,
-    provider
-  }
 ]

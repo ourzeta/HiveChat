@@ -57,7 +57,7 @@
     "settings": "Settings",
     "noLlmNotice": "No LLM has been set up, ",
     "clickToSet": "click here to set",
-    "inputPlaceholder": "Ask me anything...",
+    "inputPlaceholder": "Ask me anything",
     "notSupportVision": "The current model does not support uploading images.",
     "welcomeNotice": "how can I help you?",
     "goodMorning": "Good morning, ",

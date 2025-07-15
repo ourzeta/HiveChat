@@ -13,6 +13,7 @@ import useImageUpload from '@/app/hooks/chat/useImageUpload';
 import useMcpServerStore from '@/app/store/mcp';
 import useGlobalConfigStore from '@/app/store/globalConfig';
 import useChatStore from '@/app/store/chat';
+import useUserSettingsStore from '@/app/store/userSettings';
 import { useTranslations } from 'next-intl';
 import { fileToBase64 } from '@/app/utils';
 import useChatContext from '@/app/context/ChatContext';
@@ -32,6 +33,17 @@ const ChatInput = memo(({
 }: ChatInputProps) => {
   const t = useTranslations('Chat');
   const [inputValue, setInputValue] = useState('');
+  const { messageSendShortcut } = useUserSettingsStore();
+
+  // 生成动态快捷键提示
+  const getShortcutHint = () => {
+    if (messageSendShortcut === 'enter') {
+      return '按 Enter 发送';
+    } else {
+      const isMac = navigator.userAgent.includes('Mac');
+      return isMac ? '按 ⌘ + Enter 发送' : '按 Ctrl + Enter 发送';
+    }
+  };
 
   // Expose setInputValue to parent through ref
   React.useEffect(() => {
@@ -49,8 +61,19 @@ const ChatInput = memo(({
     if (e.nativeEvent.isComposing) return;
 
     if (e.key === 'Enter') {
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
-        // Command/Ctrl + Enter: 插入换行
+      // 根据用户设置决定发送行为
+      const shouldSend = messageSendShortcut === 'enter'
+        ? !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)  // Enter发送模式：单独Enter发送，组合键换行
+        : (e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey; // Ctrl+Enter发送模式：组合键发送，单独Enter换行
+
+      if (shouldSend) {
+        // 发送消息
+        e.preventDefault();
+        if (inputValue.trim() === '' || responseStatus === 'pending') return;
+        onSubmit(inputValue);
+        setInputValue('');
+      } else {
+        // 插入换行
         e.preventDefault();
         const target = e.currentTarget;
         const start = target.selectionStart;
@@ -60,15 +83,9 @@ const ChatInput = memo(({
         setTimeout(() => {
           target.selectionStart = target.selectionEnd = start + 1;
         }, 0);
-        return;
       }
-
-      e.preventDefault();
-      if (inputValue.trim() === '' || responseStatus === 'pending') return;
-      onSubmit(inputValue);
-      setInputValue('');
     }
-  }, [inputValue, responseStatus, onSubmit]);
+  }, [inputValue, responseStatus, onSubmit, messageSendShortcut]);
 
   return (
     <div className='flex h-full max-w-3xl w-full relative pl-2 pr-2 pt-2'>
@@ -79,7 +96,7 @@ const ChatInput = memo(({
         autoFocus={true}
         onPaste={onPaste}
         onKeyDown={handleKeyDown}
-        placeholder={t('inputPlaceholder')}
+        placeholder={`${t('inputPlaceholder')}，${getShortcutHint()}`}
         className='m-2 w-full border-none outline-none resize-none scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-gray-300 scrollbar-track-gray-100 scrollbar-rounded'
         style={{ border: 'none', resize: 'none', marginBottom: '0', scrollbarColor: '#eaeaea transparent' }}
       />

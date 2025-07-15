@@ -293,6 +293,14 @@ ALTER TABLE public.llm_settings
 ALTER COLUMN api_style SET NOT NULL;
 ```
 
+* Docker 方式升级到 0.0.26 镜像（2025-07-15 发布版本）时，需要手动更新数据库，手动执行以下 SQL
+
+```sql
+CREATE TYPE message_send_shortcut AS ENUM ('enter', 'ctrl_enter');
+
+ALTER TABLE public."user" 
+ADD COLUMN message_send_shortcut message_send_shortcut NOT NULL DEFAULT 'enter';
+```
 #### 附1：Vercel（Neon）PostgreSQL 配置
 
 1. 在 Vercel 平台顶部导航，选择「Storage」标签，点击 Create Databse

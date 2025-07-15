@@ -18,6 +18,8 @@ import { apiStyle, MCPToolResponse } from '@/types/llm'
 import { WebSearchResponse } from '@/types/search'
 const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 10)
 
+export const messageSendShortcut = pgEnum('message_send_shortcut', ['enter', 'ctrl_enter']);
+
 export const users = pgTable("user", {
   id: text("id")
     .primaryKey()
@@ -38,6 +40,7 @@ export const users = pgTable("user", {
   currentMonthTotalTokens: integer('current_month_total_tokens').notNull().default(0),
   usageUpdatedAt: timestamp('usage_updated_at').notNull().defaultNow(),
   createdAt: timestamp('created_at').defaultNow(),
+  messageSendShortcut: messageSendShortcut('message_send_shortcut').notNull().default('enter'),
 })
 
 export const accounts = pgTable("account", {

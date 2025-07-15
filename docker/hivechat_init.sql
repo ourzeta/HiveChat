@@ -81,6 +81,18 @@ CREATE TYPE public.mcp_server_type AS ENUM (
 ALTER TYPE public.mcp_server_type OWNER TO postgres;
 
 --
+-- Name: message_send_shortcut; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.message_send_shortcut AS ENUM (
+    'enter',
+    'ctrl_enter'
+);
+
+
+ALTER TYPE public.message_send_shortcut OWNER TO postgres;
+
+--
 -- Name: message_type; Type: TYPE; Schema: public; Owner: postgres
 --
 
@@ -500,7 +512,8 @@ CREATE TABLE public."user" (
     today_total_tokens integer DEFAULT 0 NOT NULL,
     current_month_total_tokens integer DEFAULT 0 NOT NULL,
     usage_updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    created_at timestamp without time zone DEFAULT now()
+    created_at timestamp without time zone DEFAULT now(),
+    message_send_shortcut public.message_send_shortcut DEFAULT 'enter'::public.message_send_shortcut NOT NULL
 );
 
 

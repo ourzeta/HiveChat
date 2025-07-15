@@ -5,6 +5,7 @@ import { Button, Modal, Form, Input, Select, Progress, message } from 'antd';
 import { TranslationOutlined } from '@ant-design/icons';
 import { useSession, signOut } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
+import useUserSettingsStore from '@/app/store/userSettings';
 
 type FormValues = {
   oldPassword: string;
@@ -20,6 +21,7 @@ const AccountPage = () => {
   const [submiting, setSubmiting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { data: session } = useSession();
+  const { messageSendShortcut, setMessageSendShortcut, loadUserSettings } = useUserSettingsStore();
   const [usageInfo, setUsageInfo] = useState<{
     todayTotalTokens: number;
     currentMonthTotalTokens: number;
@@ -62,7 +64,8 @@ const AccountPage = () => {
       setLoading(false)
     }
     fetchUsage();
-  }, []);
+    loadUserSettings();
+  }, [loadUserSettings]);
 
   const handleOk = () => {
     form.submit();
@@ -166,6 +169,30 @@ const AccountPage = () => {
             options={[
               { value: 'zh', label: '简体中文' },
               { value: 'en', label: 'English' },
+            ]}
+          />
+        </div>
+      </div>
+
+      <div className='flex flex-row justify-between mt-6 p-6 border border-gray-200 rounded-md'>
+        <div className='flex items-center'>
+          <span className='text-sm font-medium'>发送消息快捷键</span>
+        </div>
+        <div className='flex items-center'>
+          <Select
+            value={messageSendShortcut}
+            style={{'width':'140px'}}
+            onChange={async (value: 'enter' | 'ctrl_enter') => {
+              try {
+                await setMessageSendShortcut(value);
+                message.success('快捷键设置已更新');
+              } catch (error) {
+                message.error('更新失败，请重试');
+              }
+            }}
+            options={[
+              { value: 'enter', label: 'Enter' },
+              { value: 'ctrl_enter', label: navigator.userAgent.includes('Mac') ? '⌘ + Enter' : 'Ctrl + Enter' },
             ]}
           />
         </div>

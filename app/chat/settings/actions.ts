@@ -100,3 +100,69 @@ export const getUserUsage = async () => {
     tokenLimitType: userTokenLimitType,
   }
 }
+
+export const getUserSettings = async () => {
+  const session = await auth();
+  if (!session?.user) {
+    throw new Error('not allowed');
+  }
+
+  try {
+    const userDetail = await db.query.users.findFirst({
+      where: eq(users.id, session.user.id),
+      columns: {
+        messageSendShortcut: true,
+      }
+    });
+
+    return {
+      success: true,
+      data: {
+        messageSendShortcut: userDetail?.messageSendShortcut || 'enter',
+      }
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: 'Failed to fetch user settings'
+    };
+  }
+}
+
+export const updateUserSettings = async (settings: {
+  messageSendShortcut?: 'enter' | 'ctrl_enter';
+}) => {
+  const session = await auth();
+  if (!session?.user) {
+    throw new Error('not allowed');
+  }
+
+  try {
+    const updateData: any = {};
+
+    if (settings.messageSendShortcut) {
+      updateData.messageSendShortcut = settings.messageSendShortcut;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return {
+        success: false,
+        message: 'No settings to update'
+      };
+    }
+
+    await db.update(users)
+      .set(updateData)
+      .where(eq(users.id, session.user.id));
+
+    return {
+      success: true,
+      message: '设置已更新'
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: 'Failed to update user settings'
+    };
+  }
+}

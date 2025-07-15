@@ -57,7 +57,7 @@
     "settings": "设置",
     "noLlmNotice": "尚未设置任何大模型服务，",
     "clickToSet": "点此设置",
-    "inputPlaceholder": "可以问我任何问题...",
+    "inputPlaceholder": "询问任何问题",
     "notSupportVision": "当前模型不支持上传图片",
     "welcomeNotice": "有什么可以帮忙的？",
     "goodMorning": "早上好，",

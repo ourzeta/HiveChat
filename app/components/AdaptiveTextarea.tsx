@@ -12,6 +12,7 @@ import { LLMModel } from '@/types/llm';
 import useMcpServerStore from '@/app/store/mcp';
 import useGlobalConfigStore from '@/app/store/globalConfig';
 import useChatStore from '@/app/store/chat';
+import useUserSettingsStore from '@/app/store/userSettings';
 import clsx from 'clsx';
 import { useTranslations } from 'next-intl';
 import SearchButton from './SearchButton';
@@ -36,7 +37,18 @@ const AdaptiveTextarea = (props: {
   const { setWebSearchEnabled } = useChatStore();
   const [localSearchEnable, setLocalSearchEnable] = useState(false);
   const { hasUseMcp, hasMcpSelected } = useMcpServerStore();
+  const { messageSendShortcut } = useUserSettingsStore();
   const { uploadedImages, maxImages, handleImageUpload, removeImage } = useImageUpload();
+
+  // 生成动态快捷键提示
+  const getShortcutHint = () => {
+    if (messageSendShortcut === 'enter') {
+      return '按 Enter 发送';
+    } else {
+      const isMac = navigator.userAgent.includes('Mac');
+      return isMac ? '按 ⌘ + Enter 发送' : '按 Ctrl + Enter 发送';
+    }
+  };
   // 创建测试 span
   useEffect(() => {
     // 创建用于测量文本宽度的 span 元素
@@ -139,7 +151,7 @@ const AdaptiveTextarea = (props: {
             value={text}
             rows={2}
             onChange={(e) => setText(e.target.value)}
-            placeholder={t('inputPlaceholder')}
+            placeholder={`${t('inputPlaceholder')}，${getShortcutHint()}`}
             className={clsx({ 'bg-gray-100': pending }, "flex-1 p-2  leading-6 h-10 py-2 rounded-md outline-none resize-none")}
             disabled={pending}
             style={{
@@ -179,8 +191,28 @@ const AdaptiveTextarea = (props: {
                 return;
               }
               if (e.key === 'Enter') {
-                if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
-                  // Command/Ctrl + Enter: 插入换行
+                // 根据用户设置决定发送行为
+                const shouldSend = messageSendShortcut === 'enter'
+                  ? !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)  // Enter发送模式：单独Enter发送，组合键换行
+                  : (e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey; // Ctrl+Enter发送模式：组合键发送，单独Enter换行
+
+                if (shouldSend) {
+                  // 发送消息
+                  e.preventDefault();
+                  if (text.trim() === '') {
+                    return;
+                  }
+                  setPending(true);
+                  props.submit(text, await Promise.all(uploadedImages
+                    .filter(img => img.file)
+                    .map(async (img) => {
+                      return {
+                        mimeType: img.file.type,
+                        data: await fileToBase64(img.file!)
+                      }
+                    })), localSearchEnable);
+                } else {
+                  // 插入换行
                   e.preventDefault();
                   const target = e.currentTarget;
                   const start = target.selectionStart;
@@ -194,21 +226,7 @@ const AdaptiveTextarea = (props: {
                   setTimeout(() => {
                     target.selectionStart = target.selectionEnd = start + 1;
                   }, 0);
-                  return;
                 }
-                e.preventDefault();
-                if (text.trim() === '') {
-                  return;
-                }
-                setPending(true);
-                props.submit(text, await Promise.all(uploadedImages
-                  .filter(img => img.file)
-                  .map(async (img) => {
-                    return {
-                      mimeType: img.file.type,
-                      data: await fileToBase64(img.file!)
-                    }
-                  })), localSearchEnable);
               }
             }}
           />

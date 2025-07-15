@@ -47,7 +47,7 @@ export default function RootLayout({
         />
       )}
       <div className={clsx(
-        "flex flex-col w-64 bg-gray-100 h-screen p-4 box-border transition-transform duration-300 ease-in-out z-50",
+        "flex flex-col w-64 bg-gray-100 h-dvh p-4 box-border transition-transform duration-300 ease-in-out z-50",
         "fixed md:relative",
         isSidebarCollapsed ? "md:-translate-x-full -translate-x-64" : ""
       )}>

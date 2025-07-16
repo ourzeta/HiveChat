@@ -262,7 +262,7 @@ const Settings = (props: { providerId: string }) => {
           </Form.Item>
         </div>
         <Form.Item label={<span className='font-medium'>API Key</span>} name='apikey'>
-          <Input
+          <Input.Password
             onBlur={() => {
               form.submit();
             }

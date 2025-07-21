@@ -56,10 +56,10 @@ function filterPropertieAttributes(tool: MCPTool, filterNestedObj = false) {
 
 export function mcpToolsToOpenAIResponseTools(mcpTools: MCPTool[]): FunctionTool[] {
   return mcpTools.map((tool) => ({
-    type: 'function',
+    type: 'function' as const,
     name: tool.name,
-    description: tool.description,
-    strict: null,
+    description: tool.description || null,
+    strict: false,
     parameters: {
       type: 'object',
       properties: filterPropertieAttributes(tool)

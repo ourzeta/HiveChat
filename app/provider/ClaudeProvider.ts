@@ -211,7 +211,7 @@ export default class ClaudeApi implements LLMApi {
               this.reasoning_content = '';
               this.mcpTools = [];
               Object.keys(final_tool_calls).forEach(key => delete final_tool_calls[Number(key)]);
-              
+
               if (!this.controller) {
                 this.controller = new AbortController();
               }
@@ -327,15 +327,19 @@ export default class ClaudeApi implements LLMApi {
             });
           }
 
-          if (type === 'message_stop') {
-            const usage = json.usage || json['amazon-bedrock-invocationMetrics'];
-            this.inputTokens = usage?.inputTokenCount || null;
-            this.outputTokens = usage?.outputTokenCount || null;
-            this.totalTokens = usage.inputTokenCount + usage.outputTokenCount;
+          if (type === 'message_start') {
+            const usage = json?.message?.usage;
+            this.inputTokens = usage?.input_tokens ?? 0;
+          }
+
+          if (type === 'message_delta') {
+            const usage = json?.usage;
+            this.outputTokens = usage?.output_tokens ?? 0;
+            this.totalTokens = this.inputTokens + this.outputTokens;
           }
 
         } catch (e) {
-          console.error("[Request] parse error", `--------${text}------`, `===--${event}---`);
+          console.error("[Request] parse error", `--------${text}------`);
         }
       }
     }

@@ -73,9 +73,12 @@ MCP 使用
 
 注：以下为演示站，数据随时会被清空
 
-* 用户端：https://chat.yotuku.cn/
+* Cloud 版：https://www.hivechat.net/
+    * 可自行注册账号体验，支持多租户
+
+* 私有部署用户端：https://chat.yotuku.cn/
     * 可自行注册账号体验
-* 管理员端：https://hivechat-demo.vercel.app/
+* 私有部署管理员端：https://hivechat-demo.vercel.app/
     * Email: admin@demo.com
     * Password: helloHivechat
 

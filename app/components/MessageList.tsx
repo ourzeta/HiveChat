@@ -6,7 +6,7 @@ import ChatHeader from '@/app/components/ChatHeader';
 import ResponsingMessage from '@/app/components/ResponsingMessage';
 import MessageItem from '@/app/components/MessageItem';
 import useChat from '@/app/hooks/chat/useChat';
-import { throttle } from 'lodash';
+import { throttle, debounce } from 'lodash';
 import ScrollToBottomButton from '@/app/components/ScrollToBottomButton';
 import { useTranslations } from 'next-intl';
 import InputArea from '@/app/components/InputArea';
@@ -42,28 +42,49 @@ export const MessageList = (props: { chat_id: string }) => {
     setIsUserScrolling,
   } = useChat(props.chat_id);
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (!isUserScrolling && messageListRef.current) {
-      // Use requestAnimationFrame for smoother scrolling
-      const scrollToBottom = () => {
+  // 创建防抖的滚动函数，避免高频滚动操作
+  const debouncedScrollToBottom = useMemo(
+    () => debounce(() => {
+      if (!isUserScrolling && messageListRef.current) {
         try {
-          messageListRef.current?.scrollTo({
-            top: messageListRef.current.scrollHeight
+          requestAnimationFrame(() => {
+            if (messageListRef.current) {
+              messageListRef.current.scrollTo({
+                top: messageListRef.current.scrollHeight
+              });
+            }
           });
         } catch (error) {
           console.error('Scroll error:', error);
         }
-      };
+      }
+    }, 50, { leading: false, trailing: true }),
+    [isUserScrolling]
+  );
 
-      requestAnimationFrame(scrollToBottom);
+  // 清理防抖函数
+  useEffect(() => {
+    return () => {
+      debouncedScrollToBottom.cancel();
+    };
+  }, [debouncedScrollToBottom]);
+
+  // Auto-scroll to bottom when new messages arrive - 使用防抖优化
+  useEffect(() => {
+    // 只有在有实际内容变化时才触发滚动
+    const hasContent = responseMessage.content || 
+                      responseMessage.reasoningContent || 
+                      (responseMessage.mcpTools && responseMessage.mcpTools.length > 0);
+    
+    if (hasContent || messageList.length > 0) {
+      debouncedScrollToBottom();
     }
   }, [
     responseMessage.content,
     responseMessage.reasoningContent,
-    responseMessage.mcpTools?.length,
-    isUserScrolling,
-    messageList.length
+    responseMessage.mcpTools,
+    messageList.length,
+    debouncedScrollToBottom
   ]);
 
   // Optimized scroll handler with useCallback and performance optimizations

@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { throttle, debounce } from 'lodash';
 import { Message, ResponseContent, ChatOptions, LLMApi, RequestMessage, MessageContent, MCPTool } from '@/types/llm';
 import useChatStore from '@/app/store/chat';
 import useChatListStore from '@/app/store/chatList';
@@ -21,6 +22,21 @@ const useChat = (chatId: string) => {
   const [searchStatus, setSearchStatus] = useState<searchResultType>("none");
   const [chatBot, setChatBot] = useState<LLMApi | null>(null);
   const [responseMessage, setResponseMessage] = useState<ResponseContent>({ content: '', reasoningContent: '' });
+  
+  // 创建节流的响应消息更新函数，限制更新频率到60fps
+  const throttledSetResponseMessage = useMemo(
+    () => throttle((content: ResponseContent) => {
+      setResponseMessage(content);
+    }, 16, { leading: true, trailing: true }),
+    []
+  );
+
+  // 清理节流函数
+  useEffect(() => {
+    return () => {
+      throttledSetResponseMessage.cancel();
+    };
+  }, [throttledSetResponseMessage]);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [userSendCount, setUserSendCount] = useState(0);
   const { chat, initializeChat, setWebSearchEnabled, builtInImageGen, webSearchEnabled, historyType, historyCount } = useChatStore();
@@ -84,7 +100,7 @@ const useChat = (chatId: string) => {
       buildinTools,
       mcpTools,
       onUpdate: (responseContent: ResponseContent) => {
-        setResponseMessage(responseContent);
+        throttledSetResponseMessage(responseContent);
       },
       onFinish: async (responseContent: ResponseContent, shouldContinue?: boolean) => {
         const respMessage: Message = {
@@ -144,6 +160,7 @@ const useChat = (chatId: string) => {
     chatBot,
     chatId,
     currentModel,
+    throttledSetResponseMessage,
   ]);
 
   const stopChat = () => {

@@ -7,6 +7,24 @@ export const provider: LLMModelProvider = {
 
 export const modelList: LLMModel[] = [
   {
+    'id': 'gpt-5',
+    'displayName': 'GPT 5',
+    'supportVision': true,
+    'supportTool': true,
+    "maxTokens": 400 * 1024,
+    'selected': true,
+    provider
+  },
+  {
+    'id': 'gpt-5-mini',
+    'displayName': 'GPT 5 mini',
+    'supportVision': true,
+    'supportTool': true,
+    "maxTokens": 400 * 1024,
+    'selected': true,
+    provider
+  },
+  {
     'id': 'gpt-4.1',
     'displayName': 'GPT 4.1',
     'supportVision': true,
@@ -67,24 +85,6 @@ export const modelList: LLMModel[] = [
     'supportVision': false,
     'maxTokens': 131072,
     'selected': true,
-    provider
-  },
-  {
-    'id': 'gpt-4-turbo-preview',
-    'displayName': 'GPT 4 Turbo',
-    'supportVision': true,
-    'supportTool': true,
-    'maxTokens': 131072,
-    'selected': false,
-    provider
-  },
-  {
-    'id': 'gpt-4-32k',
-    'displayName': 'GPT 4 32k',
-    'supportVision': true,
-    'supportTool': true,
-    'maxTokens': 32768,
-    'selected': false,
     provider
   }
 ]

@@ -9,6 +9,7 @@ import { getGroupList } from '../group/actions';
 type FormValues = {
   email: string;
   password: string;
+  confirmPassword?: string;
   isAdmin: boolean;
   groupId: string;
 }
@@ -19,11 +20,14 @@ const UserListTab = () => {
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
   const [userList, setUserList] = useState<(UserType & { group: (null | { monthlyTokenLimit: number | null, tokenLimitType: 'limited' | 'unlimited', name: string }) })[]>([]);
   const [userFetchStatus, setUserFetchStatus] = useState(true);
-  const [passwordVisible, setPasswordVisible] = React.useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [editPasswordVisible, setEditPasswordVisible] = useState(false);
+  const [editConfirmPasswordVisible, setEditConfirmPasswordVisible] = useState(false);
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
   const [groupList, setGroupList] = useState<groupType[]>([]);
   const [groupSelectValue, setGroupSelectValue] = useState<string>('_all');
+  const [currentEditingUser, setCurrentEditingUser] = useState<UserType | null>(null);
 
   const groupsSelectOptions = [
     ...groupList.map((group) => ({
@@ -58,7 +62,14 @@ const UserListTab = () => {
 
   const handleEditUserModalCancel: () => void = () => {
     editForm.resetFields();
+    setCurrentEditingUser(null);
     setIsEditUserModalOpen(false);
+  };
+
+  // 判断用户是否通过邮箱注册（有密码且没有第三方登录ID）
+  const isEmailRegisteredUser = (user: UserType | null) => {
+    if (!user) return false;
+    return user.password && !user.dingdingUnionId && !user.wecomUserId && !user.feishuUserId;
   };
 
   useEffect(() => {
@@ -94,12 +105,21 @@ const UserListTab = () => {
   };
 
   const onEditUserFinish = async (values: FormValues) => {
-    const result = await updateUser(values.email, values);
+    // 如果密码为空，则不传递密码字段
+    const updateData = {
+      email: values.email,
+      isAdmin: values.isAdmin,
+      groupId: values.groupId,
+      ...(values.password && values.password.trim() !== '' && { password: values.password })
+    };
+    
+    const result = await updateUser(values.email, updateData);
     if (result.success) {
       const userList = await getUserList(groupSelectValue);
       setUserList(userList);
       message.success(t('updateUserSuccess'));
       editForm.resetFields();
+      setCurrentEditingUser(null);
       setIsEditUserModalOpen(false);
     } else {
       message.error(result.message)
@@ -111,7 +131,10 @@ const UserListTab = () => {
       'groupId': userInfo.groupId,
       'email': userInfo.email,
       'isAdmin': userInfo.isAdmin,
+      'password': '',
+      'confirmPassword': ''
     })
+    setCurrentEditingUser(userInfo);
     setIsEditUserModalOpen(true);
   }
 
@@ -255,6 +278,56 @@ const UserListTab = () => {
             rules={[{ type: 'email', message: t('emailNotice') }]}>
             <Input type='email' disabled />
           </Form.Item>
+          {isEmailRegisteredUser(currentEditingUser) && (
+            <>
+              <Form.Item 
+                label={<span className='font-medium'>新密码</span>} 
+                name='password'
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value) return Promise.resolve();
+                      if (value.length < 8) {
+                        return Promise.reject(new Error('密码至少需要8个字符'));
+                      }
+                      return Promise.resolve();
+                    }
+                  }
+                ]}
+                extra="留空则不修改密码"
+              >
+                <Input.Password
+                  placeholder="请输入新密码"
+                  visibilityToggle={{ visible: editPasswordVisible, onVisibleChange: setEditPasswordVisible }}
+                />
+              </Form.Item>
+              <Form.Item 
+                label={<span className='font-medium'>确认新密码</span>} 
+                name='confirmPassword'
+                dependencies={['password']}
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      const password = editForm.getFieldValue('password');
+                      if (!password && !value) return Promise.resolve();
+                      if (password && !value) {
+                        return Promise.reject(new Error('请确认新密码'));
+                      }
+                      if (password !== value) {
+                        return Promise.reject(new Error('两次输入的密码不一致'));
+                      }
+                      return Promise.resolve();
+                    }
+                  }
+                ]}
+              >
+                <Input.Password
+                  placeholder="请再次输入新密码"
+                  visibilityToggle={{ visible: editConfirmPasswordVisible, onVisibleChange: setEditConfirmPasswordVisible }}
+                />
+              </Form.Item>
+            </>
+          )}
           <Form.Item rules={[{ required: true, message: '请选择分组' }]} label={<span className='font-medium'>所属分组</span>} name='groupId'>
             <Select
               options={groupsSelectOptions}

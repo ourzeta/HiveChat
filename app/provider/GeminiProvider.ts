@@ -237,7 +237,7 @@ export default class GeminiApi implements LLMApi {
                       resTextRaw = await res.clone().text();
                     }
                     const responseTexts = [resTextRaw];
-                    if (res.status >= 400 && res.status < 500) {
+                    if (res.status >= 400 && res.status < 500 && res.status !== 429) {
                       options.onError?.(new InvalidAPIKeyError('Invalid API Key'));
                     } else {
                       this.answer = responseTexts.join("\n\n");

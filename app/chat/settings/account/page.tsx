@@ -64,8 +64,7 @@ const AccountPage = () => {
       setLoading(false)
     }
     fetchUsage();
-    loadUserSettings();
-  }, [loadUserSettings]);
+  }, []);
 
   const handleOk = () => {
     form.submit();

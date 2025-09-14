@@ -1,14 +1,25 @@
 'use client';
 import React, { useEffect } from 'react'
+import { useSession } from 'next-auth/react';
 import useMcpServerStore from '@/app/store/mcp';
 import useGlobalConfigStore from '@/app/store/globalConfig';
 import { fetchSettingsByKeys, getMcpServersAndAvailableTools } from '@/app/chat/actions/chat';
 import useModelListStore from '@/app/store/modelList';
 import { fetchAvailableLlmModels, fetchAllProviders } from '@/app/admin/llm/actions';
+import useUserSettingsStore from '@/app/store/userSettings';
 
 const AppPrepare = () => {
+  const { data: session } = useSession();
   const { setHasUseMcp, setHasMcpSelected, setMcpServers, setAllTools } = useMcpServerStore();
   const { setChatNamingModel, setSearchEnable } = useGlobalConfigStore();
+  const { loadUserSettings } = useUserSettingsStore();
+
+  useEffect(() => {
+    if (session) {
+      loadUserSettings();
+    }
+  }, [session, loadUserSettings]);
+
   useEffect(() => {
     const initializeMcpInfo = async () => {
       const { mcpServers, tools } = await getMcpServersAndAvailableTools();
@@ -62,7 +73,7 @@ const AppPrepare = () => {
 
     initializeModelList();
   }, [initModelList, setCurrentModel, setIsPending, initAllProviderList]);
-  
+
   useEffect(() => {
     const initializeAppSettings = async () => {
       const results = await fetchSettingsByKeys(['chatNamingModel', 'searchEnable']);

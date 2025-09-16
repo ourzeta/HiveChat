@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BotType } from '@/app/db/schema';
 import useChatListStore from '@/app/store/chatList';
-import { Button, message, Popconfirm, Divider, PopconfirmProps } from 'antd';
-import { LeftOutlined } from '@ant-design/icons';
+import { Button, message, Popconfirm, Divider, PopconfirmProps, Modal } from 'antd';
+import { LeftOutlined, EditOutlined } from '@ant-design/icons';
 import MarkdownRender from '@/app/components/Markdown';
-import { getBotInfoInServer, deleteBotInServer } from '@/app/admin/bot/action';
+import { getBotInfoInServer, deleteBotInServer, updateBotInServer } from '@/app/admin/bot/action';
 import { useTranslations } from 'next-intl';
+import BotForm, { BotFormValues } from '@/app/components/BotForm';
 
 const BotInfo = ({ params }: { params: { bot_id: string } }) => {
   const t = useTranslations('Chat');
@@ -17,6 +18,8 @@ const BotInfo = ({ params }: { params: { bot_id: string } }) => {
   const { chatList, addBot } = useChatListStore();
   const [botInfo, setBotInfo] = useState<BotType>();
   const [isPending, setIsPending] = useState(true);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isEditLoading, setIsEditLoading] = useState(false);
   useEffect(() => {
     const initBotData = async () => {
       const bot = await getBotInfoInServer(Number(params.bot_id));
@@ -38,6 +41,26 @@ const BotInfo = ({ params }: { params: { bot_id: string } }) => {
       } else {
         message.error(t('deleteFail'));
       }
+    }
+  };
+
+  const handleEditBot = async (values: BotFormValues) => {
+    if (!botInfo?.id) return;
+    
+    setIsEditLoading(true);
+    try {
+      const result = await updateBotInServer(botInfo.id, values);
+      if (result.status === 'success') {
+        message.success('编辑成功');
+        setBotInfo(result.data as BotType);
+        setIsEditModalVisible(false);
+      } else {
+        message.error('编辑失败');
+      }
+    } catch (error) {
+      message.error('编辑失败，请重试');
+    } finally {
+      setIsEditLoading(false);
     }
   };
 
@@ -82,6 +105,15 @@ const BotInfo = ({ params }: { params: { bot_id: string } }) => {
                     </Link></>}
                 </div>
                 <Link href={`/chat/bot/${botInfo.id}`}><Button type='primary' shape='round'>查看</Button></Link>
+                <Button 
+                  type='default' 
+                  icon={<EditOutlined />} 
+                  shape='round' 
+                  className='ml-2'
+                  onClick={() => setIsEditModalVisible(true)}
+                >
+                  编辑
+                </Button>
                 <Popconfirm
                   title="删除智能体"
                   description="删除后已添加的用户还可以继续使用，未添加智能体的用户无法添加"
@@ -103,6 +135,25 @@ const BotInfo = ({ params }: { params: { bot_id: string } }) => {
           <span className='text-gray-400 text-sm'>{t('noPrompt')}</span>
         }
       </div>
+
+      {/* 编辑模态框 */}
+      <Modal
+        title="编辑智能体"
+        open={isEditModalVisible}
+        onCancel={() => setIsEditModalVisible(false)}
+        footer={null}
+        width={600}
+        destroyOnClose
+      >
+        <BotForm
+          mode="edit"
+          initialData={botInfo}
+          onSubmit={handleEditBot}
+          loading={isEditLoading}
+          showCancelButton
+          onCancel={() => setIsEditModalVisible(false)}
+        />
+      </Modal>
     </div>
   )
 }

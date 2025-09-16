@@ -150,9 +150,19 @@
     "exportSuccess": "Successfully exported {count} bots",
     "exportFailed": "Export failed",
     "importSuccess": "Successfully imported {imported} bots, skipped {skipped} duplicates (total {total})",
+    "importSuccessDetailed": "Import completed: created {created}, updated {updated}, skipped {skipped}, failed {failed} (total {total})",
     "importFailed": "Import failed",
     "invalidFileFormat": "Invalid file format",
-    "selectJsonFile": "Please select a JSON file"
+    "selectJsonFile": "Please select a JSON file",
+    "view": "View",
+    "editBot": "Edit",
+    "deleteBot": "Delete",
+    "deleteBotTitle": "Delete Bot",
+    "deleteBotDescription": "After deletion, users who have added it can continue to use it, but users who haven't added it will not be able to add it",
+    "editBotTitle": "Edit Bot",
+    "editSuccess": "Edit successful",
+    "editFailed": "Edit failed",
+    "editFailedRetry": "Edit failed, please retry"
   },
   "Settings": {
     "accountSettings": "Account",

@@ -22,9 +22,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      imported: result.imported,
-      skipped: result.skipped,
-      total: result.total
+      summary: result.summary,
+      // 保持向后兼容
+      imported: result.summary.created + result.summary.updated,
+      skipped: result.summary.skipped,
+      total: result.summary.total
     });
   } catch (error) {
     console.error('Import error:', error);

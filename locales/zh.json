@@ -150,9 +150,19 @@
     "exportSuccess": "成功导出 {count} 个智能体",
     "exportFailed": "导出失败",
     "importSuccess": "成功导入 {imported} 个智能体，跳过 {skipped} 个重复项（共 {total} 个）",
+    "importSuccessDetailed": "导入完成：创建 {created} 个，更新 {updated} 个，跳过 {skipped} 个，失败 {failed} 个（共 {total} 个）",
     "importFailed": "导入失败",
     "invalidFileFormat": "文件格式错误",
-    "selectJsonFile": "请选择 JSON 文件"
+    "selectJsonFile": "请选择 JSON 文件",
+    "view": "查看",
+    "editBot": "编辑",
+    "deleteBot": "删除",
+    "deleteBotTitle": "删除智能体",
+    "deleteBotDescription": "删除后已添加的用户还可以继续使用，未添加智能体的用户无法添加",
+    "editBotTitle": "编辑智能体",
+    "editSuccess": "编辑成功",
+    "editFailed": "编辑失败",
+    "editFailedRetry": "编辑失败，请重试"
   },
   "Settings": {
     "accountSettings": "账号设置",

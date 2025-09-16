@@ -184,6 +184,8 @@ export const importBotsInServer = async (botsData: Array<{
   }
 
   const results = [];
+  let updatedCount = 0;
+  let createdCount = 0;
   let skippedCount = 0;
   
   for (const botData of botsData) {
@@ -200,18 +202,33 @@ export const importBotsInServer = async (botsData: Array<{
         .limit(1);
       
       if (existingBot.length > 0) {
-        // 如果存在，更新现有智能体
-        const updatedBot = await db.update(bots)
-          .set({
-            desc: botData.desc,
-            prompt: botData.prompt,
-            avatar: botData.avatar,
-            avatarType: botData.avatarType,
-            updatedAt: new Date()
-          })
-          .where(eq(bots.id, existingBot[0].id))
-          .returning();
-        results.push(updatedBot[0]);
+        // 检查内容是否有变化，避免不必要的更新
+        const existing = existingBot[0];
+        const hasChanges = 
+          existing.desc !== botData.desc ||
+          existing.prompt !== botData.prompt ||
+          existing.avatar !== botData.avatar ||
+          existing.avatarType !== botData.avatarType;
+
+        if (hasChanges) {
+          // 如果存在且有变化，更新现有智能体
+          const updatedBot = await db.update(bots)
+            .set({
+              desc: botData.desc,
+              prompt: botData.prompt,
+              avatar: botData.avatar,
+              avatarType: botData.avatarType,
+              updatedAt: new Date()
+            })
+            .where(eq(bots.id, existing.id))
+            .returning();
+          results.push({ ...updatedBot[0], action: 'updated' });
+          updatedCount++;
+        } else {
+          // 如果存在但没有变化，跳过
+          results.push({ ...existing, action: 'skipped' });
+          skippedCount++;
+        }
       } else {
         // 如果不存在，创建新智能体
         const botResult = await db.insert(bots)
@@ -220,7 +237,8 @@ export const importBotsInServer = async (botsData: Array<{
             creator: 'public'
           })
           .returning();
-        results.push(botResult[0]);
+        results.push({ ...botResult[0], action: 'created' });
+        createdCount++;
       }
     } catch (error) {
       console.error('Failed to import bot:', botData.title, error);
@@ -231,8 +249,12 @@ export const importBotsInServer = async (botsData: Array<{
   return {
     status: 'success',
     data: results,
-    imported: results.length,
-    skipped: skippedCount,
-    total: botsData.length
+    summary: {
+      total: botsData.length,
+      created: createdCount,
+      updated: updatedCount,
+      skipped: skippedCount,
+      failed: botsData.length - createdCount - updatedCount - skippedCount
+    }
   }
 }

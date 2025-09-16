@@ -1,0 +1,82 @@
+name: 🔒 安全问题
+description: 报告安全漏洞（请对严重漏洞使用私人披露）
+title: '[Security]: '
+labels: ['security']
+assignees:
+  - wuhaoworld
+  - hiratwu
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **⚠️ 重要提醒：对于严重的安全漏洞，请使用 GitHub 的私人漏洞披露功能，而不是创建公开 issue。**
+        
+        此模板适用于一般的安全改进和轻微的安全相关问题。
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 严重程度
+      description: 这个安全问题有多严重？
+      options:
+        - 低 - 轻微安全改进
+        - 中 - 中等安全问题
+        - 高 - 应尽快解决
+        - 关键 - 需要立即处理
+    validations:
+      required: true
+
+  - type: textarea
+    id: security-issue
+    attributes:
+      label: 安全问题描述
+      description: 描述安全问题或关注点。
+      placeholder: 安全问题是什么？
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected-components
+    attributes:
+      label: 受影响的组件
+      description: 应用程序的哪些部分受到影响？
+      placeholder: 例如：身份验证、API 端点、数据库等。
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 重现步骤（如适用）
+      description: 如何重现这个安全问题？
+      placeholder: |
+        1. 进入...
+        2. 执行...
+        3. 观察...
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: 潜在影响
+      description: 如果这个安全问题被利用，会发生什么？
+      placeholder: 描述潜在影响...
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-fix
+    attributes:
+      label: 建议解决方案
+      description: 您对修复此问题有什么建议吗？
+      placeholder: 应该如何解决这个问题？
+
+  - type: checkboxes
+    id: disclosure
+    attributes:
+      label: 责任披露
+      description: 请确认您对责任披露的理解
+      options:
+        - label: 我理解严重漏洞应该首先私下报告
+          required: true
+        - label: 这不是一个可能造成立即伤害的关键漏洞
+          required: true

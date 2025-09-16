@@ -1,0 +1,95 @@
+name: ❓ 问题/支持
+description: 咨询问题或获取 HiveChat 使用支持
+title: '[Question]: '
+labels: ['question', 'support']
+assignees:
+  - wuhaoworld
+  - hiratwu
+body:
+  - type: markdown
+    attributes:
+      value: |
+        在提问之前，请检查：
+        - [文档](README.md)
+        - [现有 Issues](../../issues)
+        - [讨论](../../discussions)
+
+  - type: dropdown
+    id: question-category
+    attributes:
+      label: 问题分类
+      description: 您的问题属于哪个类别？
+      options:
+        - 安装/设置
+        - 配置
+        - 使用/操作指南
+        - API 集成
+        - AI 模型
+        - 身份验证
+        - 数据库
+        - 部署
+        - 故障排除
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: 您的问题
+      description: 详细描述您的问题。
+      placeholder: 您想知道什么？
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 上下文/背景
+      description: 提供任何相关上下文或您试图实现的目标。
+      placeholder: 您试图做什么？
+
+  - type: textarea
+    id: attempted-solutions
+    attributes:
+      label: 您试过什么？
+      description: 您已经尝试过哪些解决方案或方法？
+      placeholder: |
+        - 我试过...
+        - 我查看了...
+        - 我搜索了...
+
+  - type: input
+    id: version
+    attributes:
+      label: HiveChat 版本
+      description: 您使用的是哪个版本的 HiveChat？
+      placeholder: v0.1.0
+
+  - type: textarea
+    id: environment-details
+    attributes:
+      label: 环境详情
+      description: 提供相关的环境信息。
+      placeholder: |
+        - 操作系统: 
+        - Node.js 版本:
+        - 数据库:
+        - 浏览器（如适用）:
+
+  - type: textarea
+    id: error-messages
+    attributes:
+      label: 错误信息（如适用）
+      description: 包含您遇到的任何错误信息。
+      placeholder: 在此粘贴错误信息...
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 检查清单
+      options:
+        - label: 我已搜索现有的 issues 和讨论
+          required: true
+        - label: 我已为我的问题提供了足够的上下文
+          required: true

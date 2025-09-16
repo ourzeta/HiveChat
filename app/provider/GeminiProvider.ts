@@ -355,7 +355,7 @@ export default class GeminiApi implements LLMApi {
         }
       }
     }
-    if (options.config.model.includes('image-generation')) {
+    if (options.config.model.includes('image')) {
       generationConfig = {
         "generationConfig": {
           "responseModalities": [

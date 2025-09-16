@@ -1,14 +1,16 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useState, useEffect } from 'react';
-import { PlusOutlined } from '@ant-design/icons';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { BotType } from '@/app/db/schema';
 import { getBotListInServer } from '@/app/chat/actions/bot';
-import { Button, Skeleton } from 'antd';
+import { Button, Skeleton, Input, Empty } from 'antd';
 import { useSession } from 'next-auth/react';
 import { useLoginModal } from '@/app/contexts/loginModalContext';
 import { useTranslations } from 'next-intl';
+import CustomPagination from '@/app/components/CustomPagination';
+import { debounce } from 'lodash';
 
 const BotDiscover = () => {
   const t = useTranslations('Chat');
@@ -16,6 +18,10 @@ const BotDiscover = () => {
   const { showLogin } = useLoginModal();
   const [botList, setBotList] = useState<BotType[]>([]);
   const [isPending, setIsPending] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [pageSize, setPageSize] = useState(12);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -23,41 +29,148 @@ const BotDiscover = () => {
     }
   }, [status, showLogin]);
 
-  useEffect(() => {
-    async function getBotsList() {
-      const bots = await getBotListInServer()
+  const fetchBots = useCallback(async (page: number, size: number, query?: string) => {
+    setIsPending(true);
+    try {
+      const bots = await getBotListInServer(page, size, query);
       setBotList(bots.data as BotType[]);
+      setTotal(bots.total || 0);
+    } catch (error) {
+      console.error('Failed to fetch bots:', error);
+    } finally {
       setIsPending(false);
     }
-    getBotsList();
   }, []);
 
+  const debouncedFetchRef = useRef(
+    debounce((query: string) => {
+      setCurrentPage(1);
+      fetchBots(1, pageSize, query);
+    }, 300)
+  );
+
+  // Update the debounced function when pageSize or fetchBots changes
+  useEffect(() => {
+    debouncedFetchRef.current = debounce((query: string) => {
+      setCurrentPage(1);
+      fetchBots(1, pageSize, query);
+    }, 300);
+  }, [pageSize, fetchBots]);
+
+  useEffect(() => {
+    fetchBots(currentPage, pageSize, searchQuery);
+  }, [currentPage, pageSize, searchQuery, fetchBots]);
+
+  useEffect(() => {
+    debouncedFetchRef.current(searchQuery);
+  }, [searchQuery]);
+
+  const handlePageChange = (page: number, newPageSize?: number) => {
+    if (newPageSize && newPageSize !== pageSize) {
+      setPageSize(newPageSize);
+      setCurrentPage(1);
+    } else {
+      setCurrentPage(page);
+    }
+  };
+
+  const handleShowSizeChange = (current: number, size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
   return (
-    <div className="container max-w-4xl mx-auto p-4">
-      <div className='w-full flex flex-row justify-between items-center'>
-        <h1 className='text-xl font-bold mb-4 mt-4'>{t('discoverBots')}</h1>
-        <Link href='/chat/bot/create'>
-          <Button type="primary" icon={<PlusOutlined />} shape='round'>
-            <div className='flex flex-row'>
-              {t('createBot')}
-            </div>
-          </Button>
-        </Link>
+    <div className="container max-w-6xl mx-auto p-4">
+      <div className='w-full flex flex-col space-y-4'>
+        <div className='flex flex-row justify-between items-center'>
+          <h1 className='text-xl font-bold'>{t('discoverBots')}</h1>
+          <Link href='/chat/bot/create'>
+            <Button type="primary" icon={<PlusOutlined />} shape='round'>
+              <div className='flex flex-row'>
+                {t('createBot')}
+              </div>
+            </Button>
+          </Link>
+        </div>
+        
+        <div className='flex flex-row items-center space-x-4'>
+          <div className='flex-1'>
+            <Input
+              placeholder="搜索智能体名称或描述..."
+              prefix={<SearchOutlined className="text-gray-400" />}
+              value={searchQuery}
+              onChange={handleSearchChange}
+              size="large"
+              className="rounded-lg"
+              style={{
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+              }}
+            />
+          </div>
+          {searchQuery && (
+            <Button
+              type="text"
+              onClick={() => setSearchQuery('')}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              清除
+            </Button>
+          )}
+        </div>
       </div>
 
       {isPending ?
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
           <SkeletonCard />
           <SkeletonCard />
           <SkeletonCard />
           <SkeletonCard />
         </div>
         :
-        <div className="grid grid-cols-2 gap-4">
-          {botList.map((item, index) => (
-            <ServiceCard key={index} bot={item} />
-          ))}
-        </div>
+        <>
+          {botList.length === 0 ? (
+            <div className="flex justify-center items-center py-16">
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={
+                  <span className="text-gray-500">
+                    {searchQuery ? `未找到包含「${searchQuery}」的智能体` : '暂无智能体'}
+                  </span>
+                }
+              >
+                {!searchQuery && (
+                  <Link href='/chat/bot/create'>
+                    <Button type="primary" icon={<PlusOutlined />}>
+                      创建第一个智能体
+                    </Button>
+                  </Link>
+                )}
+              </Empty>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
+                {botList.map((item, index) => (
+                  <ServiceCard key={item.id} bot={item} />
+                ))}
+              </div>
+              <CustomPagination
+                current={currentPage}
+                total={total}
+                pageSize={pageSize}
+                onChange={handlePageChange}
+                onShowSizeChange={handleShowSizeChange}
+                loading={isPending}
+                showSizeChanger={true}
+              />
+            </>
+          )}
+        </>
       }
     </div>
   )

@@ -6,7 +6,15 @@
     "all": "All",
     "edit": "Edit",
     "delete": "Delete",
-    "ok": "OK"
+    "ok": "OK",
+    "items": "items",
+    "currentDisplay": "Showing",
+    "to": "to",
+    "total": "Total",
+    "perPage": "per page",
+    "jumpTo": "Jump to",
+    "page": "page",
+    "itemsPerPage": "per page"
   },
   "Auth": {
     "login": "Login",
@@ -29,6 +37,15 @@
     "setupNotice": "Please set up the administrator account and password. Once the administrator account is set up, this page will no longer be accessible."
   },
   "Chat": {
+    "avatarType": "Avatar Type",
+    "selectAvatarType": "Select Avatar Type",
+    "emoji": "Emoji",
+    "imageUrl": "Image URL",
+    "selectEmoji": "Select Emoji",
+    "avatar": "Avatar",
+    "enterImageUrl": "Enter image URL",
+    "enterAvatar": "Please enter avatar",
+    "selectAvatarTypeRequired": "Please select avatar type",
     "webSearch": "Web Search",
     "mcpServer": "MCP Server",
     "mcpTool": "MCP Tool",
@@ -125,7 +142,17 @@
     "modelNotConfigured": "Model Not Configured",
     "guideAlertText": "The large model service has not been configured yet, and AI chat is not available. Please contact the administrator for setup.",
     "thinking": "Thinking...",
-    "thought": "Thought"
+    "thought": "Thought",
+    "export": "Export",
+    "import": "Import",
+    "exportCurrent": "Export Current Page",
+    "exportAll": "Export All Bots",
+    "exportSuccess": "Successfully exported {count} bots",
+    "exportFailed": "Export failed",
+    "importSuccess": "Successfully imported {imported} bots, skipped {skipped} duplicates (total {total})",
+    "importFailed": "Import failed",
+    "invalidFileFormat": "Invalid file format",
+    "selectJsonFile": "Please select a JSON file"
   },
   "Settings": {
     "accountSettings": "Account",

@@ -6,7 +6,15 @@
     "all": "全部",
     "edit": "编辑",
     "delete": "删除",
-    "ok": "确定"
+    "ok": "确定",
+    "items": "个项目",
+    "currentDisplay": "当前显示第",
+    "to": "到",
+    "total": "共",
+    "perPage": "条/页",
+    "jumpTo": "跳至",
+    "page": "页",
+    "itemsPerPage": "条/页"
   },
   "Auth": {
     "login": "登录",
@@ -29,6 +37,15 @@
     "setupNotice": "请设置管理员账号和密码，管理员账号设置完成后，此页面将无法访问。"
   },
   "Chat": {
+    "avatarType": "头像类型",
+    "selectAvatarType": "选择头像类型",
+    "emoji": "表情符号",
+    "imageUrl": "图片链接",
+    "selectEmoji": "选择表情符号",
+    "avatar": "头像",
+    "enterImageUrl": "输入图片链接",
+    "enterAvatar": "请输入头像",
+    "selectAvatarTypeRequired": "请选择头像类型",
     "webSearch": "联网搜索",
     "mcpServer": "MCP 服务器",
     "mcpTool": "MCP 工具",
@@ -125,7 +142,17 @@
     "modelNotConfigured": "模型未配置",
     "guideAlertText": "尚未配置大模型服务，AI 对话无法正常使用，请联系管理员进行设置",
     "thinking": "思考中...",
-    "thought": "已深度思考"
+    "thought": "已深度思考",
+    "export": "导出",
+    "import": "导入",
+    "exportCurrent": "导出当前页",
+    "exportAll": "导出所有智能体",
+    "exportSuccess": "成功导出 {count} 个智能体",
+    "exportFailed": "导出失败",
+    "importSuccess": "成功导入 {imported} 个智能体，跳过 {skipped} 个重复项（共 {total} 个）",
+    "importFailed": "导入失败",
+    "invalidFileFormat": "文件格式错误",
+    "selectJsonFile": "请选择 JSON 文件"
   },
   "Settings": {
     "accountSettings": "账号设置",

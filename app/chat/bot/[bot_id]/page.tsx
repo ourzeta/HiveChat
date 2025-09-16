@@ -5,20 +5,24 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BotType } from '@/app/db/schema';
 import useChatListStore from '@/app/store/chatList';
-import { Button, message, Popconfirm, Divider, PopconfirmProps } from 'antd';
-import { LeftOutlined } from '@ant-design/icons';
+import { Button, message, Popconfirm, Divider, PopconfirmProps, Modal } from 'antd';
+import { LeftOutlined, EditOutlined } from '@ant-design/icons';
 import MarkdownRender from '@/app/components/Markdown';
-import { getBotInfoInServer, deleteBotInServer } from '@/app/chat/actions/bot';
+import { getBotInfoInServer, deleteBotInServer, updateBotInServer } from '@/app/chat/actions/bot';
 import { useTranslations } from 'next-intl';
+import BotForm, { BotFormValues } from '@/app/components/BotForm';
 
 const BotInfo = ({ params }: { params: { bot_id: string } }) => {
   const t = useTranslations('Chat');
+  const tCommon = useTranslations('Common');
   const router = useRouter();
   const { chatList, addBot } = useChatListStore();
   const [botInfo, setBotInfo] = useState<BotType>();
   const [botChatId, setBotChatId] = useState('');
   const [isPending, setIsPending] = useState(true);
   const [isAdded, setIsAdded] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   useEffect(() => {
     const initBotData = async () => {
       const bot = await getBotInfoInServer(Number(params.bot_id));
@@ -41,7 +45,7 @@ const BotInfo = ({ params }: { params: { bot_id: string } }) => {
   const addToChat = (botId: number) => {
     addBot(botId);
   }
-  const removeCurrentBot: PopconfirmProps['onConfirm'] = async (e) => {
+  const removeCurrentBot: PopconfirmProps['onConfirm'] = async () => {
     if (botInfo?.id) {
       const result = await deleteBotInServer(botInfo.id);
       if (result.status === 'success') {
@@ -51,6 +55,42 @@ const BotInfo = ({ params }: { params: { bot_id: string } }) => {
         message.error(t('deleteFail'));
       }
     }
+  };
+
+  const handleEditBot = () => {
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateBot = async (values: BotFormValues) => {
+    if (botInfo?.id) {
+      setIsUpdating(true);
+      try {
+        const result = await updateBotInServer(botInfo.id, {
+          title: values.title,
+          desc: values.desc,
+          prompt: values.prompt,
+          avatar: values.avatar,
+          avatarType: values.avatarType
+        });
+        
+        if (result.status === 'success') {
+          message.success('更新成功');
+          setBotInfo(result.data as BotType);
+          setIsEditModalOpen(false);
+        } else {
+          message.error('更新失败');
+        }
+      } catch (error) {
+        message.error('更新失败');
+        throw error;
+      } finally {
+        setIsUpdating(false);
+      }
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditModalOpen(false);
   };
 
   return (
@@ -99,15 +139,26 @@ const BotInfo = ({ params }: { params: { bot_id: string } }) => {
                     shape='round'
                     onClick={() => { addToChat(botInfo.id!) }}>{t('addToChats')}</Button>}
                 {botInfo.creator !== 'public' &&
-                  <Popconfirm
-                    title="删除智能体"
-                    description="确认要删除当前智能体吗？"
-                    onConfirm={removeCurrentBot}
-                    okText="确认"
-                    cancelText="取消"
-                  >
-                    <Button type='text' className='ml-2' style={{ color: '#999' }} shape='round'>{t('remove')}</Button>
-                  </Popconfirm>
+                  <>
+                    <Button 
+                      type='default' 
+                      className='ml-2' 
+                      icon={<EditOutlined />} 
+                      shape='round'
+                      onClick={handleEditBot}
+                    >
+                      {tCommon('edit')}
+                    </Button>
+                    <Popconfirm
+                      title="删除智能体"
+                      description="确认要删除当前智能体吗？"
+                      onConfirm={removeCurrentBot}
+                      okText="确认"
+                      cancelText="取消"
+                    >
+                      <Button type='text' className='ml-2' style={{ color: '#999' }} shape='round'>{t('remove')}</Button>
+                    </Popconfirm>
+                  </>
                 }
 
               </div>
@@ -122,6 +173,23 @@ const BotInfo = ({ params }: { params: { bot_id: string } }) => {
           <span className='text-gray-400 text-sm'>{t('noPrompt')}</span>
         }
       </div>
+      
+      <Modal
+        title="编辑智能体"
+        open={isEditModalOpen}
+        onCancel={handleCancelEdit}
+        width={600}
+        footer={null}
+      >
+        <BotForm
+          mode="edit"
+          initialData={botInfo}
+          onSubmit={handleUpdateBot}
+          loading={isUpdating}
+          onCancel={handleCancelEdit}
+          showCancelButton={true}
+        />
+      </Modal>
     </div>
   )
 }

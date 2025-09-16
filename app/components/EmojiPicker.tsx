@@ -45,8 +45,8 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ onEmojiSelect, current
         className='flex items-center justify-center cursor-pointer text-6xl w-24 h-24 bg-slate-200 rounded-full relative'
       >
         {currentEmoji || '😀'}
-        <div style={{ backgroundColor: '#3875F6' }} className='w-8 h-8 rounded-full border-2 border-white absolute bottom-0 right-0 flex items-center justify-center'>
-          <EditOutlined className='text-sm' style={{ color: 'white' }} />
+        <div style={{ backgroundColor: '#f0f2f5' }} className='w-8 h-8 rounded-full border-2 border-white absolute bottom-0 right-0 flex items-center justify-center shadow-sm hover:bg-gray-200 transition-colors'>
+          <EditOutlined className='text-sm' style={{ color: '#666666' }} />
         </div>
       </div>
 

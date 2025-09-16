@@ -1,7 +1,7 @@
 'use server';
 import { db } from '@/app/db';
 import { auth } from "@/auth";
-import { eq, and, or, desc } from 'drizzle-orm'
+import { eq, and, or, desc, count, ilike } from 'drizzle-orm'
 import { chats, bots } from '@/app/db/schema';
 
 export const addBotInServer = async (botInfo: {
@@ -25,6 +25,47 @@ export const addBotInServer = async (botInfo: {
       creator: session.user.id
     })
     .returning();
+  return {
+    status: 'success',
+    data: botResult[0]
+  }
+}
+
+export const updateBotInServer = async (botId: number, botInfo: {
+  title: string;
+  desc?: string;
+  prompt: string;
+  avatar: string;
+  avatarType: 'emoji' | 'url';
+}) => {
+  const session = await auth();
+  if (!session?.user.id) {
+    return {
+      status: 'fail',
+      message: 'please login first.'
+    }
+  }
+
+  const botResult = await db.update(bots)
+    .set({
+      ...botInfo,
+      updatedAt: new Date()
+    })
+    .where(
+      and(
+        eq(bots.id, botId),
+        eq(bots.creator, session.user.id)
+      )
+    )
+    .returning();
+    
+  if (botResult.length === 0) {
+    return {
+      status: 'fail',
+      message: 'Bot not found or you do not have permission to update it.'
+    }
+  }
+  
   return {
     status: 'success',
     data: botResult[0]
@@ -90,33 +131,65 @@ export const addBotToChatInServer = async (botId: number) => {
   }
 }
 
-export const getBotListInServer = async () => {
+export const getBotListInServer = async (page: number = 1, pageSize: number = 12, searchQuery?: string) => {
   const session = await auth();
   if (!session?.user.id) {
     return {
       status: 'fail',
       data: [],
+      total: 0,
       message: 'please login first.'
     }
   }
-  const result = await db.select()
-    .from(bots)
-    .where(
-      or(
-        eq(bots.creator, session?.user.id),
-        eq(bots.creator, 'public'),
-      )
-    )
-    .orderBy(desc(bots.createdAt));
-  if (result.length > 0) {
+  
+  const offset = (page - 1) * pageSize;
+  
+  let baseCondition = or(
+    eq(bots.creator, session?.user.id),
+    eq(bots.creator, 'public'),
+  );
+
+  let finalCondition = baseCondition;
+  
+  if (searchQuery && searchQuery.trim()) {
+    const searchCondition = or(
+      ilike(bots.title, `%${searchQuery.trim()}%`),
+      ilike(bots.desc, `%${searchQuery.trim()}%`)
+    );
+    finalCondition = and(baseCondition, searchCondition);
+  }
+  
+  const [result, totalResult] = await Promise.all([
+    db.select()
+      .from(bots)
+      .where(finalCondition)
+      .orderBy(desc(bots.createdAt))
+      .limit(pageSize)
+      .offset(offset),
+    db.select({ count: count() })
+      .from(bots)
+      .where(finalCondition)
+  ]);
+  
+  const total = totalResult[0]?.count || 0;
+  
+  if (result.length > 0 || page === 1) {
     return {
       status: 'success',
-      data: result
+      data: result,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize)
     }
   } else {
     return {
       status: 'fail',
-      data: []
+      data: [],
+      total: 0,
+      page,
+      pageSize,
+      totalPages: 0
     }
   }
 }

@@ -51,14 +51,14 @@ const BotInfo = ({ params }: { params: { bot_id: string } }) => {
     try {
       const result = await updateBotInServer(botInfo.id, values);
       if (result.status === 'success') {
-        message.success('编辑成功');
+        message.success(t('editSuccess'));
         setBotInfo(result.data as BotType);
         setIsEditModalVisible(false);
       } else {
-        message.error('编辑失败');
+        message.error(t('editFailed'));
       }
     } catch (error) {
-      message.error('编辑失败，请重试');
+      message.error(t('editFailedRetry'));
     } finally {
       setIsEditLoading(false);
     }
@@ -104,7 +104,7 @@ const BotInfo = ({ params }: { params: { bot_id: string } }) => {
                       <Button type='text' size='small' style={{ color: '#6b7280' }}>{t('source')}</Button>
                     </Link></>}
                 </div>
-                <Link href={`/chat/bot/${botInfo.id}`}><Button type='primary' shape='round'>查看</Button></Link>
+                <Link href={`/chat/bot/${botInfo.id}`}><Button type='primary' shape='round'>{t('view')}</Button></Link>
                 <Button 
                   type='default' 
                   icon={<EditOutlined />} 
@@ -112,16 +112,16 @@ const BotInfo = ({ params }: { params: { bot_id: string } }) => {
                   className='ml-2'
                   onClick={() => setIsEditModalVisible(true)}
                 >
-                  编辑
+                  {t('editBot')}
                 </Button>
                 <Popconfirm
-                  title="删除智能体"
-                  description="删除后已添加的用户还可以继续使用，未添加智能体的用户无法添加"
+                  title={t('deleteBotTitle')}
+                  description={t('deleteBotDescription')}
                   onConfirm={removeCurrentBot}
-                  okText="确认"
-                  cancelText="取消"
+                  okText={t('confirm')}
+                  cancelText={t('cancel')}
                 >
-                  <Button type='text' className='ml-2' style={{ color: '#999' }} shape='round'>删除</Button>
+                  <Button type='text' className='ml-2' style={{ color: '#999' }} shape='round'>{t('deleteBot')}</Button>
                 </Popconfirm>
               </div>
             </>
@@ -138,7 +138,7 @@ const BotInfo = ({ params }: { params: { bot_id: string } }) => {
 
       {/* 编辑模态框 */}
       <Modal
-        title="编辑智能体"
+        title={t('editBotTitle')}
         open={isEditModalVisible}
         onCancel={() => setIsEditModalVisible(false)}
         footer={null}

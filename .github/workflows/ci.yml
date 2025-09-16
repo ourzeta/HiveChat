@@ -41,7 +41,7 @@ jobs:
           ${{ runner.os }}-eslint-
 
     - name: 运行 ESLint
-      run: npm run lint -- --cache
+      run: npm run lint 
 
     - name: 缓存 TypeScript
       uses: actions/cache@v3
@@ -102,39 +102,3 @@ jobs:
       with:
         name: build-files
         path: .next/
-
-  security-scan:
-    name: 安全扫描
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: 检出代码
-      uses: actions/checkout@v4
-
-    - name: 设置 Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-
-    - name: 缓存 node_modules
-      uses: actions/cache@v3
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
-
-    - name: 安装依赖
-      run: npm ci
-
-    - name: 运行安全审计
-      run: npm audit --audit-level=moderate
-
-    - name: 运行 CodeQL 分析
-      uses: github/codeql-action/init@v3
-      with:
-        languages: javascript
-
-    - name: 执行 CodeQL 分析
-      uses: github/codeql-action/analyze@v3

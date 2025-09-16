@@ -1,0 +1,140 @@
+name: 持续集成
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint-and-type-check:
+    name: 代码检查和类型检查
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: 缓存 node_modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: 安装依赖
+      run: npm ci
+
+    - name: 缓存 ESLint
+      uses: actions/cache@v3
+      with:
+        path: .eslintcache
+        key: ${{ runner.os }}-eslint-${{ hashFiles('.eslintrc.json') }}-${{ hashFiles('**/*.{js,jsx,ts,tsx}') }}
+        restore-keys: |
+          ${{ runner.os }}-eslint-
+
+    - name: 运行 ESLint
+      run: npm run lint -- --cache
+
+    - name: 缓存 TypeScript
+      uses: actions/cache@v3
+      with:
+        path: .tsbuildinfo
+        key: ${{ runner.os }}-tsc-${{ hashFiles('tsconfig.json') }}-${{ hashFiles('**/*.{ts,tsx}') }}
+        restore-keys: |
+          ${{ runner.os }}-tsc-
+
+    - name: 类型检查
+      run: npx tsc --noEmit --incremental
+
+  build:
+    name: 构建应用程序
+    runs-on: ubuntu-latest
+    needs: lint-and-type-check
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: 缓存 node_modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: 安装依赖
+      run: npm ci
+
+    - name: 缓存 Next.js 构建
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.npm
+          ${{ github.workspace }}/.next/cache
+        key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+        restore-keys: |
+          ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+
+    - name: 构建应用程序
+      run: npm run build
+      env:
+        DATABASE_URL: postgresql://test:test@localhost:5432/test
+        AUTH_SECRET: test-secret-for-ci
+        NEXTAUTH_URL: http://localhost:3000
+
+    - name: 上传构建产物
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-files
+        path: .next/
+
+  security-scan:
+    name: 安全扫描
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: 缓存 node_modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: 安装依赖
+      run: npm ci
+
+    - name: 运行安全审计
+      run: npm audit --audit-level=moderate
+
+    - name: 运行 CodeQL 分析
+      uses: github/codeql-action/init@v3
+      with:
+        languages: javascript
+
+    - name: 执行 CodeQL 分析
+      uses: github/codeql-action/analyze@v3

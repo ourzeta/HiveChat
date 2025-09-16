@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 文档
+    url: https://www.hivechat.net/zh/docs
+    about: 首先查看项目文档
+  - name: 🔐 安全漏洞
+    url: https://github.com/HiveNexus/HiveChat/security/advisories/new
+    about: 私下报告安全漏洞

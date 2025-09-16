@@ -1,0 +1,136 @@
+name: 🐛 Bug 反馈
+description: 创建一个错误报告来帮助我们改进 HiveChat
+title: '[Bug]: '
+labels: ['bug', 'triage']
+assignees:
+  - wuhaoworld
+  - hiratwu
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您花时间报告这个错误！请填写下面的表格，帮助我们理解和重现这个问题。
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 错误描述
+      description: 清晰简洁地描述这个错误是什么。
+      placeholder: 描述这个错误...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 重现步骤
+      description: 重现此错误的步骤
+      placeholder: |
+        1. 进入 '...'
+        2. 点击 '...'
+        3. 滚动到 '...'
+        4. 看到错误
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: 预期行为
+      description: 清晰简洁地描述您期望发生什么。
+      placeholder: 应该发生什么？
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: 实际行为
+      description: 清晰简洁地描述实际发生了什么。
+      placeholder: 实际发生了什么？
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: 运行环境
+      description: 这个问题发生在哪个环境中？
+      options:
+        - 开发环境
+        - 测试环境
+        - 生产环境
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 版本号
+      description: 您使用的是哪个版本的 HiveChat？
+      placeholder: v0.1.0
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: 浏览器
+      description: 您使用的是哪个浏览器？
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - 其他
+
+  - type: input
+    id: browser-version
+    attributes:
+      label: 浏览器版本
+      description: 浏览器的版本是？
+      placeholder: 120.0.0.0
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: 操作系统
+      description: 您使用的是哪个操作系统？
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - iOS
+        - Android
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 截图
+      description: 如果适用，添加截图来帮助解释您的问题。
+      placeholder: 在此粘贴截图...
+
+  - type: textarea
+    id: error-logs
+    attributes:
+      label: 错误信息/日志
+      description: 如果适用，添加任何错误信息或相关日志。
+      placeholder: 在此粘贴日志...
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 其他信息
+      description: 在此处添加有关该问题的任何其他信息。
+      placeholder: 任何其他信息...
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 检查清单
+      description: 请确认以下项目
+      options:
+        - label: 我已搜索现有的 issues 以确保此错误之前未被报告过
+          required: true
+        - label: 我已提供了上述所有请求的信息
+          required: true
+        - label: 我愿意帮助测试此问题的修复
+          required: false
